@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-export default new Phaser.Core.Config({
+const config = new Phaser.Core.Config({
     title: "Snake Extreme",
     type: Phaser.AUTO,
     scale: {
@@ -21,3 +21,5 @@ export default new Phaser.Core.Config({
         gamepad: true,
     },
 });
+
+export default config;

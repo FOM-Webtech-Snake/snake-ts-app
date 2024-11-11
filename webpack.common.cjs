@@ -1,17 +1,15 @@
-import path from 'path';
-import HtmlWebpackPlugin from "html-webpack-plugin";
+const {resolve} = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-export default {
+module.exports = {
     entry: './src/client/index.ts', // Entry point for Phaser game
     output: {
         filename: 'bundle.[contenthash].js', // ensure to have unique bundle name (that you always see up to date version in your browser window and not something cached.)
-        path: path.resolve('./dist'), // Output to 'public/dist'
+        path: resolve(__dirname, 'dist'), // Output to './dist'
         clean: true, // Clean output directory on each build
-    },
-    resolve: {
+    }, resolve: {
         extensions: ['.ts', '.js'], // Resolve TypeScript and JavaScript files
-    },
-    module: {
+    }, module: {
         rules: [{
             test: /\.ts$/, use: 'ts-loader', // Use ts-loader for TypeScript files
             exclude: /node_modules/,
@@ -21,10 +19,7 @@ export default {
                 filename: 'assets/[name][ext]', // Output assets to 'public/assets'
             },
         }],
-    },
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: './public/templates/index.html',
-        })
-    ]
+    }, plugins: [new HtmlWebpackPlugin({
+        template: './public/templates/index.html',
+    })]
 };

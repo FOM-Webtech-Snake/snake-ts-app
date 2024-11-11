@@ -42,12 +42,12 @@ browser-based multiplayer games.
 * `.env`: Stores environment-specific variables. (e.g. PORT)
 * `tsconfig.json`: TypeScript configuration file, with settings for include and exclude paths and configuring the
   compiler.
-* `webpack.common.js`: Contains shared Webpack configuration for both development and production builds, specifying
+* `webpack.common.cjs`: Contains shared Webpack configuration for both development and production builds, specifying
   entry points, output, file handling, and plugins. This file centralizes shared configuration to avoid repetition in
   environment-specific configurations.
-    * `webpack.dev.js`: Extends `webpack.common.js` with settings optimized for development, such as enabling source
+    * `webpack.dev.cjs`: Extends `webpack.common.cjs` with settings optimized for development, such as enabling source
       maps, using the development server, and setting the mode to development for faster builds.
-    * `webpack.prod.js`: Extends `webpack.common.js` with production-specific settings and mode set to production to
+    * `webpack.prod.cjs`: Extends `webpack.common.cjs` with production-specific settings and mode set to production to
       minimize output and enhance performance.
 * `package.json`: Lists dependencies, scripts for building and running the project, and any useful developer tools.
 * `Dockerfile`: Specifies instructions for building a Docker image for the app, including installing dependencies,
