@@ -1,0 +1,62 @@
+name: Build and Push Docker Image
+
+# Trigger the workflow on push to specific branches or when a tag is created.
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'  # Match version tags like v1.0, v1.1.1, etc.
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 3: Log in to GitHub Container Registry (GHCR)
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Step 4: Build and push Docker image with branch name tag (non-main branches)
+      - name: Build and push Docker image with SNAPSHOT tag for non-main branches
+        if: github.ref_type == 'branch' && github.ref != 'refs/heads/main'
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          SNAPSHOT_TAG="${BRANCH_NAME}-SNAPSHOT"
+          docker buildx create --use
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t ghcr.io/fom-webtech-snake/snake-ts-app:${SNAPSHOT_TAG} --push .
+
+      # Step 5: Build and push Docker image with version tag for main branch
+      - name: Build and push Docker image with version tag for main branch
+        if: github.ref == 'refs/heads/main'
+        run: |
+          VERSION_TAG="v1.0.${{ github.run_number }}"  # Example: v1.0.23
+          docker buildx create --use
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t ghcr.io/fom-webtech-snake/snake-ts-app:${VERSION_TAG} \
+            -t ghcr.io/fom-webtech-snake/snake-ts-app:latest --push .
+
+      # Step 6: Build and push Docker image with release tag and 'latest' for tags
+      - name: Build and push Docker image with release tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          VERSION_TAG=${GITHUB_REF#refs/tags/}
+          docker buildx create --use
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t ghcr.io/fom-webtech-snake/snake-ts-app:${VERSION_TAG} \
+            -t ghcr.io/fom-webtech-snake/snake-ts-app:latest --push .
