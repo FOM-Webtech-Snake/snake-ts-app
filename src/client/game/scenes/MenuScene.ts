@@ -10,10 +10,8 @@ export class MenuScene extends Phaser.Scene {
     }
 
     create() {
-        const width = typeof this.game.config.width === 'number' ? this.game.config.width : parseInt(this.game.config.width as string, 10);
-
-        this.add.image(width / 2, 150, 'logo');
-        const singlePlayerBtn = this.add.text(width / 2, 300, "Singleplayer", {
+        this.add.image(this.cameras.main.width / 2, 150, 'logo');
+        const singlePlayerBtn = this.add.text(this.cameras.main.width / 2, 300, "Singleplayer", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
@@ -33,7 +31,7 @@ export class MenuScene extends Phaser.Scene {
             this.scene.start('GameScene', {});
         });
 
-        const multiPlayerBtn = this.add.text(width / 2, 400, "Multiplayer", {
+        const multiPlayerBtn = this.add.text(this.cameras.main.width / 2, 400, "Multiplayer", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
@@ -59,7 +57,7 @@ export class MenuScene extends Phaser.Scene {
             backBtn.setVisible(true);
         });
 
-        const howToPlayBtn = this.add.text(width / 2, 500, "How to Play", {
+        const howToPlayBtn = this.add.text(this.cameras.main.width / 2, 500, "How to Play", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
@@ -79,7 +77,7 @@ export class MenuScene extends Phaser.Scene {
         });
 
         // Multiplayer modes
-        const multiPlayerLocalBtn = this.add.text(width / 2, 300, "Lokal", {
+        const multiPlayerLocalBtn = this.add.text(this.cameras.main.width / 2, 300, "Lokal", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
@@ -100,14 +98,14 @@ export class MenuScene extends Phaser.Scene {
             multiPlayerLocalBtn.setStyle({fill: '#ffffff'});
         });
 
-        const multiPlayerOnlineBtn = this.add.text(width / 2, 400, "Online", {
+        const multiPlayerOnlineBtn = this.add.text(this.cameras.main.width / 2, 400, "Online", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
         }).setOrigin(0.5).setInteractive();
         multiPlayerOnlineBtn.setInteractive();
         multiPlayerOnlineBtn.on('pointerdown', () => {
-            this.showMultiplayerOptions(width);
+            this.showMultiplayerOptions();
         });
         multiPlayerOnlineBtn.setVisible(false);
 
@@ -121,7 +119,7 @@ export class MenuScene extends Phaser.Scene {
             multiPlayerOnlineBtn.setStyle({fill: '#ffffff'});
         });
 
-        const backBtn = this.add.text(width / 2, 500, "Zurück", {
+        const backBtn = this.add.text(this.cameras.main.width / 2, 500, "Zurück", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
@@ -148,19 +146,19 @@ export class MenuScene extends Phaser.Scene {
         });
     }
 
-    showMultiplayerOptions(width: number) {
+    showMultiplayerOptions() {
         // Clear the previous buttons (singleplayer and multiplayer buttons)
         this.children.removeAll();
 
         // Add text for 'Multiplayer Options'
-        this.add.text(width / 2, 150, 'Multiplayer Online', {
+        this.add.text(this.cameras.main.width / 2, 150, 'Multiplayer Online', {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
         }).setOrigin(0.5).setInteractive();
 
         // Host Game Button
-        const hostBtn = this.add.text(width / 2, 300, "Host Game", {
+        const hostBtn = this.add.text(this.cameras.main.width / 2, 300, "Host Game", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'
@@ -182,7 +180,7 @@ export class MenuScene extends Phaser.Scene {
         });
 
         // Join Game Button
-        const joinBtn = this.add.text(width / 2, 400, "Join Game", {
+        const joinBtn = this.add.text(this.cameras.main.width / 2, 400, "Join Game", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'  // Schriftart Lobster Two anwenden
@@ -205,7 +203,7 @@ export class MenuScene extends Phaser.Scene {
         });
 
         // Back Button to go back to main menu
-        const backBtn = this.add.text(width / 2, 500, "Back", {
+        const backBtn = this.add.text(this.cameras.main.width / 2, 500, "Back", {
             fontSize: '30px',
             color: '#ffffff',
             fontFamily: '"Lobster Two", cursive'  // Schriftart Lobster Two anwenden
