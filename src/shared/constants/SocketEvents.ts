@@ -1,6 +1,8 @@
 export namespace SocketEvents {
     export enum Connection {
         JOIN_SESSION = "joinSession",
+        GET_AVAILABLE_SESSIONS = "getAvailableSessions",
+        AVAILABLE_SESSIONS = "availableSessions",
         DISCONNECT = "disconnect",
         CONNECT = "connect",
         CONNECTED = "connected",

@@ -1,9 +1,15 @@
 import {Server, Socket} from 'socket.io';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
+import {GameSession} from "../../shared/GameSession";
 
-const configureServerSocket = (io: Server) => {
+const configureServerSocket = (io: Server, sessions: Record<string, GameSession>) => {
     io.on(SocketEvents.Connection.CONNECTION, (socket: Socket) => {
         console.log(`user connected: ${socket.id}`);
+
+        socket.on(SocketEvents.Connection.GET_AVAILABLE_SESSIONS, () => {
+            console.log('user getting available sessions');
+            socket.emit(SocketEvents.Connection.AVAILABLE_SESSIONS, sessions)
+        });
 
         // Example of handling a custom event (e.g., joining a game room)
         socket.on(SocketEvents.Connection.JOIN_SESSION, (sessionId: string) => {
