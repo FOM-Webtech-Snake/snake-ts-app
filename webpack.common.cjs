@@ -7,17 +7,18 @@ const buildNumber = pkg.version + "-" + buildTimestamp; // 1.0.0-202411120919
 const repoUrl = pkg.repository.url;
 
 module.exports = {
-    entry: './src/client/index.ts', // Entry point for Phaser game
+    entry: './src/client/index.tsx', // Entry point for Phaser game
     output: {
         filename: 'bundle.[contenthash].js', // ensure to have unique bundle name (that you always see up to date version in your browser window and not something cached.)
         path: resolve(__dirname, 'dist'), // Output to './dist'
         clean: true, // Clean output directory on each build
     }, resolve: {
-        extensions: ['.ts', '.js'], // Resolve TypeScript and JavaScript files
+        extensions: ['.ts', '.tsx', '.js'], // Resolve TypeScript and JavaScript files
     }, module: {
         rules: [
             {
-                test: /\.ts$/, use: 'ts-loader', // Use ts-loader for TypeScript files
+                test: /\.tsx?$/,
+                use: 'ts-loader', // Use ts-loader for TypeScript files
                 exclude: /node_modules/,
             },
             {

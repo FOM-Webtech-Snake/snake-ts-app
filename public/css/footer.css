@@ -1,47 +1,38 @@
 /* general footer styling */
 footer {
-    display: flex;
-    justify-content: space-between; /* Space between the elements */
-    align-items: center; /* Vertically center the content */
-    position: fixed;
-    bottom: 0;
-    left: 0;
+    position: relative;
     width: 100%;
-    background-color: #333;
+    bottom: 0;
+    background-color: #343a40; /* Dark background */
     color: white;
-    padding: 10px 20px;
-    font-size: 14px;
     text-align: center;
-    box-sizing: border-box; /* Ensure padding is included in the width calculation */
+    padding: 10px 0; /* Spacing inside footer */
 }
 
-/* styling for the build number section */
-#build-number-container {
-    text-align: center;
-    flex: 1 1 auto; /* Allow the build number to take the available space in the middle */
-    overflow: hidden; /* Prevent overflow if the content is too large */
-}
-
-/* styling for the repository link section */
-#repository-container {
-    text-align: right;
-    flex-shrink: 0; /* Prevent shrinking */
-    white-space: nowrap; /* Ensure the text does not wrap */
-}
-
-/* GitHub icon styling */
-#repository-container a {
-    color: white;
-    text-decoration: none;
+/* container for content, center-align with space between */
+footer .container {
     display: flex;
+    justify-content: space-between;
     align-items: center;
 }
 
-#repository-container a:hover {
-    color: #ff0; /* Change color on hover */
+/* styling for the build number section */
+footer p {
+    margin: 0;
+    font-size: 14px;
 }
 
-#repository-container i {
-    margin-left: 5px; /* Space between the text and the icon */
-    font-size: 16px; /* Size of the GitHub icon */
+/* styling for GitHub icon */
+footer .fab {
+    font-size: 20px; /* Icon size */
+    color: white;
+}
+
+/* link behavior */
+footer a {
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #007bff; /* Optional: Hover color for GitHub link */
 }

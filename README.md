@@ -26,7 +26,7 @@ browser-based multiplayer games.
 * `src/`: Holds all TypeScript source code for both client and server sides.
     * `client/`: Contains all client related code, where `/game` holds all Phaser-related code, it holds individual game
       `/scenes`, and Game.ts initializes the
-      Phaser game. `index.ts` is the main entry point for Webpack to compile the bundles and also the main entrypoit for
+      Phaser game. `index.tsx` is the main entry point for Webpack to compile the bundles and also the main entrypoit for
       a user visiting the App.
     * `server/`: Holds the server code, which includes setting up Express and Socket.IO. Key subdirectories include:
         * `controllers/`: Contains functions that handle specific game actions, managing game state, user events, etc.
