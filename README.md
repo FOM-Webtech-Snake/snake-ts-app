@@ -98,3 +98,4 @@ After executing, just open a browser and visit http://localhost:8081.
 - **TypeScript**: [https://www.typescriptlang.org/](https://www.typescriptlang.org/)
 - **Webpack**: [https://webpack.js.org/](https://webpack.js.org/)
 - **Node.js**: [https://nodejs.org/](https://nodejs.org/)  
+- **Nodemon**: [https://nodemon.io/](https://nodemon.io/)
