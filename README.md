@@ -40,6 +40,9 @@ browser-based multiplayer games.
 ### Supporting Files
 
 * `.env`: Stores environment-specific variables. (e.g. PORT)
+* `nodemon.json`: Configuration file for nodemon. Nodemon is a dev tool that automatically triggers the build for the
+  project when something has been changed in the `/src`folder. Without this tool, the developer has to trigger the build
+  and webpack process manually all the time something changes.
 * `tsconfig.json`: TypeScript configuration file, with settings for include and exclude paths and configuring the
   compiler.
 * `webpack.common.cjs`: Contains shared Webpack configuration for both development and production builds, specifying

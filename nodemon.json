@@ -1,0 +1,5 @@
+{
+  "watch": ["src"],
+  "ext": "ts, json",
+  "exec": "node run build:dev webpack --config webpack.dev.cjs && tsc --project tsconfig.json && node dist/server/index.js"
+}
