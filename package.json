@@ -12,7 +12,7 @@
     "clean": "rm -rf dist"
   },
   "keywords": [],
-  "author": "",
+  "author": "fbnystn,ludwig258,MJoners",
   "license": "ISC",
   "description": "",
   "dependencies": {
