@@ -1,5 +1,5 @@
 {
   "watch": ["src", "public"],
-  "ext": "ts, json, css",
+  "ext": "ts, json, css, html",
   "exec": "webpack --config webpack.dev.cjs && tsc --project tsconfig.json && node dist/server/index.js"
 }
