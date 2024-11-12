@@ -1,7 +1,10 @@
 import Phaser from "phaser";
 
 export class GameConfigUtil {
-    static createGameConfig(width: number, height: number, parentDiv: string): Phaser.Types.Core.GameConfig {
+    static createGameConfig(
+        width: number,
+        height: number,
+        parentDiv: string): Phaser.Types.Core.GameConfig {
         return {
             title: "Snake Extreme",
             type: Phaser.AUTO,
@@ -21,7 +24,7 @@ export class GameConfigUtil {
             parent: parentDiv,
             input: {
                 gamepad: true,
-            },
+            }
         };
     }
 }
