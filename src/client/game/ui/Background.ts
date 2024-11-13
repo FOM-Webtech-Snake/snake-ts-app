@@ -7,8 +7,8 @@ export class Background {
     private graphics: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene) {
-        let cols = Math.ceil(scene.scale.width / tileSize);
-        let rows = Math.ceil(scene.scale.height / tileSize);
+        let cols = Math.ceil(scene.physics.world.bounds.width / tileSize);
+        let rows = Math.ceil(scene.physics.world.bounds.height / tileSize);
 
         this.graphics = scene.add.graphics();
         for (let row = 0; row < rows; row++) {
