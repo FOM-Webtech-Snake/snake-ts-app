@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import StartPage from './StartPage';
 import Footer from "./Footer";
 import {GameUtil} from "../game/util/GameUtil";
-import {GameConfigUtil} from "../game/util/GameConfigUtil";
+import {ConfigUtil} from "../game/util/ConfigUtil";
 
 const App: React.FC = () => {
     const [gameStarted, setGameStarted] = useState(false);
@@ -15,7 +15,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (gameStarted) {
-            const game = GameUtil.createGame(GameConfigUtil.createGameConfig(800, 600, "game-container"));
+            const game = GameUtil.createGame(ConfigUtil.createGameConfig(800, 600, "game-container"));
         }
     });
 

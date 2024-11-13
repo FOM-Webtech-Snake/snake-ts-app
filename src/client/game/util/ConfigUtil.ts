@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-export class GameConfigUtil {
+export class ConfigUtil {
     static createGameConfig(
         width: number,
         height: number,
