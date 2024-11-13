@@ -73,12 +73,33 @@ export class Snake {
     }
 
     private saveCurrentHeadCoordinates(): void {
-        this.lastPositions.unshift({x: this.head.x, y: this.head.y});
-        // Ensure lastPositions doesn't exceed the body length
-        if (this.lastPositions.length > this.body.getChildren().length * this.head.displayWidth) {
-            this.lastPositions.pop();  // Remove the last position if array is too long
-        }
+        const bodyLength = this.body.getChildren().length;
+        const segmentWidth = this.head.displayWidth;
 
+        // save the current head position at the start of the array
+        this.lastPositions.unshift({x: this.head.x, y: this.head.y});
+
+        this.removeOldPositionsFromHistory(bodyLength, segmentWidth);
+        console.log("position history item count:", this.lastPositions.length);
+    }
+
+    private removeOldPositionsFromHistory(bodyLength: number, segmentWidth: number) {
+        const minPositionsNeeded = bodyLength * segmentWidth;
+
+        // only remove the oldest position if we have more than the minimum required positions
+        if (this.lastPositions.length > minPositionsNeeded) {
+            const headMovementDistance = Phaser.Math.Distance.Between(
+                this.head.x,
+                this.head.y,
+                this.lastPositions[this.lastPositions.length-1].x,
+                this.lastPositions[this.lastPositions.length-1].y
+            );
+            console.log("head movement distance:", headMovementDistance);
+            // remove the last position if the head has moved more than a certain threshold
+            if (headMovementDistance >= segmentWidth * 0.5) {
+                this.lastPositions.pop();
+            }
+        }
     }
 
     private moveBodyParts() {
@@ -86,19 +107,33 @@ export class Snake {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
         const segmentSpacing = this.head.displayWidth;
 
-        // Loop through each segment of the body 0 is the head and therefore skipped
+        // Loop through each segment of the body, 0 is the head and therefore skipped
         for (let i = 1; i < bodyParts.length; i++) {
             const currentSegment = bodyParts[i];
 
-            // Calculate how far back in lastPositions this segment should be following
-            const positionIndex = i * (segmentSpacing);
+            // The target distance for this segment from the head
+            const targetDistance = i * segmentSpacing;
+            let accumulatedDistance = 0;
+            let targetPosition = null;
 
-            // Find the nearest integer index to maintain the required spacing
-            const roundedIndex = Math.round(positionIndex);
+            // Traverse `lastPositions` and accumulate distances until reaching the target distance
+            for (let j = 1; j < this.lastPositions.length; j++) {
+                const posA = this.lastPositions[j - 1];
+                const posB = this.lastPositions[j];
 
-            // Check if there is a saved position in lastPositions for this index
-            if (this.lastPositions[roundedIndex]) {
-                const targetPosition = this.lastPositions[roundedIndex];
+                // Calculate the distance between two consecutive positions
+                const distance = Phaser.Math.Distance.Between(posA.x, posA.y, posB.x, posB.y);
+                accumulatedDistance += distance;
+
+                // Check if we've reached or exceeded the target distance
+                if (accumulatedDistance >= targetDistance) {
+                    targetPosition = posB;
+                    break;
+                }
+            }
+
+            // Set the segment position if a valid target position is found
+            if (targetPosition) {
                 currentSegment.setPosition(targetPosition.x, targetPosition.y);
             }
         }
