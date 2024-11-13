@@ -15,7 +15,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (gameStarted) {
-            const game = GameUtil.createGame(ConfigUtil.createGameConfig(800, 600, "game-container"));
+            const game = GameUtil.createGame(ConfigUtil.createPhaserGameConfig(800, 600, "game-container"));
         }
     });
 

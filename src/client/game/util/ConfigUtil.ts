@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 
 export class ConfigUtil {
-    static createGameConfig(
+    static createPhaserGameConfig(
         width: number,
         height: number,
         parentDiv: string): Phaser.Types.Core.GameConfig {
