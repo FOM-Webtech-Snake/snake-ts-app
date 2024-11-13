@@ -1,3 +1,5 @@
+import Phaser from 'phaser';
+
 const style = {
     fontSize: '30px',
     color: '#ffffff',
