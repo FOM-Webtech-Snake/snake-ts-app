@@ -19,9 +19,8 @@ export class MenuScene extends Phaser.Scene {
             this.scene.start('GameScene', {});
         });
 
-
         const multiPlayerBtn = new Button(this, this.cameras.main.width / 2, 400, "Multiplayer", () => {
-            this.scene.start('MultiplayerOptionsScene'); // Transition to the multiplayer options scene
+            this.scene.start('MultiplayerOptionsScene');
         });
 
         const howToPlayBtn = new Button(this, this.cameras.main.width / 2, 500, 'How To Play', () => {
