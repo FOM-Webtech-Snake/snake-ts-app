@@ -2,7 +2,7 @@ import Phaser from "phaser";
 import {DirectionUtil} from "../util/DirectionUtil";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 
-const SNAKE_SCALE: number = 0.1;
+const SNAKE_SCALE: number = 0.15;
 const DEFAULT_SNAKE_LENGTH: number = 3;
 const DEFAULT_SNAKE_SPEED: number = 100;
 const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
@@ -84,13 +84,14 @@ export class Snake {
     private moveBodyParts() {
         // Get all body parts as an array
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+        const segmentSpacing = this.head.displayWidth;
 
         // Loop through each segment of the body 0 is the head and therefore skipped
         for (let i = 1; i < bodyParts.length; i++) {
             const currentSegment = bodyParts[i];
 
             // Calculate how far back in lastPositions this segment should be following
-            const positionIndex = i * currentSegment.displayWidth;
+            const positionIndex = i * (segmentSpacing);
 
             // Find the nearest integer index to maintain the required spacing
             const roundedIndex = Math.round(positionIndex);
