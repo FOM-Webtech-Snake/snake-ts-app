@@ -15,7 +15,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
     };
 
     return (
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-dark text-white">
+        <div className="d-flex flex-column justify-content-center align-items-center vh-100">
             <h1 className="mb-4">Welcome to Snake Extreme!</h1>
             <div className="input-container text-center mb-3">
                 <label htmlFor="playerName" className="form-label">Player Name</label>

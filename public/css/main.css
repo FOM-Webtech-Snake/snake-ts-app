@@ -1,12 +1,8 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 
-/* main.css */
 html, body {
     height: 100%;
     margin: 0;
-}
-
-#game-container {
-    flex: 1; /* Makes game container take available space */
+    padding: 0;
 }

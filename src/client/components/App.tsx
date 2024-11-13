@@ -20,14 +20,19 @@ const App: React.FC = () => {
     });
 
     return (
-        <div className="d-flex flex-column min-vh-100">
+        <div className="d-flex flex-column vh-100 bg-dark text-white">
+
             {gameStarted ? (
-                <div id="game-container" className="game-container">
-                    {/* game content will be rendered here by Phaser */}
+                <div className="d-flex flex-column justify-content-center align-items-center vh-100">
+
+                    <div id="game-container">
+                        {/* game content will be rendered here by Phaser */}
+                    </div>
                 </div>
             ) : (
                 <StartPage onStart={handleStart}/>
             )}
+
             <Footer/>
         </div>
     );
