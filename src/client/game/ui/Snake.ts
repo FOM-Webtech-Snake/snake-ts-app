@@ -103,29 +103,29 @@ export class Snake {
     }
 
     private moveBodyParts() {
-        // Get all body parts as an array
+        // get all body parts as an array
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
-        const segmentSpacing = this.head.displayWidth;
+        const segmentSpacing: number = this.head.displayWidth;
 
         // Loop through each segment of the body, 0 is the head and therefore skipped
         for (let i = 1; i < bodyParts.length; i++) {
             const currentSegment = bodyParts[i];
 
             // The target distance for this segment from the head
-            const targetDistance = i * segmentSpacing;
-            let accumulatedDistance = 0;
+            const targetDistance: number = i * segmentSpacing;
+            let accumulatedDistance: number = 0;
             let targetPosition = null;
 
-            // Traverse `lastPositions` and accumulate distances until reaching the target distance
+            // loop through lastPositions and accumulate distances until reaching the target distance
             for (let j = 1; j < this.lastPositions.length; j++) {
                 const posA = this.lastPositions[j - 1];
                 const posB = this.lastPositions[j];
 
-                // Calculate the distance between two consecutive positions
+                // calculate the distance between two positions
                 const distance = Phaser.Math.Distance.Between(posA.x, posA.y, posB.x, posB.y);
                 accumulatedDistance += distance;
 
-                // Check if we've reached or exceeded the target distance
+                // check if we reached or exceeded the target distance
                 if (accumulatedDistance >= targetDistance) {
                     targetPosition = posB;
                     break;
