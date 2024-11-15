@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import {DirectionUtil} from "../util/DirectionUtil";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
+import {ColorUtil} from "../util/ColorUtil";
 
 const SNAKE_SCALE: number = 0.15;
 const DEFAULT_SNAKE_LENGTH: number = 3;
@@ -19,14 +20,18 @@ export class Snake {
     private body: Phaser.Physics.Arcade.Group;
     private lastPositions: { x: number, y: number }[] = []; // To store the last positions of body parts
 
-    constructor(scene: Phaser.Scene) {
+    constructor(scene: Phaser.Scene, color: number) {
         this.scene = scene;
+        this.color = color;
+
+        const darkColor = ColorUtil.darkenColor(this.color);
+        const lightColor = ColorUtil.lightenColor(this.color);
 
         // create the body
         this.body = scene.physics.add.group();
         for (let i = 0; i < DEFAULT_SNAKE_LENGTH; i++) {
             const bodyPart = scene.physics.add.sprite(0, 100, "snake_body");
-            bodyPart.setTint(this.color);
+            bodyPart.setTint(lightColor, lightColor, darkColor, darkColor);
             bodyPart.setScale(SNAKE_SCALE);
             bodyPart.setDepth(1);
 
@@ -80,7 +85,6 @@ export class Snake {
         this.lastPositions.unshift({x: this.head.x, y: this.head.y});
 
         this.removeOldPositionsFromHistory(bodyLength, segmentWidth);
-        console.log("position history item count:", this.lastPositions.length);
     }
 
     /**

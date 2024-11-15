@@ -5,6 +5,7 @@ import UUID = Phaser.Utils.String.UUID;
 import {KeyboardInputHandler} from "../input/KeyboardInputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {InputHandler} from "../input/InputHandler";
+import {ColorUtil} from "../util/ColorUtil";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -35,7 +36,7 @@ export class GameScene extends Phaser.Scene {
         this.background = new Background(this);
 
         // game objects
-        const localSnake = new Snake(this);
+        const localSnake = new Snake(this, ColorUtil.getRandomColor());
         this.cameras.main.startFollow(localSnake.getHead());
         this.snakes[this.playerId] = localSnake;
 
