@@ -43,6 +43,7 @@ export class BootScene extends Phaser.Scene {
     }
 
     create() {
-        this.scene.start('MenuScene'); // Start the game scene after preloading
+        // TODO: implement / add game config from previous side (inject by custom game config later)
+        this.scene.start('GameScene', {}); // Start the game scene after preloading
     }
 }
