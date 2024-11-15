@@ -63,14 +63,13 @@ export class Snake {
 
         // update the head direction
         const directionVector = DirectionUtil.getDirectionVector(this.direction);
-        //this.head.setVelocity(directionVector.x * this.speed, directionVector.y * this.speed);
         this.headGroup.setVelocity(directionVector.x * this.speed, directionVector.y * this.speed);
 
-        // make face follow the head and set rotation
-        //this.face.setPosition(this.head.x, this.head.y);
+        // make face follow the direction
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
 
         this.saveCurrentHeadCoordinates();
+        this.removeOldPositionsFromHistory();
     }
 
     setDirection(direction: DirectionEnum): void {
@@ -78,24 +77,19 @@ export class Snake {
     }
 
     private saveCurrentHeadCoordinates(): void {
-        const bodyLength = this.body.getChildren().length;
-        const segmentWidth = this.head.displayWidth;
-
         // save the current head position at the start of the array
         this.lastPositions.unshift({x: this.head.x, y: this.head.y});
-
-        this.removeOldPositionsFromHistory(bodyLength, segmentWidth);
     }
 
     /**
      * removes old positions from the position history to keep the position tracking
      * efficient and within the needed bounds.
      *
-     * @param {number} bodyLength - the current length of the snake body
-     * @param {number} segmentWidth - the width of each body segment.
      * @private
      */
-    private removeOldPositionsFromHistory(bodyLength: number, segmentWidth: number) {
+    private removeOldPositionsFromHistory() {
+        const bodyLength = this.body.getChildren().length;
+        const segmentWidth = this.head.displayWidth;
         const minPositionsNeeded = bodyLength * segmentWidth;
 
         // remove all excess positions at once if we have more than the minimum required
@@ -108,7 +102,7 @@ export class Snake {
     private moveBodyParts() {
         // get all body parts as an array
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
-        const segmentSpacing: number = this.head.displayWidth;
+        const segmentSpacing: number = Math.round(this.head.displayWidth);
 
         // loop through each segment of the body, skipping the head (index 0)
         for (let i = 1; i < bodyParts.length; i++) {
