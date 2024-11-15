@@ -11,18 +11,19 @@ const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
 export class Snake {
 
     // movement
-    private direction: DirectionEnum = DEFAULT_SNAKE_DIRECTION;
-    private speed: number = DEFAULT_SNAKE_SPEED;
+    private direction: DirectionEnum;
+    private directionLock: boolean;
+    private speed: number;
 
     // colors
-    private primaryColor: number = 0xff0000;
+    private primaryColor: number;
     private darkColor: number;
     private lightColor: number;
 
     // physics
     private scene: Phaser.Scene;
-    private head: Phaser.Physics.Arcade.Sprite;
-    private face: Phaser.Physics.Arcade.Sprite;
+    private readonly head: Phaser.Physics.Arcade.Sprite;
+    private readonly face: Phaser.Physics.Arcade.Sprite;
     private headGroup: Phaser.Physics.Arcade.Group;
     private body: Phaser.Physics.Arcade.Group;
 
@@ -31,6 +32,11 @@ export class Snake {
 
     constructor(scene: Phaser.Scene, color: number) {
         this.scene = scene;
+
+        // init movement
+        this.direction = DEFAULT_SNAKE_DIRECTION;
+        this.directionLock = false;
+        this.speed = DEFAULT_SNAKE_SPEED;
 
         // store primary color and create colors for tinting
         this.primaryColor = color;
@@ -74,10 +80,14 @@ export class Snake {
 
         this.saveCurrentHeadCoordinates();
         this.removeOldPositionsFromHistory();
+        this.unlockDirection();
     }
 
-    setDirection(direction: DirectionEnum): void {
-        this.direction = direction;
+    setDirection(newDirection: DirectionEnum): void {
+        if (!this.directionLock && newDirection != DirectionUtil.getOppositeDirection(this.direction)) {
+            this.direction = newDirection;
+            this.lockDirection();
+        }
     }
 
     setPrimaryColor(color: number) {
@@ -94,6 +104,14 @@ export class Snake {
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
         this.body.add(bodyPart);
         return bodyPart;
+    }
+
+    private unlockDirection() {
+        this.directionLock = false;
+    }
+
+    private lockDirection() {
+        this.directionLock = true;
     }
 
     private saveCurrentHeadCoordinates(): void {
