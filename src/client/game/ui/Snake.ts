@@ -4,6 +4,7 @@ import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {ColorUtil} from "../util/ColorUtil";
 
 const SNAKE_SCALE: number = 0.15;
+const POSITION_HISTORY_BUFFER: number = 20;
 const DEFAULT_SNAKE_LENGTH: number = 3;
 const DEFAULT_SNAKE_SPEED: number = 100;
 const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
@@ -102,6 +103,7 @@ export class Snake {
         bodyPart.setScale(SNAKE_SCALE);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+        bodyPart.body.allowDrag = false;
         this.body.add(bodyPart);
         return bodyPart;
     }
@@ -127,8 +129,8 @@ export class Snake {
      */
     private removeOldPositionsFromHistory() {
         const bodyLength = this.body.getChildren().length;
-        const segmentWidth = this.head.displayWidth;
-        const minPositionsNeeded = bodyLength * segmentWidth;
+        const segmentWidth = Math.ceil(this.head.displayWidth);
+        const minPositionsNeeded = (bodyLength * segmentWidth) + POSITION_HISTORY_BUFFER;
 
         // remove all excess positions at once if we have more than the minimum required
         if (this.lastPositions.length > minPositionsNeeded) {
@@ -170,12 +172,12 @@ export class Snake {
             }
 
             // set the segment position if a valid target position is found, interpolate between them to get the best position
-            if (positionB) {
+            if (positionB && distance > 0) {
                 const overshoot = accumulatedDistance - targetDistance; // e.g. 90 - 87 = 3
                 const interpolationFactor = 1 - (overshoot / distance)
                 const segmentPosition = {
-                    x: Phaser.Math.Interpolation.Linear([positionB.x, positionA.x], interpolationFactor),
-                    y: Phaser.Math.Interpolation.Linear([positionB.y, positionA.y], interpolationFactor),
+                    x: Phaser.Math.Linear(positionB.x, positionA.x, interpolationFactor),
+                    y: Phaser.Math.Linear(positionB.y, positionA.y, interpolationFactor),
                 };
 
                 currentSegment.setPosition(segmentPosition.x, segmentPosition.y);

@@ -39,7 +39,7 @@ export class GameScene extends Phaser.Scene {
 
         // game objects
         const localSnake = new Snake(this, ColorUtil.getRandomColor());
-        this.cameras.main.startFollow(localSnake.getHead());
+        this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.snakes[this.playerId] = localSnake;
 
         // TODO remove creation of Collectable (only for testing)
