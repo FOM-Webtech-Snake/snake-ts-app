@@ -132,7 +132,7 @@ export class Snake {
                 }
             }
 
-            // Set the segment position if a valid target position is found
+            // set the segment position if a valid target position is found
             if (targetPosition) {
                 currentSegment.setPosition(targetPosition.x, targetPosition.y);
             }
