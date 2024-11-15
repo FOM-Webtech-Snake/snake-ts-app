@@ -20,6 +20,8 @@ export class GameScene extends Phaser.Scene {
     private background: Background;
     private playerId: string;
     private snakes: Record<string, Snake>;
+    private collectables: Record<string, Collectable>;
+
     private inputHandler: Record<InputTypeEnum, InputHandler>;
 
 
@@ -28,6 +30,7 @@ export class GameScene extends Phaser.Scene {
         this.background = null;
         this.playerId = UUID(); // create a unique playerId
         this.snakes = {} as Record<string, Snake>;
+        this.collectables = {} as Record<string, Collectable>;
         this.inputHandler = {} as Record<InputTypeEnum, InputHandler>;
     }
 
@@ -43,7 +46,7 @@ export class GameScene extends Phaser.Scene {
         this.snakes[this.playerId] = localSnake;
 
         // TODO remove creation of Collectable (only for testing)
-        const item = new Collectable(this, ChildCollectableTypeEnum.GROWTH);
+        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.GROWTH);
 
         // input handler
         const inputHandler = new KeyboardInputHandler(this, localSnake, false);
@@ -59,6 +62,17 @@ export class GameScene extends Phaser.Scene {
 
         if (this.snakes[this.playerId]) {
             this.snakes[this.playerId].update();
+
+            if (this.collectables) {
+                Object.keys(this.collectables).forEach(uuid => {
+                    if (this.collectables[uuid].checkCollision(this.snakes[this.playerId])) {
+                        delete this.collectables[uuid];
+                    }
+                });
+            }
+
         }
+
+
     }
 }
