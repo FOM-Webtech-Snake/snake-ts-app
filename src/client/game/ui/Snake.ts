@@ -97,7 +97,7 @@ export class Snake {
         this.body.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
     }
 
-    addSegmentToBody() {
+    private addSegmentToBody() {
         const bodyPart = this.scene.physics.add.sprite(0, 100, "snake_body");
         bodyPart.setScale(SNAKE_SCALE);
         bodyPart.setDepth(1);
