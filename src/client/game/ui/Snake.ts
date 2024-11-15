@@ -9,37 +9,41 @@ const DEFAULT_SNAKE_SPEED: number = 100;
 const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
 
 export class Snake {
+
+    // movement
     private direction: DirectionEnum = DEFAULT_SNAKE_DIRECTION;
     private speed: number = DEFAULT_SNAKE_SPEED;
-    private color: number = 0xff0000;
 
+    // colors
+    private primaryColor: number = 0xff0000;
+    private darkColor: number;
+    private lightColor: number;
+
+    // physics
     private scene: Phaser.Scene;
     private head: Phaser.Physics.Arcade.Sprite;
     private face: Phaser.Physics.Arcade.Sprite;
     private headGroup: Phaser.Physics.Arcade.Group;
     private body: Phaser.Physics.Arcade.Group;
+
+    // location history
     private lastPositions: { x: number, y: number }[] = []; // To store the last positions of body parts
 
     constructor(scene: Phaser.Scene, color: number) {
         this.scene = scene;
-        this.color = color;
 
-        const darkColor = ColorUtil.darkenColor(this.color);
-        const lightColor = ColorUtil.lightenColor(this.color);
+        // store primary color and create colors for tinting
+        this.primaryColor = color;
+        this.darkColor = ColorUtil.darkenColor(this.primaryColor);
+        this.lightColor = ColorUtil.lightenColor(this.primaryColor);
 
         // create the body
         this.body = scene.physics.add.group();
         for (let i = 0; i < DEFAULT_SNAKE_LENGTH; i++) {
-            const bodyPart = scene.physics.add.sprite(0, 100, "snake_body");
-            bodyPart.setTint(lightColor, lightColor, darkColor, darkColor);
-            bodyPart.setScale(SNAKE_SCALE);
-            bodyPart.setDepth(1);
-
+            const bodyPart = this.addSegmentToBody();
             if (i === 0) {
                 this.head = bodyPart;
             }
-
-            this.body.add(bodyPart);
         }
 
         // create the face
@@ -74,6 +78,22 @@ export class Snake {
 
     setDirection(direction: DirectionEnum): void {
         this.direction = direction;
+    }
+
+    setPrimaryColor(color: number) {
+        this.primaryColor = color;
+        this.lightColor = ColorUtil.lightenColor(this.primaryColor);
+        this.darkColor = ColorUtil.darkenColor(this.primaryColor);
+        this.body.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+    }
+
+    addSegmentToBody() {
+        const bodyPart = this.scene.physics.add.sprite(0, 100, "snake_body");
+        bodyPart.setScale(SNAKE_SCALE);
+        bodyPart.setDepth(1);
+        bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+        this.body.add(bodyPart);
+        return bodyPart;
     }
 
     private saveCurrentHeadCoordinates(): void {
