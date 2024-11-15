@@ -83,22 +83,21 @@ export class Snake {
         console.log("position history item count:", this.lastPositions.length);
     }
 
+    /**
+     * removes old positions from the position history to keep the position tracking
+     * efficient and within the needed bounds.
+     *
+     * @param {number} bodyLength - the current length of the snake body
+     * @param {number} segmentWidth - the width of each body segment.
+     * @private
+     */
     private removeOldPositionsFromHistory(bodyLength: number, segmentWidth: number) {
         const minPositionsNeeded = bodyLength * segmentWidth;
 
-        // only remove the oldest position if we have more than the minimum required positions
+        // remove all excess positions at once if we have more than the minimum required
         if (this.lastPositions.length > minPositionsNeeded) {
-            const headMovementDistance = Phaser.Math.Distance.Between(
-                this.head.x,
-                this.head.y,
-                this.lastPositions[this.lastPositions.length-1].x,
-                this.lastPositions[this.lastPositions.length-1].y
-            );
-            console.log("head movement distance:", headMovementDistance);
-            // remove the last position if the head has moved more than a certain threshold
-            if (headMovementDistance >= segmentWidth * 0.5) {
-                this.lastPositions.pop();
-            }
+            // remove all excess positions from the end of the array
+            this.lastPositions.splice(minPositionsNeeded + 1);
         }
     }
 
