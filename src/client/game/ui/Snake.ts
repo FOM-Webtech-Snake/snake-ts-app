@@ -106,35 +106,45 @@ export class Snake {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
         const segmentSpacing: number = this.head.displayWidth;
 
-        // Loop through each segment of the body, 0 is the head and therefore skipped
+        // loop through each segment of the body, skipping the head (index 0)
         for (let i = 1; i < bodyParts.length; i++) {
             const currentSegment = bodyParts[i];
 
             // The target distance for this segment from the head
             const targetDistance: number = i * segmentSpacing;
             let accumulatedDistance: number = 0;
-            let targetPosition = null;
 
-            // loop through lastPositions and accumulate distances until reaching the target distance
+            let positionA = this.lastPositions[0]; // set starting position to 0 for the fist iteration
+            let positionB = null;
+            let distance = 0;
+
+            // loop through lastPositions to find the two closest points around the target distance
             for (let j = 1; j < this.lastPositions.length; j++) {
-                const posA = this.lastPositions[j - 1];
-                const posB = this.lastPositions[j];
+                positionA = this.lastPositions[j - 1];
+                positionB = this.lastPositions[j];
 
-                // calculate the distance between two positions
-                const distance = Phaser.Math.Distance.Between(posA.x, posA.y, posB.x, posB.y);
+                // calculate the distance between the two positions
+                distance = Phaser.Math.Distance.Between(positionA.x, positionA.y, positionB.x, positionB.y);
                 accumulatedDistance += distance;
 
-                // check if we reached or exceeded the target distance
+                // Stop once the accumulated distance reaches or exceeds the target distance
                 if (accumulatedDistance >= targetDistance) {
-                    targetPosition = posB;
                     break;
                 }
             }
 
-            // set the segment position if a valid target position is found
-            if (targetPosition) {
-                currentSegment.setPosition(targetPosition.x, targetPosition.y);
+            // set the segment position if a valid target position is found, interpolate between them to get the best position
+            if (positionB) {
+                const overshoot = accumulatedDistance - targetDistance; // e.g. 90 - 87 = 3
+                const interpolationFactor = 1 - (overshoot / distance)
+                const segmentPosition = {
+                    x: Phaser.Math.Interpolation.Linear([positionB.x, positionA.x], interpolationFactor),
+                    y: Phaser.Math.Interpolation.Linear([positionB.y, positionA.y], interpolationFactor),
+                };
+
+                currentSegment.setPosition(segmentPosition.x, segmentPosition.y);
             }
         }
     }
+
 }
