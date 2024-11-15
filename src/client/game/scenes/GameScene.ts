@@ -1,11 +1,13 @@
 import Phaser from "phaser";
 import {Background} from "../ui/Background";
 import {Snake} from "../ui/Snake";
-import UUID = Phaser.Utils.String.UUID;
 import {KeyboardInputHandler} from "../input/KeyboardInputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {InputHandler} from "../input/InputHandler";
 import {ColorUtil} from "../util/ColorUtil";
+import {Collectable} from "../ui/Collectable";
+import {ChildCollectableTypeEnum} from "../../../shared/constants/CollectableTypeEnum";
+import UUID = Phaser.Utils.String.UUID;
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -39,6 +41,9 @@ export class GameScene extends Phaser.Scene {
         const localSnake = new Snake(this, ColorUtil.getRandomColor());
         this.cameras.main.startFollow(localSnake.getHead());
         this.snakes[this.playerId] = localSnake;
+
+        // TODO remove creation of Collectable (only for testing)
+        const item = new Collectable(this, ChildCollectableTypeEnum.GROWTH);
 
         // input handler
         const inputHandler = new KeyboardInputHandler(this, localSnake, false);
