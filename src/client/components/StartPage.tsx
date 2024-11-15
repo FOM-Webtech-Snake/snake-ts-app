@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useRef, useEffect} from "react";
 
 interface StartPageProps {
     onStart: (playerName: string) => void;
@@ -6,6 +6,8 @@ interface StartPageProps {
 
 const StartPage: React.FC<StartPageProps> = ({onStart}) => {
     const [playerName, setPlayerName] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const handleStart = () => {
         if (playerName.trim()) {
             onStart(playerName);
@@ -13,6 +15,19 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
             alert("Please enter your name");
         }
     };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            handleStart();
+        }
+    };
+
+    useEffect(() => {
+        // Focus the input field when the component loads
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, []);
 
     return (
         <div className="d-flex flex-column justify-content-center align-items-center vh-100">
@@ -26,6 +41,8 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                     placeholder="Enter your name"
                     value={playerName}
                     onChange={(e) => setPlayerName(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    ref={inputRef} // Attach the ref for focusing
                     style={{maxWidth: '300px'}}
                 />
             </div>
