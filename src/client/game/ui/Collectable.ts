@@ -7,7 +7,7 @@ const COLLECTABLE_SCALE = 0.5;
 
 export class Collectable {
 
-    // config a
+    // config
     private type: ChildCollectableTypeEnum;
 
     // physics
