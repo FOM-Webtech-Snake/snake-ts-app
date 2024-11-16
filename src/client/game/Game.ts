@@ -12,6 +12,7 @@ export class Game extends Phaser.Game {
         this.scene.add('MenuScene', MenuScene);
         this.scene.add('MultiplayerOptionsScene', MultiplayerOptionsScene);
         this.scene.add('GameScene', GameScene);
+
         this.scene.start('BootScene');
     }
 }

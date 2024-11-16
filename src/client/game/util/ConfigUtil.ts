@@ -16,7 +16,7 @@ export class ConfigUtil {
                 default: 'arcade',
                 arcade: {
                     debug: false,
-                    fps: 30,
+                    fps: 100,
                     gravity: {x: 0, y: 0},
                 }
             },
