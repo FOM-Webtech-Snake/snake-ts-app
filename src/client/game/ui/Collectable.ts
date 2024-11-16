@@ -6,7 +6,7 @@ import {Snake} from "./Snake";
 const COLLECTABLE_SCALE = 0.5;
 
 export class Collectable {
-a
+
     // config
     private type: ChildCollectableTypeEnum;
 
