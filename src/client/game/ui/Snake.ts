@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import {DirectionUtil} from "../util/DirectionUtil";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {ColorUtil} from "../util/ColorUtil";
+import {Position} from "../../../shared/model/Position";
 
 const SNAKE_SCALE: number = 0.15;
 const POSITION_HISTORY_BUFFER: number = 20;
@@ -30,9 +31,9 @@ export class Snake {
     private body: Phaser.Physics.Arcade.Group;
 
     // location history
-    private lastPositions: { x: number, y: number }[] = []; // To store the last positions of body parts
+    private lastPositions: Position[] = []; // To store the last positions of body parts
 
-    constructor(scene: Phaser.Scene, color: number) {
+    constructor(scene: Phaser.Scene, color: number, pos: Position) {
         this.scene = scene;
 
         // init movement
@@ -49,7 +50,7 @@ export class Snake {
         // create the body
         this.body = scene.physics.add.group();
         for (let i = 0; i < DEFAULT_SNAKE_LENGTH; i++) {
-            const bodyPart = this.addSegmentToBody();
+            const bodyPart = this.addSegmentToBody(pos);
             if (i === 0) {
                 this.head = bodyPart;
             }
@@ -115,6 +116,16 @@ export class Snake {
         }
     }
 
+    doubleLength(): void {
+        const currentLength = this.body.getLength();
+        const lastSegment = this.body.getChildren()[currentLength - 1] as Phaser.Physics.Arcade.Sprite;
+        const spawnPos: Position = new Position(lastSegment.x, lastSegment.y);
+
+        for (let i = 0; i < currentLength; i++) {
+            this.addSegmentToBody(spawnPos);
+        }
+    }
+
     reverseDirection(): void {
         this.direction = DirectionUtil.getOppositeDirection(this.direction);
 
@@ -125,8 +136,8 @@ export class Snake {
         this.justReversed = true;
     }
 
-    private addSegmentToBody() {
-        const bodyPart = this.scene.physics.add.sprite(0, 100, "snake_body");
+    private addSegmentToBody(pos: Position) {
+        const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getX(), "snake_body");
         bodyPart.setScale(SNAKE_SCALE);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
@@ -145,7 +156,7 @@ export class Snake {
 
     private saveCurrentHeadCoordinates(): void {
         // save the current head position at the start of the array
-        this.lastPositions.unshift({x: this.head.x, y: this.head.y});
+        this.lastPositions.unshift(new Position(this.head.x, this.head.y));
     }
 
     /**
@@ -189,7 +200,7 @@ export class Snake {
                 positionB = this.lastPositions[j];
 
                 // calculate the distance between the two positions
-                distance = Phaser.Math.Distance.Between(positionA.x, positionA.y, positionB.x, positionB.y);
+                distance = Phaser.Math.Distance.Between(positionA.getX(), positionA.getY(), positionB.getX(), positionB.getY());
                 accumulatedDistance += distance;
 
                 // Stop once the accumulated distance reaches or exceeds the target distance
@@ -203,8 +214,8 @@ export class Snake {
                 const overshoot = accumulatedDistance - targetDistance; // e.g. 90 - 87 = 3
                 const interpolationFactor = 1 - (overshoot / distance)
                 const segmentPosition = {
-                    x: Phaser.Math.Linear(positionB.x, positionA.x, interpolationFactor),
-                    y: Phaser.Math.Linear(positionB.y, positionA.y, interpolationFactor),
+                    x: Phaser.Math.Linear(positionB.getX(), positionA.getX(), interpolationFactor),
+                    y: Phaser.Math.Linear(positionB.getY(), positionA.getY(), interpolationFactor),
                 };
 
                 currentSegment.setPosition(segmentPosition.x, segmentPosition.y);

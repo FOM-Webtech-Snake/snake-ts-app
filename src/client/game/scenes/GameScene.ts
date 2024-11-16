@@ -8,6 +8,7 @@ import {ColorUtil} from "../util/ColorUtil";
 import {Collectable} from "../ui/Collectable";
 import {ChildCollectableTypeEnum} from "../../../shared/constants/CollectableTypeEnum";
 import UUID = Phaser.Utils.String.UUID;
+import {Position} from "../../../shared/model/Position";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -41,7 +42,7 @@ export class GameScene extends Phaser.Scene {
         this.background = new Background(this);
 
         // game objects
-        const localSnake = new Snake(this, ColorUtil.getRandomColor());
+        const localSnake = new Snake(this, ColorUtil.getRandomColor(), new Position(300, 300));
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.snakes[this.playerId] = localSnake;
 
