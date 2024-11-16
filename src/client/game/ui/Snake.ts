@@ -104,7 +104,16 @@ export class Snake {
         this.speed = this.speed * factor;
     }
 
+    splitInHalf(): void {
+        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+        const halfLength = Math.ceil(bodyParts.length / 2);
 
+        // remove the second half of the body
+        for (let i = halfLength; i < bodyParts.length; i++) {
+            const segment = bodyParts[i];
+            this.body.remove(segment, true, true);
+        }
+    }
 
     reverseDirection(): void {
         this.direction = DirectionUtil.getOppositeDirection(this.direction);

@@ -48,7 +48,7 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_split",
-        func: snake => console.log("split")// TODO snake.split();
+        func: snake => snake.splitInHalf()
     },
     [ChildCollectableTypeEnum.DOUBLE]: {
         name: "double",
