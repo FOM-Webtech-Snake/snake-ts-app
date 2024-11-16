@@ -28,4 +28,8 @@ export class Position {
         this.y = y;
     }
 
+    toString(): string {
+        return `Position(x: ${this.x}, y: ${this.y})`;
+    }
+
 }

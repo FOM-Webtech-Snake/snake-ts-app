@@ -29,6 +29,7 @@ export class Snake {
     private readonly face: Phaser.Physics.Arcade.Sprite;
     private headGroup: Phaser.Physics.Arcade.Group;
     private body: Phaser.Physics.Arcade.Group;
+    private lockedSegments: Phaser.Physics.Arcade.Group;
 
     // location history
     private lastPositions: Position[] = []; // To store the last positions of body parts
@@ -49,6 +50,7 @@ export class Snake {
 
         // create the body
         this.body = scene.physics.add.group();
+        this.lockedSegments = scene.physics.add.group();
         for (let i = 0; i < DEFAULT_SNAKE_LENGTH; i++) {
             const bodyPart = this.addSegmentToBody(pos);
             if (i === 0) {
@@ -118,11 +120,9 @@ export class Snake {
 
     doubleLength(): void {
         const currentLength = this.body.getLength();
-        const lastSegment = this.body.getChildren()[currentLength - 1] as Phaser.Physics.Arcade.Sprite;
-        const spawnPos: Position = new Position(lastSegment.x, lastSegment.y);
-
+        const spawnPos: Position = new Position(this.head.x, this.head.y);
         for (let i = 0; i < currentLength; i++) {
-            this.addSegmentToBody(spawnPos);
+            this.addSegmentToBody(spawnPos, true);
         }
     }
 
@@ -136,12 +136,18 @@ export class Snake {
         this.justReversed = true;
     }
 
-    private addSegmentToBody(pos: Position) {
-        const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getX(), "snake_body");
+    private addSegmentToBody(pos: Position, positionLocked: boolean = false) {
+        const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getY(), "snake_body");
         bodyPart.setScale(SNAKE_SCALE);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
         bodyPart.body.allowDrag = false;
+
+        // position locked
+        if (positionLocked) {
+            this.lockedSegments.add(bodyPart);
+        }
+
         this.body.add(bodyPart);
         return bodyPart;
     }
@@ -185,6 +191,12 @@ export class Snake {
         // loop through each segment of the body, skipping the head (index 0)
         for (let i = 1; i < bodyParts.length; i++) {
             const currentSegment = bodyParts[i];
+
+            // locked segment
+            if (this.lockedSegments.contains(currentSegment)) {
+                // don't move locked segments
+                continue;
+            }
 
             // The target distance for this segment from the head
             const targetDistance: number = i * segmentSpacing;
