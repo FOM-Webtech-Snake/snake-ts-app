@@ -14,11 +14,11 @@ export class Collectable {
     private scene: Phaser.Scene;
     private item: Phaser.Physics.Arcade.Sprite;
 
-    constructor(scene: Phaser.Scene, type: ChildCollectableTypeEnum) {
+    constructor(scene: Phaser.Scene, type: ChildCollectableTypeEnum, pos: { x: number, y: number }) {
         this.scene = scene;
         this.type = type;
 
-        this.item = this.scene.physics.add.sprite(100, 100, childCollectables[this.type].imageKey);
+        this.item = this.scene.physics.add.sprite(pos.x, pos.y, childCollectables[this.type].imageKey);
         this.item.setScale(COLLECTABLE_SCALE);
         this.item.setDepth(1);
     }

@@ -32,7 +32,7 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_feather",
-        func: snake => console.log("fast")// TODO snake.faster();
+        func: snake => snake.changeSpeedByFactor(1.2)
     },
     [ChildCollectableTypeEnum.SLOW]: {
         name: "slow",
@@ -40,7 +40,7 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_snail",
-        func: snake => console.log("slow")// TODO snake.slower();
+        func: snake => snake.changeSpeedByFactor(0.8)
     },
     [ChildCollectableTypeEnum.SPLIT]: {
         name: "split",

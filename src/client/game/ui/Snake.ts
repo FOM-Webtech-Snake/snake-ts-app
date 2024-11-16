@@ -84,6 +84,13 @@ export class Snake {
         this.unlockDirection();
     }
 
+    setPrimaryColor(color: number) {
+        this.primaryColor = color;
+        this.lightColor = ColorUtil.lightenColor(this.primaryColor);
+        this.darkColor = ColorUtil.darkenColor(this.primaryColor);
+        this.body.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+    }
+
     setDirection(newDirection: DirectionEnum): void {
         if (!this.directionLock && newDirection != DirectionUtil.getOppositeDirection(this.direction)) {
             this.direction = newDirection;
@@ -91,11 +98,8 @@ export class Snake {
         }
     }
 
-    setPrimaryColor(color: number) {
-        this.primaryColor = color;
-        this.lightColor = ColorUtil.lightenColor(this.primaryColor);
-        this.darkColor = ColorUtil.darkenColor(this.primaryColor);
-        this.body.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+    changeSpeedByFactor(factor: number): void {
+        this.speed = this.speed * factor;
     }
 
     private addSegmentToBody() {
