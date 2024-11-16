@@ -64,7 +64,7 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_u_turn",
-        func: snake => console.log("reverse")// TODO snake.reverse();
+        func: snake => snake.reverseDirection()
     }
 };
 

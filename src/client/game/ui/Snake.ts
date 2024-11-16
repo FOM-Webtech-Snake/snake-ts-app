@@ -12,9 +12,10 @@ const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
 export class Snake {
 
     // movement
+    private speed: number;
     private direction: DirectionEnum;
     private directionLock: boolean;
-    private speed: number;
+    private justReversed: boolean;
 
     // colors
     private primaryColor: number;
@@ -35,9 +36,10 @@ export class Snake {
         this.scene = scene;
 
         // init movement
+        this.speed = DEFAULT_SNAKE_SPEED;
         this.direction = DEFAULT_SNAKE_DIRECTION;
         this.directionLock = false;
-        this.speed = DEFAULT_SNAKE_SPEED;
+        this.justReversed = false;
 
         // store primary color and create colors for tinting
         this.primaryColor = color;
@@ -100,6 +102,18 @@ export class Snake {
 
     changeSpeedByFactor(factor: number): void {
         this.speed = this.speed * factor;
+    }
+
+
+
+    reverseDirection(): void {
+        this.direction = DirectionUtil.getOppositeDirection(this.direction);
+
+        // fix face rotation for new direction
+        this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
+
+        // set justReversed to true, to temp. disable self collision detection
+        this.justReversed = true;
     }
 
     private addSegmentToBody() {
