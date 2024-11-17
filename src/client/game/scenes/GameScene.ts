@@ -54,7 +54,9 @@ export class GameScene extends Phaser.Scene {
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.FAST, {x: 100, y: 210});
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.REVERSE, {x: 100, y: 240});
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.SPLIT, {x: 100, y: 270});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 100, y: 300});
+        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 300});
+        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 400});
+        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 500});
 
         // input handler
         const inputHandler = new KeyboardInputHandler(this, localSnake, false);
