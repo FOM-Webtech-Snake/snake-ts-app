@@ -5,8 +5,9 @@ import {ColorUtil} from "../util/ColorUtil";
 import {Position} from "../../../shared/model/Position";
 
 const SNAKE_SCALE: number = 0.15;
-const POSITION_HISTORY_BUFFER: number = 20;
-const DEFAULT_SNAKE_LENGTH: number = 3;
+const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
+const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
+const DEFAULT_SNAKE_LENGTH: number = 4;
 const DEFAULT_SNAKE_SPEED: number = 100;
 const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
 
@@ -29,6 +30,7 @@ export class Snake {
     private readonly face: Phaser.Physics.Arcade.Sprite;
     private headGroup: Phaser.Physics.Arcade.Group;
     private body: Phaser.Physics.Arcade.Group;
+    private lockedSegments: Phaser.Physics.Arcade.Group;
 
     // location history
     private lastPositions: Position[] = []; // To store the last positions of body parts
@@ -49,6 +51,7 @@ export class Snake {
 
         // create the body
         this.body = scene.physics.add.group();
+        this.lockedSegments = scene.physics.add.group();
         for (let i = 0; i < DEFAULT_SNAKE_LENGTH; i++) {
             const bodyPart = this.addSegmentToBody(pos);
             if (i === 0) {
@@ -120,7 +123,7 @@ export class Snake {
         const currentLength = this.body.getLength();
         const spawnPos: Position = new Position(this.head.x, this.head.y);
         for (let i = 0; i < currentLength; i++) {
-            this.addSegmentToBody(spawnPos);
+            this.addSegmentToBody(spawnPos, true);
         }
     }
 
@@ -134,12 +137,14 @@ export class Snake {
         this.justReversed = true;
     }
 
-    private addSegmentToBody(pos: Position) {
+    private addSegmentToBody(pos: Position, lockPosition: boolean = false) {
         const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getY(), "snake_body");
         bodyPart.setScale(SNAKE_SCALE);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
         bodyPart.body.allowDrag = false;
+
+        if (lockPosition) this.lockedSegments.add(bodyPart);
 
         this.body.add(bodyPart);
         return bodyPart;
@@ -161,13 +166,11 @@ export class Snake {
     /**
      * removes old positions from the position history to keep the position tracking
      * efficient and within the needed bounds.
-     *
-     * @private
      */
     private removeOldPositionsFromHistory() {
         const bodyLength = this.body.getChildren().length;
         const segmentWidth = Math.ceil(this.head.displayWidth);
-        const minPositionsNeeded = (bodyLength * segmentWidth) + POSITION_HISTORY_BUFFER;
+        const minPositionsNeeded = (bodyLength * segmentWidth) * POSITION_HISTORY_BUFFER_MULTIPLIER;
 
         // remove all excess positions at once if we have more than the minimum required
         if (this.lastPositions.length > minPositionsNeeded) {
@@ -176,48 +179,67 @@ export class Snake {
         }
     }
 
+    // changed 2024-11-17 (removed complex interpolation logic
     private moveBodyParts() {
         // get all body parts as an array
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
         const segmentSpacing: number = Math.round(this.head.displayWidth);
 
         // loop through each segment of the body, skipping the head (index 0)
+        let lastUsedPositionsIndex = 0;
         for (let i = 1; i < bodyParts.length; i++) {
             const currentSegment = bodyParts[i];
 
+            // locked position logic (follow when old tail has reached spawn position
+            if (this.lockedSegments.contains(currentSegment)) {
+                // check all smaller indexed segments for overlapping
+                let isOverlapping = false;
+                for (let k = 0; k < i; k++) {
+                    const smallerSegment = bodyParts[k];
+                    if (Phaser.Geom.Intersects.RectangleToRectangle(currentSegment.getBounds(), smallerSegment.getBounds())) {
+                        isOverlapping = true;
+                        break;
+                    }
+                }
+                if (!isOverlapping) {
+                    this.lockedSegments.remove(currentSegment, false, false);
+                } else {
+                    // skip element if it is locked in position
+                    continue;
+                }
+            }
+
             // The target distance for this segment from the head
-            const targetDistance: number = i * segmentSpacing;
-            let accumulatedDistance: number = 0;
+            let positionA: Position = this.lastPositions[lastUsedPositionsIndex];
+            let positionB: Position = null;
+            let distance: number = 0;
 
-            let positionA = this.lastPositions[0]; // set starting position to 0 for the fist iteration
-            let positionB = null;
-            let distance = 0;
-
-            // loop through lastPositions to find the two closest points around the target distance
-            for (let j = 1; j < this.lastPositions.length; j++) {
-                positionA = this.lastPositions[j - 1];
+            // loop through lastPositions to find the next position in relation to the segment spacing
+            for (let j = lastUsedPositionsIndex; j < this.lastPositions.length; j++) {
                 positionB = this.lastPositions[j];
 
                 // calculate the distance between the two positions
                 distance = Phaser.Math.Distance.Between(positionA.getX(), positionA.getY(), positionB.getX(), positionB.getY());
-                accumulatedDistance += distance;
 
-                // Stop once the accumulated distance reaches or exceeds the target distance
-                if (accumulatedDistance >= targetDistance) {
+                // Stop once the distance reaches or exceeds the necessary segment spacing
+                if (distance >= segmentSpacing) {
+                    lastUsedPositionsIndex = j;
                     break;
                 }
             }
 
-            // set the segment position if a valid target position is found, interpolate between them to get the best position
-            if (positionB && distance > 0) {
-                const overshoot = accumulatedDistance - targetDistance; // e.g. 90 - 87 = 3
-                const interpolationFactor = 1 - (overshoot / distance)
-                const segmentPosition = {
-                    x: Phaser.Math.Linear(positionB.getX(), positionA.getX(), interpolationFactor),
-                    y: Phaser.Math.Linear(positionB.getY(), positionA.getY(), interpolationFactor),
-                };
+            if (positionB) {
 
-                currentSegment.setPosition(segmentPosition.x, segmentPosition.y);
+                // TODO: use interpolation?
+                const interpolationFactor = MOVEMENT_INTERPOLATION_FACTOR * (this.speed / DEFAULT_SNAKE_SPEED);
+                // Apply interpolation to smooth the movement of the segment towards the new position
+                const interpolatedX = Phaser.Math.Linear(currentSegment.x, positionB.getX(), MOVEMENT_INTERPOLATION_FACTOR);
+                const interpolatedY = Phaser.Math.Linear(currentSegment.y, positionB.getY(), MOVEMENT_INTERPOLATION_FACTOR);
+                // Set the segment position to the interpolated position
+                currentSegment.setPosition(interpolatedX, interpolatedY);
+
+
+                //currentSegment.setPosition(positionB.getX(), positionB.getY());
             }
         }
     }
