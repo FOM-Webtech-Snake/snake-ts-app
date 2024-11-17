@@ -101,8 +101,8 @@ export class Snake {
         }
     }
 
-    changeSpeedByFactor(factor: number): void {
-        this.speed = this.speed * factor;
+    changeSpeedBy(value: number): void {
+        this.speed += value;
     }
 
     splitInHalf(): void {
