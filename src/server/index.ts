@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 3000;
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer);
 
-const sessions: Record<string, GameSession> = {};
-configureServerSocket(io, sessions);
+// init websocket server
+configureServerSocket(io);
 
 httpServer.listen(PORT, () => {
     console.log(`Express is listening at port ${PORT}`);
