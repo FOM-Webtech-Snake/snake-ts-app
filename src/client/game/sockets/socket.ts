@@ -1,4 +1,4 @@
-import {SocketEvents} from "../../shared/constants/SocketEvents";
+import {SocketEvents} from "../../../shared/constants/SocketEvents";
 import {Socket} from "socket.io-client";
 
 const configureClientSocket = (io: Socket) => {

@@ -30,7 +30,7 @@ const App: React.FC = () => {
         <div className="d-flex flex-column vh-100 bg-dark text-white">
             <Header playerId={playerId} playerName={playerName} sessionId={sessionId} />
             {gameStarted ? ( // when game was started -> show the game
-                <GamePage />
+                <GamePage sessionId={sessionId!} playerId={playerId!} />
             ) : inLobby ? ( // when in lobby, but game not started -> show lobby
                 <LobbyPage playerId={playerId!} playerName={playerName!} onJoinGame={handleJoinGame} onGameStart={handleGameStart}/>
             ) : (

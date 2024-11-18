@@ -2,20 +2,28 @@ import React, {useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
 
-const GameComponent: React.FC = () => {
+interface GamePageProps {
+    sessionId: string;
+    playerId: string;
+}
+
+const GamePage: React.FC<GamePageProps> = ({sessionId, playerId}) => {
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
 
     useEffect(() => {
-        console.log("useEffect called");
+        console.debug("useEffect called");
         if (gameContainerRef.current && !gameCreatedRef.current) {
-            console.log("Container detected, creating game...");
+            console.debug("Container detected, creating game...");
+            let gameConfig = ConfigUtil.createPhaserGameConfig(
+                window.innerWidth * 0.8,
+                window.innerHeight * 0.8,
+                "game-container"
+            );
             const game = GameUtil.createGame(
-                ConfigUtil.createPhaserGameConfig(
-                    window.innerWidth * 0.8,
-                    window.innerHeight * 0.8,
-                    "game-container"
-                )
+                gameConfig,
+                sessionId,
+                playerId
             );
             gameCreatedRef.current = true;
         }
@@ -30,4 +38,4 @@ const GameComponent: React.FC = () => {
     );
 };
 
-export default GameComponent;
+export default GamePage;
