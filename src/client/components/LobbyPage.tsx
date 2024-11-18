@@ -27,7 +27,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, 
                 const data = await response.json();
                 setSessionId(data.id);
                 onJoinGame(data.id); // Auto join newly created session
-                onGameStart();
+                onGameStart(); // TODO don't start immediately
             } catch (error) {
                 alert(`Error: ${(error as Error).message}`);
             }
@@ -49,7 +49,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, 
             const data = await response.json();
             setSessionId(data.id);
             onJoinGame(data.id); // Auto join newly created session
-            onGameStart();
+            onGameStart(); // TODO don't start immediately
         } catch (error) {
             alert(`Error: ${(error as Error).message}`);
         }
