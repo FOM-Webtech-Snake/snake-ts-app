@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
 interface LobbyPageProps {
     playerId: string;
@@ -9,6 +9,7 @@ interface LobbyPageProps {
 
 const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, onGameStart}) => {
     const [sessionId, setSessionId] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const handleJoin = async () => {
         if (sessionId.trim()) {
@@ -62,6 +63,18 @@ const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, 
         }
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            handleButtonClick();
+        }
+    };
+
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, []);
+
     return (
         <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-dark text-white">
             <h1 className="mb-4">Welcome to the Lobby, {playerName}!</h1>
@@ -74,6 +87,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, 
                     placeholder="Enter session code to join"
                     value={sessionId ? sessionId : ""}
                     onChange={(e) => setSessionId(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    ref={inputRef}
                     style={{maxWidth: '300px'}}
                 />
             </div>
