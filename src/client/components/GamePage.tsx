@@ -1,20 +1,18 @@
 import React, {useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
+import {Socket} from "socket.io-client";
 
 interface GamePageProps {
-    sessionId: string;
-    playerId: string;
+    socket: Socket;
 }
 
-const GamePage: React.FC<GamePageProps> = ({sessionId, playerId}) => {
+const GamePage: React.FC<GamePageProps> = ({socket}) => {
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
 
     useEffect(() => {
-        console.debug("useEffect called");
         if (gameContainerRef.current && !gameCreatedRef.current) {
-            console.debug("Container detected, creating game...");
             let gameConfig = ConfigUtil.createPhaserGameConfig(
                 window.innerWidth * 0.8,
                 window.innerHeight * 0.8,
@@ -22,8 +20,7 @@ const GamePage: React.FC<GamePageProps> = ({sessionId, playerId}) => {
             );
             const game = GameUtil.createGame(
                 gameConfig,
-                sessionId,
-                playerId
+                socket
             );
             gameCreatedRef.current = true;
         }

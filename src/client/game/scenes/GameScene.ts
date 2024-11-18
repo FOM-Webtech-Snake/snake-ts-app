@@ -10,6 +10,8 @@ import {ChildCollectableTypeEnum} from "../../../shared/constants/CollectableTyp
 import UUID = Phaser.Utils.String.UUID;
 import {Position} from "../../../shared/model/Position";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
+import configureGameSceneSocket from "../sockets/socket";
+import {Socket} from "socket.io-client";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -20,8 +22,8 @@ const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
 export class GameScene extends Phaser.Scene {
 
     private background: Background;
+    private socket: Socket;
     private playerId: string;
-    private sessionId: string;
     private snakes: Record<string, Snake>;
     private collectables: Record<string, Collectable>;
 
@@ -30,8 +32,8 @@ export class GameScene extends Phaser.Scene {
     constructor() {
         super(sceneConfig);
         this.background = null;
+        this.socket = null;
         this.playerId = null;
-        this.sessionId = null;
         this.snakes = {} as Record<string, Snake>;
         this.collectables = {} as Record<string, Collectable>;
         this.inputHandler = {} as Record<InputTypeEnum, InputHandler>;
@@ -39,8 +41,11 @@ export class GameScene extends Phaser.Scene {
 
     create() {
         // get necessary global properties
-        this.playerId = this.registry.get(GlobalPropKeyEnum.PLAYER_ID);
-        this.sessionId = this.registry.get(GlobalPropKeyEnum.SESSION_ID);
+        this.socket = this.registry.get(GlobalPropKeyEnum.SOCKET);
+
+        this.playerId = this.socket.id;
+
+        configureGameSceneSocket(this.socket, this);
 
         // setup world & camera
         this.physics.world.setBounds(0, 0, 1600, 1200); // push the world bounds to (1600x1200px)

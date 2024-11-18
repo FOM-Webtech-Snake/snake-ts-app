@@ -1,5 +1,6 @@
 import express, {Request, Response} from "express";
 import {sessionManager} from "../SessionManager";
+import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ router.post("/create", (request: Request, response: Response) => {
     const {playerId} = request.body;
 
     // Create and store the game session
-    const newGame = sessionManager.createSession(playerId);
+    const newGame = sessionManager.createSession(playerId, DEFAULT_GAME_SESSION_CONFIG);
     console.log(`created new game session: ${newGame.getId()} - ${newGame.getCreatorId()}`);
 
     response.status(201).json(newGame);

@@ -1,8 +1,7 @@
 import React, {useState, useRef, useEffect} from "react";
-import {v4 as uuidv4} from "uuid";
 
 interface StartPageProps {
-    onStart: (playerId: string, playerName: string) => void;
+    onStart: (playerName: string) => void;
 }
 
 const StartPage: React.FC<StartPageProps> = ({onStart}) => {
@@ -11,7 +10,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
 
     const handleStart = () => {
         if (playerName.trim()) {
-            onStart(uuidv4(), playerName);
+            onStart(playerName);
         } else {
             alert("Please enter your name");
         }

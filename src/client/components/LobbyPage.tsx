@@ -1,66 +1,50 @@
 import React, {useEffect, useRef, useState} from 'react';
+import {GameSession} from "../../shared/GameSession";
 
 interface LobbyPageProps {
     playerId: string;
     playerName: string;
-    onJoinGame: (sessionId: string) => void;
+    onJoinGame: (gameSession: GameSession) => void;
     onGameStart: () => void;
 }
 
 const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, onGameStart}) => {
     const [sessionId, setSessionId] = useState("");
+    const [gameSession, setGameSession] = useState<GameSession>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const handleJoin = async () => {
-        if (sessionId.trim()) {
-
-            try {
-                const response = await fetch(`/api/lobby/join`, {
+    const handleButtonClick = async () => {
+        try {
+            let response;
+            if (sessionId.trim()) {
+                response = await fetch(`/api/lobby/join`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({sessionId: sessionId, playerId: playerId})
                 });
-
-                if (!response.ok) {
-                    throw new Error('Failed to join session');
-                }
-                const data = await response.json();
-                setSessionId(data.id);
-                onJoinGame(data.id); // Auto join newly created session
-                onGameStart(); // TODO don't start immediately
-            } catch (error) {
-                alert(`Error: ${(error as Error).message}`);
+            } else {
+                response = await fetch(`/api/lobby/create`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({playerId: playerId})
+                });
             }
-        } else {
-            alert('Please enter a session code to join an existing game!');
-        }
-    };
 
-    const handleCreateSession = async () => {
-        try {
-            const response = await fetch(`/api/lobby/create`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({playerId: playerId})
-            });
-            if (!response.ok) {
-                throw new Error('Failed to create a new session');
+            if (!response?.ok) {
+                throw new Error('Failed to join session');
             }
+
             const data = await response.json();
-            setSessionId(data.id);
-            onJoinGame(data.id); // Auto join newly created session
+            const session = GameSession.fromData(data)
+            console.info("parsed game session", session);
+
+            setGameSession(session);
+            onJoinGame(session); // Auto join newly created session
             onGameStart(); // TODO don't start immediately
         } catch (error) {
             alert(`Error: ${(error as Error).message}`);
         }
-    };
 
-    const handleButtonClick = () => {
-        if (sessionId.trim()) {
-            handleJoin();
-        } else {
-            handleCreateSession();
-        }
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {

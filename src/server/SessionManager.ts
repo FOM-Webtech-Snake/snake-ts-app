@@ -1,5 +1,6 @@
 import {GameSession} from "../shared/GameSession";
 import {GameStateEnum} from "../shared/constants/GameStateEnum";
+import {GameSessionConfig} from "../shared/GameSessionConfig";
 
 
 class SessionManager {
@@ -13,8 +14,8 @@ class SessionManager {
         return this.sessions;
     }
 
-    createSession(playerId: string) {
-        const newGame = new GameSession(null, playerId);
+    createSession(playerId: string, config: GameSessionConfig) {
+        const newGame = new GameSession(null, playerId, config);
         newGame.addPlayer(playerId);
         this.sessions[newGame.getId()] = newGame;
         return newGame;

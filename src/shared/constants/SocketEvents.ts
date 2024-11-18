@@ -5,6 +5,7 @@ export namespace SocketEvents {
         AVAILABLE_SESSIONS = "availableSessions",
         DISCONNECT = "disconnect",
         CONNECT = "connect",
+        CONNECT_ERROR = "connect_error",
         CONNECTED = "connected",
         CONNECTION = "connection"
     }
