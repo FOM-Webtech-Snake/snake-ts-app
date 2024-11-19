@@ -58,7 +58,7 @@ export class GameScene extends Phaser.Scene {
         this.background = new Background(this);
 
         // game objects
-        const localSnake = new Snake(this, ColorUtil.getRandomColor(), new Position(300, 300));
+        const localSnake = new Snake(this, this.playerId, ColorUtil.getRandomColor(), new Position(300, 300));
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.snakes[this.playerId] = localSnake;
 
@@ -101,6 +101,17 @@ export class GameScene extends Phaser.Scene {
         this.background = new Background(this);
     }
 
+    handleRemoteSnake(snake: string) {
+        let parsedSnake = JSON.parse(snake);
+        if (this.snakes[parsedSnake?.playerId]) {
+            this.snakes[parsedSnake?.playerId].updateFromData(parsedSnake)
+        } else {
+            const newSnake = Snake.fromData(this, parsedSnake);
+            this.snakes[newSnake.getPlayerId()] = newSnake;
+        }
+    }
+
+
     update() {
         if (this.inputHandler) {
             Object.keys(this.inputHandler).forEach(handler => {
@@ -108,17 +119,20 @@ export class GameScene extends Phaser.Scene {
             })
         }
 
-        if (this.snakes[this.playerId]) {
+        if (this.snakes && this.snakes[this.playerId]) {
             this.snakes[this.playerId].update();
             this.multiplayerManager.emitSnake(this.snakes[this.playerId])
 
             if (this.collectables) {
                 Object.keys(this.collectables).forEach(uuid => {
                     if (this.collectables[uuid].checkCollision(this.snakes[this.playerId])) {
+                        this.multiplayerManager.emitCollect(uuid);
                         delete this.collectables[uuid];
                     }
                 });
             }
         }
+
+
     }
 }

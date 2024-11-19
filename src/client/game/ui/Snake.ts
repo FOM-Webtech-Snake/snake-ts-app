@@ -13,6 +13,9 @@ const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
 
 export class Snake {
 
+    // identifier
+    private playerId: string;
+
     // movement
     private speed: number;
     private direction: DirectionEnum;
@@ -35,8 +38,9 @@ export class Snake {
     // location history
     private lastPositions: Position[] = []; // To store the last positions of body parts
 
-    constructor(scene: Phaser.Scene, color: number, pos: Position) {
+    constructor(scene: Phaser.Scene, playerId: string, color: number, pos: Position) {
         this.scene = scene;
+        this.playerId = playerId;
 
         // init movement
         this.speed = DEFAULT_SNAKE_SPEED;
@@ -73,6 +77,10 @@ export class Snake {
 
     getHead(): Phaser.Physics.Arcade.Sprite {
         return this.head;
+    }
+
+    getPlayerId() {
+        return this.playerId;
     }
 
     update(): void {
@@ -250,28 +258,8 @@ export class Snake {
     }
 
     static fromData(scene: Phaser.Scene, data: any) {
-        const snake = new Snake(scene, data.primaryColor, new Position(data.head.x, data.head.y));
-        snake.speed = data.speed;
-        snake.direction = data.direction;
-        snake.directionLock = data.directionLock;
-        snake.justReversed = data.justReversed;
-        snake.primaryColor = data.primaryColor;
-        snake.darkColor = data.darkColor;
-        snake.lightColor = data.lightColor;
-        snake.lastPositions = data.lastPositions.map((pos: any) => new Position(pos.x, pos.y));
-
-        // Create body parts
-        for (let i = 1; i < data.body.length; i++) {
-            const part = snake.addSegmentToBody(new Position(data.body[i].x, data.body[i].y));
-            if (data.lockedSegments.includes(i)) {
-                snake.lockedSegments.add(part);
-            }
-        }
-
-        // Update face position and rotation
-        snake.face.setPosition(data.face.x, data.face.y);
-        snake.face.setRotation(data.face.rotation);
-
+        const snake = new Snake(scene, data.playerId, data.primaryColor, new Position(data.head.x, data.head.y));
+        snake.updateFromData(data);
         return snake;
     }
 
@@ -285,13 +273,27 @@ export class Snake {
         //this.lightColor = data.lightColor;
         //this.lastPositions = data.lastPositions.map((pos: any) => new Position(pos.x, pos.y));
 
+        const currentBodyLength = this.body.getLength();
+        const dataBodyLength = data.body.length;
+
         // Update body parts
-        this.body.clear(true, true);
-        for (let i = 1; i < data.body.length; i++) {
-            const part = this.addSegmentToBody(new Position(data.body[i].x, data.body[i].y));
-            if (data.lockedSegments.includes(i)) {
-                this.lockedSegments.add(part);
+        if (dataBodyLength > currentBodyLength) {
+            // Add new segments
+            for (let i = currentBodyLength; i < dataBodyLength; i++) {
+                this.addSegmentToBody(new Position(data.body[i].x, data.body[i].y));
             }
+        } else if (dataBodyLength < currentBodyLength) {
+            // Remove extra segments
+            for (let i = currentBodyLength - 1; i >= dataBodyLength; i--) {
+                const segment = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
+                this.body.remove(segment, true, true);
+            }
+        }
+
+        // Update existing segments
+        for (let i = 0; i < Math.min(currentBodyLength, dataBodyLength); i++) {
+            const part = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
+            part.setPosition(data.body[i].x, data.body[i].y);
         }
 
         // Update face position and rotation
@@ -301,6 +303,7 @@ export class Snake {
 
     toJson(): string {
         return JSON.stringify({
+            playerId: this.playerId,
             speed: this.speed,
             direction: this.direction,
             //directionLock: this.directionLock,

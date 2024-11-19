@@ -13,13 +13,13 @@ export namespace SocketEvents {
         CONNECT = "connect",
         CONNECT_ERROR = "connect_error",
         CONNECTED = "connected",
-        CONNECTION = "connection"
+        CONNECTION = "connection",
     }
 
     export enum GameControl {
         START_GAME = "startGame",
         PAUSE_GAME = "pauseGame",
-        RESUME_GAME = "resumeGame"
+        RESUME_GAME = "resumeGame",
     }
 
     export enum SessionState {
@@ -27,7 +27,7 @@ export namespace SocketEvents {
         GET_CURRENT_SESSION = "getCurrentSession",
         CURRENT_SESSION = "currentSession",
         NEW_PLAYER = "newPlayer",
-        DISCONNECTED = "disconnected"
+        DISCONNECTED = "disconnected",
     }
 
     export enum GameEvents {
@@ -36,17 +36,18 @@ export namespace SocketEvents {
         SPAWN_FOOD_ITEM = "spawnFoodItem",
         COLLECTABLE_COLLECTED = "collectableCollected",
         SPAWN_NEW_COLLECTABLE = "spawnNewItem",
-        ITEM_SPAWNED = "itemSpawned"
+        ITEM_SPAWNED = "itemSpawned",
+        ITEM_COLLECTED = "itemCollected",
     }
 
     export enum PlayerActions {
         PLAYER_MOVEMENT = "playerMovement",
-        PLAYER_MOVED = "playerMoved"
+        PLAYER_MOVED = "playerMoved",
     }
 
     export enum GameStatus {
         STARTED_GAME = "startedGame",
         PAUSED_GAME = "pausedGame",
-        RESUMED_GAME = "resumedGame"
+        RESUMED_GAME = "resumedGame",
     }
 }

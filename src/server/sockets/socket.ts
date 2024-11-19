@@ -35,6 +35,10 @@ const configureServerSocket = (io: Server) => {
                     // TODO session.updatePlayerSnake();
                 });
 
+                socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
+                    console.log(`item ${uuid} collected by ${socket.id}`);
+                });
+
                 // player leave session event
                 socket.on(SocketEvents.Connection.LEAVE_SESSION, () => {
                     session.removePlayer(socket.id);

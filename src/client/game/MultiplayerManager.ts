@@ -48,9 +48,9 @@ export class MultiplayerManager {
             // TODO self.scene.pauseGame(false);
         });
 
-        this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (player) {
-            console.log("player movement", player);
-            // TODO self.scene.updateOtherPlayersMovement(player);
+        this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
+            console.log("snake movement", snake);
+            self.scene.handleRemoteSnake(snake);
         });
 
         this.socket.on(SocketEvents.GameEvents.COLLECTABLE_COLLECTED, function (id) {
@@ -74,11 +74,15 @@ export class MultiplayerManager {
         this.emitGetConfiguration();
     }
 
-    private emitGetConfiguration() {
+    public emitCollect(uuid: string){
+        this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
+    }
+
+    public emitGetConfiguration() {
         this.socket.emit(SocketEvents.SessionState.GET_CURRENT_SESSION);
     }
 
-    public emitSnake(snake: Snake){
+    public emitSnake(snake: Snake) {
         this.socket.emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake.toJson())
     }
 }
