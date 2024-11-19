@@ -46,8 +46,20 @@ const App: React.FC = () => {
         }
     };
 
+    const handleLeaveGame = () => {
+        if (socket) {
+            socket.emit(SocketEvents.Connection.LEAVE_SESSION, gameSession.getId);
+            console.log("left socket session", gameSession.getId());
+        }
+        setGameSession(null);
+    };
+
     const handleGameStart = () => {
-        setGameStarted(true);
+        if (socket) {
+            socket.emit(SocketEvents.GameControl.START_GAME, player.getId());
+            console.log("game started", gameSession.getId());
+            setGameStarted(true);
+        }
     };
 
     return (
@@ -74,6 +86,7 @@ const App: React.FC = () => {
                 <LobbyPage socket={socket!}
                            player={player!}
                            onJoinGame={handleJoinGame}
+                           onLeaveGame={handleLeaveGame}
                            onGameStart={handleGameStart}/>
             ) : (
                 <StartPage onStart={handleStart}/>

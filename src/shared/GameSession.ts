@@ -8,13 +8,13 @@ export class GameSession {
     private creatorId: string;
     private gameState: GameStateEnum;
     private config: GameSessionConfig;
-    private players: Player[];
+    private players: Record<string, Player>;
 
     constructor(id: string = null,
                 creatorId: string,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
-                players: Player[] = []) {
+                players: Record<string, Player> = {}) {
         this.id = id || GameSessionUtil.generateSessionId();
         this.creatorId = creatorId;
         this.gameState = gameState;
@@ -43,7 +43,15 @@ export class GameSession {
     }
 
     addPlayer(player: Player): void {
-        this.players.push(player);
+        this.players[player.getId()] = player;
+    }
+
+    removePlayer(playerId: string): void {
+        delete this.players[playerId];
+    }
+
+    hasPlayers(): boolean {
+        return Object.keys(this.players).length > 0;
     }
 
     toJson() {
@@ -61,7 +69,7 @@ export class GameSession {
         return this.fromData(data);
     }
 
-    static fromData(data: any){
+    static fromData(data: any) {
         return new GameSession(data.id, data.creatorId, data.config, data.gameState, data.players);
     }
 }

@@ -7,6 +7,22 @@ export class GameSessionConfig {
         this.size = size;
     }
 
+    getMaxPlayers(): number {
+        return this.maxPlayers;
+    }
+
+    getSize(): { height: number, width: number } {
+        return this.size;
+    }
+
+    getWidth(): number {
+        return this.size.width;
+    }
+
+    getHeight(): number {
+        return this.size.height;
+    }
+
     toJson() {
         return JSON.stringify({
             maxPlayers: this.maxPlayers,
@@ -14,9 +30,13 @@ export class GameSessionConfig {
         });
     }
 
+    static fromData(data: any) {
+        return new GameSessionConfig(data.maxPlayers, data.size);
+    }
+
     static fromJson(json: string) {
         const data = JSON.parse(json);
-        return new GameSessionConfig(data.maxPlayers, data.size);
+        return this.fromData(data);
     }
 }
 

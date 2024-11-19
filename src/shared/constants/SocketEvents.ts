@@ -1,6 +1,12 @@
 export namespace SocketEvents {
+    export enum Configuration {
+        GET_CONFIGURATION = "getConfiguration",
+        CURRENT_CONFIGURATION = "currentConfiguration",
+    }
+
     export enum Connection {
         JOIN_SESSION = "joinSession",
+        LEAVE_SESSION = "leaveSession",
         GET_AVAILABLE_SESSIONS = "getAvailableSessions",
         AVAILABLE_SESSIONS = "availableSessions",
         DISCONNECT = "disconnect",

@@ -244,4 +244,84 @@ export class Snake {
         }
     }
 
+    static fromJson(scene: Phaser.Scene, json: string): Snake {
+        const data = JSON.parse(json);
+        return this.fromData(scene, data);
+    }
+
+    static fromData(scene: Phaser.Scene, data: any) {
+        const snake = new Snake(scene, data.primaryColor, new Position(data.head.x, data.head.y));
+        snake.speed = data.speed;
+        snake.direction = data.direction;
+        snake.directionLock = data.directionLock;
+        snake.justReversed = data.justReversed;
+        snake.primaryColor = data.primaryColor;
+        snake.darkColor = data.darkColor;
+        snake.lightColor = data.lightColor;
+        snake.lastPositions = data.lastPositions.map((pos: any) => new Position(pos.x, pos.y));
+
+        // Create body parts
+        for (let i = 1; i < data.body.length; i++) {
+            const part = snake.addSegmentToBody(new Position(data.body[i].x, data.body[i].y));
+            if (data.lockedSegments.includes(i)) {
+                snake.lockedSegments.add(part);
+            }
+        }
+
+        // Update face position and rotation
+        snake.face.setPosition(data.face.x, data.face.y);
+        snake.face.setRotation(data.face.rotation);
+
+        return snake;
+    }
+
+    updateFromData(data: any): void {
+        this.speed = data.speed;
+        this.direction = data.direction;
+        this.directionLock = data.directionLock;
+        this.justReversed = data.justReversed;
+        this.primaryColor = data.primaryColor;
+        this.darkColor = data.darkColor;
+        this.lightColor = data.lightColor;
+        this.lastPositions = data.lastPositions.map((pos: any) => new Position(pos.x, pos.y));
+
+        // Update body parts
+        this.body.clear(true, true);
+        for (let i = 1; i < data.body.length; i++) {
+            const part = this.addSegmentToBody(new Position(data.body[i].x, data.body[i].y));
+            if (data.lockedSegments.includes(i)) {
+                this.lockedSegments.add(part);
+            }
+        }
+
+        // Update face position and rotation
+        this.face.setPosition(data.face.x, data.face.y);
+        this.face.setRotation(data.face.rotation);
+    }
+
+    toJson(): any {
+        return {
+            speed: this.speed,
+            direction: this.direction,
+            directionLock: this.directionLock,
+            justReversed: this.justReversed,
+            primaryColor: this.primaryColor,
+            darkColor: this.darkColor,
+            lightColor: this.lightColor,
+            head: {x: this.head.x, y: this.head.y},
+            face: {x: this.face.x, y: this.face.y, rotation: this.face.rotation},
+            lastPositions: this.lastPositions.map(pos => ({x: pos.getX(), y: pos.getY()})),
+            body: this.body.getChildren().map((segment: Phaser.Physics.Arcade.Sprite) => ({
+                x: segment.x,
+                y: segment.y
+            })),
+            lockedSegments: this.lockedSegments.getChildren().map((_: any, index: number) => index) // Store indices of locked segments
+        };
+    }
+
+    updateFromJson(json: string){
+        const data = JSON.parse(json);
+        this.updateFromData(data);
+    }
+
 }

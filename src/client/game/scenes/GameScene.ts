@@ -10,8 +10,9 @@ import {ChildCollectableTypeEnum} from "../../../shared/constants/CollectableTyp
 import UUID = Phaser.Utils.String.UUID;
 import {Position} from "../../../shared/model/Position";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
-import configureGameSceneSocket from "../sockets/socket";
 import {Socket} from "socket.io-client";
+import {MultiplayerManager} from "../MultiplayerManager";
+import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/GameSessionConfig";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -23,6 +24,8 @@ export class GameScene extends Phaser.Scene {
 
     private background: Background;
     private socket: Socket;
+    private config: GameSessionConfig;
+    private multiplayerManager: MultiplayerManager
     private playerId: string;
     private snakes: Record<string, Snake>;
     private collectables: Record<string, Collectable>;
@@ -33,6 +36,8 @@ export class GameScene extends Phaser.Scene {
         super(sceneConfig);
         this.background = null;
         this.socket = null;
+        this.config = DEFAULT_GAME_SESSION_CONFIG;
+        this.multiplayerManager = null;
         this.playerId = null;
         this.snakes = {} as Record<string, Snake>;
         this.collectables = {} as Record<string, Collectable>;
@@ -44,12 +49,11 @@ export class GameScene extends Phaser.Scene {
         this.socket = this.registry.get(GlobalPropKeyEnum.SOCKET);
 
         this.playerId = this.socket.id;
-
-        configureGameSceneSocket(this.socket, this);
+        this.multiplayerManager = new MultiplayerManager(this, this.socket);
 
         // setup world & camera
-        this.physics.world.setBounds(0, 0, 1600, 1200); // push the world bounds to (1600x1200px)
-        this.cameras.main.setBounds(0, 0, 1600, 1200); // setup camera not to leave the world
+        this.physics.world.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // push the world bounds to (e.g. 1600x1200px)
+        this.cameras.main.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // setup camera not to leave the world
         this.background = new Background(this);
 
         // game objects
@@ -74,6 +78,23 @@ export class GameScene extends Phaser.Scene {
         this.inputHandler[inputHandler.getType()] = inputHandler;
     }
 
+    setConfig(conf: GameSessionConfig) {
+        console.debug("updating game config", conf);
+        this.config = conf;
+        this.loadGameConfig();
+    }
+
+    loadGameConfig() {
+        // setup world & camera
+        this.physics.world.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // push the world bounds to (e.g. 1600x1200px)
+        this.cameras.main.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // setup camera not to leave the world
+
+        if (this.background) {
+            this.background.destroy();
+        }
+        this.background = new Background(this);
+    }
+
     update() {
         if (this.inputHandler) {
             Object.keys(this.inputHandler).forEach(handler => {
@@ -91,9 +112,6 @@ export class GameScene extends Phaser.Scene {
                     }
                 });
             }
-
         }
-
-
     }
 }

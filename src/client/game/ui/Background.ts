@@ -24,4 +24,8 @@ export class Background {
             }
         }
     }
+
+    destroy(){
+        this.graphics.destroy(true);
+    }
 }
