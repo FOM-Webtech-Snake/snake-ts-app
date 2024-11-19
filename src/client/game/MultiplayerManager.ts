@@ -2,6 +2,7 @@ import {Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameScene} from "./scenes/GameScene";
 import {GameSession} from "../../shared/GameSession";
+import {Snake} from "./ui/Snake";
 
 export class MultiplayerManager {
 
@@ -75,5 +76,9 @@ export class MultiplayerManager {
 
     private emitGetConfiguration() {
         this.socket.emit(SocketEvents.SessionState.GET_CURRENT_SESSION);
+    }
+
+    public emitSnake(snake: Snake){
+        this.socket.emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake.toJson())
     }
 }
