@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {GameSession} from "../../shared/GameSession";
 import {Socket} from "socket.io-client";
 import {Player} from "../../shared/Player";
+import {Button, Col, Container, ProgressBar, Row} from 'react-bootstrap';
 
 interface LobbyPageProps {
     socket: Socket;
@@ -14,9 +15,7 @@ interface LobbyPageProps {
 const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeaveGame, onGameStart}) => {
     const [sessionId, setSessionId] = useState("");
     const [gameSession, setGameSession] = useState<GameSession>(null);
-
-    // TODO use later when there is a lobby (show player, waiting for players etc.)
-    //  const [gameSession, setGameSession] = useState<GameSession>(null);
+    const [currentStep, setCurrentStep] = useState(1);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleButtonClick = async () => {
@@ -52,17 +51,18 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
             console.info("parsed game session", session);
 
             setGameSession(session);
-            onJoinGame(session); // Auto join newly created session
+            onJoinGame(session); // automatically join newly created session
+            setCurrentStep(2);
         } catch (error) {
             alert(`Error: ${(error as Error).message}`);
         }
-
     };
 
     const handleLeaveSession = () => {
         setSessionId("");
         setGameSession(null);
         onLeaveGame();
+        setCurrentStep(1); // Move back to the first step
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -78,60 +78,68 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
     }, []);
 
     return (
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-dark text-white">
-            <h1 className="mb-4">Welcome to the Lobby, {player.getName()}!</h1>
-            <div className="input-container text-center mb-3">
-                {gameSession ? (
-                    <div className="input-group">
-                        <span className="input-group-text">Session ID: {gameSession?.getId()}</span>
-                        <button
-                            className="btn btn-danger btn-lg ml-2"
-                            onClick={handleLeaveSession}>
-                            <i className="fa fa-sign-out"></i>
-                        </button>
-                    </div>
-                ) : (
-                    <div className="input-group">
-                        <span className="input-group-text">Session ID</span>
-                        <div className="form-floating">
-                            <input
-                                type="text"
-                                id="sessionCode"
-                                className="form-control"
-                                placeholder="Session Code"
-                                value={sessionId ? sessionId : ""}
-                                onChange={(e) => setSessionId(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                ref={inputRef}
-                                style={{maxWidth: '300px'}}
-                            />
-                            <label htmlFor="sessionCode">Session Code</label>
+        <Container className={"vh-100 d-flex flex-column bg-dark text-white justify-content-center align-items-center"}>
+            <Row className="w-100 mb-4">
+                <Col>
+                    <h1 className="text-center">Welcome to the Lobby, {player.getName()}!</h1>
+                </Col>
+            </Row>
+            <Row className="w-100">
+                <Col className="d-flex justify-content-center">
+                    {currentStep === 1 ? (
+                        <div className="input-container text-center mb-3">
+                            <div className="input-group">
+                                <span className="input-group-text">Session ID</span>
+                                <div className="form-floating">
+                                    <input
+                                        type="text"
+                                        id="sessionCode"
+                                        className="form-control"
+                                        placeholder="Session Code"
+                                        value={sessionId ? sessionId : ""}
+                                        onChange={(e) => setSessionId(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        ref={inputRef}
+                                        style={{maxWidth: '300px'}}
+                                    />
+                                    <label htmlFor="sessionCode">Session Code</label>
+                                </div>
+
+                                {sessionId.trim() && !gameSession ? (
+                                    <Button
+                                        className="btn btn-primary btn-lg"
+                                        onClick={handleButtonClick}>
+                                        <i className="fa fa-right-to-bracket"/>
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        className="btn btn-secondary btn-lg"
+                                        onClick={handleButtonClick}>
+                                        <i className="fa fa-plus"/>
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-
-
-                        {sessionId.trim() && !gameSession ? (
-                            <button
-                                className="btn btn-primary btn-lg"
-                                onClick={handleButtonClick}>
-                                <i className="fa fa-right-to-bracket"/>
-                            </button>
-                        ) : (
-                            <button
-                                className="btn btn-secondary btn-lg"
-                                onClick={handleButtonClick}>
-                                <i className="fa fa-plus"/>
-                            </button>
-                        )}
-                    </div>
-                )}
-            </div>
-            {gameSession ? (
-                <button
-                    className="btn btn-success btn-lg mt-3"
-                    onClick={onGameStart}>
-                    Start Game
-                </button>) : ""}
-        </div>
+                    ) : (
+                        <div className="input-container text-center mb-3">
+                            <div className="input-group">
+                                <span className="input-group-text">Session ID: {gameSession?.getId()}</span>
+                                <Button
+                                    className="btn btn-danger btn-lg ml-2"
+                                    onClick={handleLeaveSession}>
+                                    <i className="fa fa-sign-out"></i>
+                                </Button>
+                            </div>
+                            <Button
+                                className="btn btn-success btn-lg mt-3"
+                                onClick={onGameStart}>
+                                Start Game
+                            </Button>
+                        </div>
+                    )}
+                </Col>
+            </Row>
+        </Container>
     );
 };
 
