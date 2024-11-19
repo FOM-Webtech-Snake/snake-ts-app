@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import StartPage from './StartPage';
 import LobbyPage from './LobbyPage';
 import Footer from "./Footer";
@@ -8,6 +8,7 @@ import {io, Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameSession} from "../../shared/GameSession";
 import {Player} from "../../shared/Player";
+import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 
 const App: React.FC = () => {
     const [gameStarted, setGameStarted] = useState(false);
@@ -25,7 +26,7 @@ const App: React.FC = () => {
             console.log("Socket connected:", newSocket.id);
             setSocket(newSocket); // Set the connected socket
 
-            const newPlayer = new Player(newSocket.id, playerName);
+            const newPlayer = new Player(newSocket.id, playerName, PlayerRoleEnum.HOST);
             setPlayer(newPlayer)
 
             setInLobby(true); // Transition to the lobby
@@ -38,11 +39,11 @@ const App: React.FC = () => {
         });
     };
 
-    const handleJoinGame = (gameSession: GameSession) => {
-        setGameSession(gameSession);
+    const handleJoinGame = (session: GameSession) => {
+        setGameSession(session);
         if (socket) {
-            socket.emit(SocketEvents.Connection.JOIN_SESSION, gameSession.getId());
-            console.log("joined socket session", gameSession.getId());
+            socket.emit(SocketEvents.Connection.JOIN_SESSION, session.getId());
+            console.log("joined socket session", session.getId());
         }
     };
 
@@ -54,12 +55,12 @@ const App: React.FC = () => {
         setGameSession(null);
     };
 
-    const handleGameStart = () => {
-        if (socket) {
+    const handleGameStart = (remoteTriggered: boolean) => {
+        // prevent all guest from sending the start message again after it has been triggered by the host
+        if (socket && !remoteTriggered) {
             socket.emit(SocketEvents.GameControl.START_GAME, player.getId());
-            console.log("game started", gameSession.getId());
-            setGameStarted(true);
         }
+        setGameStarted(true);
     };
 
     return (

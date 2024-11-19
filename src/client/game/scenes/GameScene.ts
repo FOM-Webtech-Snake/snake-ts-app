@@ -62,7 +62,7 @@ export class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.snakes[this.playerId] = localSnake;
 
-        // TODO remove creation of Collectable (only for testing)
+        /* TODO remove creation of Collectable (only for testing)
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.FOOD, {x: 100, y: 100});
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.SHRINK, {x: 100, y: 130});
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.GROWTH, {x: 100, y: 160});
@@ -73,6 +73,7 @@ export class GameScene extends Phaser.Scene {
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 300});
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 400});
         this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 500});
+        */
 
         // input handler
         const inputHandler = new KeyboardInputHandler(this, localSnake, false);

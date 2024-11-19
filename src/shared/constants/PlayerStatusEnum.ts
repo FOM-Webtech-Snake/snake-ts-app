@@ -1,4 +1,4 @@
 export enum PlayerStatusEnum {
-    NOT_READY,
-    READY,
+    NOT_READY = "notReady",
+    READY = "ready",
 }

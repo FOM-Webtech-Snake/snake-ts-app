@@ -3,13 +3,14 @@ import {GameSession} from "../../shared/GameSession";
 import {Socket} from "socket.io-client";
 import {Player} from "../../shared/Player";
 import {Button, Col, Container, ProgressBar, Row} from 'react-bootstrap';
+import {SocketEvents} from "../../shared/constants/SocketEvents";
 
 interface LobbyPageProps {
     socket: Socket;
     player: Player;
     onJoinGame: (gameSession: GameSession) => void;
     onLeaveGame: () => void;
-    onGameStart: () => void;
+    onGameStart: (remote: boolean) => void;
 }
 
 const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeaveGame, onGameStart}) => {
@@ -17,6 +18,15 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
     const [gameSession, setGameSession] = useState<GameSession>(null);
     const [currentStep, setCurrentStep] = useState(1);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (socket) {
+            socket.on(SocketEvents.GameControl.START_GAME, () => {
+                console.log("Game started by host");
+                onGameStart(true);
+            });
+        }
+    }, []);
 
     const handleButtonClick = async () => {
         try {
@@ -130,11 +140,19 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
                                     <i className="fa fa-sign-out"></i>
                                 </Button>
                             </div>
-                            <Button
-                                className="btn btn-success btn-lg mt-3"
-                                onClick={onGameStart}>
-                                Start Game
-                            </Button>
+                            {/* check if the curren user is the owner -> show start button when true */}
+                            {(gameSession?.getOwnerId() === player.getId()) ? (
+                                <Button
+                                    className="btn btn-success btn-lg mt-3"
+                                    onClick={() => onGameStart(false)}>
+                                    Start Game
+                                </Button>
+                            ) : (
+                                <div className="text-center mt-3">
+                                    <p>Waiting for the host to start the game</p>
+                                </div>
+                            )}
+
                         </div>
                     )}
                 </Col>
