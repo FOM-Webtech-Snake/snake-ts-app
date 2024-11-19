@@ -50,8 +50,8 @@ export class Snake {
         this.lightColor = ColorUtil.lightenColor(this.primaryColor);
 
         // create the body
-        this.body = scene.physics.add.group();
-        this.lockedSegments = scene.physics.add.group();
+        this.body = this.scene.physics.add.group();
+        this.lockedSegments = this.scene.physics.add.group();
         for (let i = 0; i < DEFAULT_SNAKE_LENGTH; i++) {
             const bodyPart = this.addSegmentToBody(pos);
             if (i === 0) {
@@ -60,13 +60,13 @@ export class Snake {
         }
 
         // create the face
-        this.face = scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
+        this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
         this.face.setScale(SNAKE_SCALE);
         this.face.setDepth(2);
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
 
         // create the headGroup
-        this.headGroup = scene.physics.add.group();
+        this.headGroup = this.scene.physics.add.group();
         this.headGroup.add(this.head);
         this.headGroup.add(this.face);
     }
