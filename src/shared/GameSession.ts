@@ -2,7 +2,7 @@ import {GameStateEnum} from "./constants/GameStateEnum";
 import {GameSessionUtil} from "./util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
-import {GameScene} from "../client/game/scenes/GameScene";
+import {Collectable} from "./model/Collectable";
 
 export class GameSession {
     private id: string;
@@ -10,17 +10,20 @@ export class GameSession {
     private gameState: GameStateEnum;
     private config: GameSessionConfig;
     private players: Record<string, Player>;
+    private collectables: Record<string, Collectable>;
 
     constructor(id: string = null,
                 ownerId: string,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
-                players: Record<string, Player> = {}) {
+                players: Record<string, Player> = {},
+                collectables: Record<string, Collectable> = {}) {
         this.id = id || GameSessionUtil.generateSessionId();
         this.ownerId = ownerId;
         this.gameState = gameState;
         this.config = config;
         this.players = players;
+        this.collectables = collectables;
     }
 
     getId(): string {
@@ -47,8 +50,16 @@ export class GameSession {
         this.players[player.getId()] = player;
     }
 
+    addCollectable(collectable: Collectable): void {
+        this.collectables[collectable.getId()] = collectable;
+    }
+
     removePlayer(playerId: string): void {
         delete this.players[playerId];
+    }
+
+    removeCollectable(collectableId: string): void {
+        delete this.collectables[collectableId];
     }
 
     hasPlayers(): boolean {

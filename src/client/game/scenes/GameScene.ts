@@ -5,9 +5,7 @@ import {KeyboardInputHandler} from "../input/KeyboardInputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {InputHandler} from "../input/InputHandler";
 import {ColorUtil} from "../util/ColorUtil";
-import {Collectable} from "../ui/Collectable";
-import {ChildCollectableTypeEnum} from "../../../shared/constants/CollectableTypeEnum";
-import UUID = Phaser.Utils.String.UUID;
+import {PhaserCollectable} from "../ui/PhaserCollectable";
 import {Position} from "../../../shared/model/Position";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
 import {Socket} from "socket.io-client";
@@ -29,7 +27,7 @@ export class GameScene extends Phaser.Scene {
     private multiplayerManager: MultiplayerManager
     private playerId: string;
     private snakes: Record<string, Snake>;
-    private collectables: Record<string, Collectable>;
+    private collectables: Record<string, PhaserCollectable>;
 
     private inputHandler: Record<InputTypeEnum, InputHandler>;
 
@@ -41,7 +39,7 @@ export class GameScene extends Phaser.Scene {
         this.multiplayerManager = null;
         this.playerId = null;
         this.snakes = {} as Record<string, Snake>;
-        this.collectables = {} as Record<string, Collectable>;
+        this.collectables = {} as Record<string, PhaserCollectable>;
         this.inputHandler = {} as Record<InputTypeEnum, InputHandler>;
     }
 
