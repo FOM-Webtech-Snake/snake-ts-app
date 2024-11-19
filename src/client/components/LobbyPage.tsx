@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {GameSession} from "../../shared/GameSession";
 import {Socket} from "socket.io-client";
 import {Player} from "../../shared/Player";
-import {Button, Col, Container, ProgressBar, Row} from 'react-bootstrap';
+import {Button, Col, Container, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 
 interface LobbyPageProps {
