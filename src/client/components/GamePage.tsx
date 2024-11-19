@@ -20,7 +20,7 @@ const GamePage: React.FC<GamePageProps> = ({socket}) => {
             );
             const game = GameUtil.createGame(
                 gameConfig,
-                socket
+                socket,
             );
             gameCreatedRef.current = true;
         }

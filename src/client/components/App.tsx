@@ -38,8 +38,8 @@ const App: React.FC = () => {
     const handleJoinGame = (gameSession: GameSession) => {
         setGameSession(gameSession);
         if (socket) {
-            console.log("joining socket session", gameSession.getId());
             socket.emit(SocketEvents.Connection.JOIN_SESSION, gameSession.getId());
+            console.log("joined socket session", gameSession.getId());
         }
     };
 
@@ -52,7 +52,8 @@ const App: React.FC = () => {
 
             {/* TODO extract to component */}
             {isConnecting && (
-                <div className="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-75 d-flex align-items-center justify-content-center">
+                <div
+                    className="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-75 d-flex align-items-center justify-content-center">
                     <div className="text-center">
                         <div className="spinner-border text-white mb-3" role="status">
                             <span className="visually-hidden">Connecting...</span>
@@ -67,7 +68,9 @@ const App: React.FC = () => {
             {gameStarted ? ( // when game was started -> show the game
                 <GamePage socket={socket!}/>
             ) : inLobby ? ( // when in lobby, but game not started -> show lobby
-                <LobbyPage playerId={socket.id!} playerName={playerName!} onJoinGame={handleJoinGame}
+                <LobbyPage socket={socket!}
+                           playerName={playerName!}
+                           onJoinGame={handleJoinGame}
                            onGameStart={handleGameStart}/>
             ) : (
                 <StartPage onStart={handleStart}/>

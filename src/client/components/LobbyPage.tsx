@@ -1,16 +1,18 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {GameSession} from "../../shared/GameSession";
+import {Socket} from "socket.io-client";
 
 interface LobbyPageProps {
-    playerId: string;
+    socket: Socket;
     playerName: string;
     onJoinGame: (gameSession: GameSession) => void;
     onGameStart: () => void;
 }
 
-const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, onGameStart}) => {
+const LobbyPage: React.FC<LobbyPageProps> = ({socket, playerName, onJoinGame, onGameStart}) => {
     const [sessionId, setSessionId] = useState("");
-    const [gameSession, setGameSession] = useState<GameSession>(null);
+    // TODO use later when there is a lobby (show player, waiting for players etc.)
+    //  const [gameSession, setGameSession] = useState<GameSession>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleButtonClick = async () => {
@@ -20,13 +22,13 @@ const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, 
                 response = await fetch(`/api/lobby/join`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({sessionId: sessionId, playerId: playerId})
+                    body: JSON.stringify({sessionId: sessionId, playerId: socket.id})
                 });
             } else {
                 response = await fetch(`/api/lobby/create`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({playerId: playerId})
+                    body: JSON.stringify({playerId: socket.id})
                 });
             }
 
@@ -38,9 +40,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({playerId, playerName, onJoinGame, 
             const session = GameSession.fromData(data)
             console.info("parsed game session", session);
 
-            setGameSession(session);
             onJoinGame(session); // Auto join newly created session
-            onGameStart(); // TODO don't start immediately
+            onGameStart(); // TODO don't start immediately when lobby is fully implemented
         } catch (error) {
             alert(`Error: ${(error as Error).message}`);
         }
