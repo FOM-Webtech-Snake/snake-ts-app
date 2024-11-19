@@ -278,12 +278,12 @@ export class Snake {
     updateFromData(data: any): void {
         this.speed = data.speed;
         this.direction = data.direction;
-        this.directionLock = data.directionLock;
-        this.justReversed = data.justReversed;
+        //this.directionLock = data.directionLock;
+        //this.justReversed = data.justReversed;
         this.primaryColor = data.primaryColor;
-        this.darkColor = data.darkColor;
-        this.lightColor = data.lightColor;
-        this.lastPositions = data.lastPositions.map((pos: any) => new Position(pos.x, pos.y));
+        //this.darkColor = data.darkColor;
+        //this.lightColor = data.lightColor;
+        //this.lastPositions = data.lastPositions.map((pos: any) => new Position(pos.x, pos.y));
 
         // Update body parts
         this.body.clear(true, true);
@@ -299,27 +299,27 @@ export class Snake {
         this.face.setRotation(data.face.rotation);
     }
 
-    toJson(): any {
-        return {
+    toJson(): string {
+        return JSON.stringify({
             speed: this.speed,
             direction: this.direction,
-            directionLock: this.directionLock,
-            justReversed: this.justReversed,
+            //directionLock: this.directionLock,
+            //justReversed: this.justReversed,
             primaryColor: this.primaryColor,
-            darkColor: this.darkColor,
-            lightColor: this.lightColor,
+            //darkColor: this.darkColor,
+            //lightColor: this.lightColor,
             head: {x: this.head.x, y: this.head.y},
             face: {x: this.face.x, y: this.face.y, rotation: this.face.rotation},
-            lastPositions: this.lastPositions.map(pos => ({x: pos.getX(), y: pos.getY()})),
+            //lastPositions: this.lastPositions.map(pos => ({x: pos.getX(), y: pos.getY()})),
             body: this.body.getChildren().map((segment: Phaser.Physics.Arcade.Sprite) => ({
                 x: segment.x,
                 y: segment.y
             })),
-            lockedSegments: this.lockedSegments.getChildren().map((_: any, index: number) => index) // Store indices of locked segments
-        };
+            //lockedSegments: this.lockedSegments.getChildren().map((_: any, index: number) => index) // Store indices of locked segments
+        });
     }
 
-    updateFromJson(json: string){
+    updateFromJson(json: string) {
         const data = JSON.parse(json);
         this.updateFromData(data);
     }
