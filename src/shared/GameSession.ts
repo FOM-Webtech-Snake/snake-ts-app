@@ -70,6 +70,6 @@ export class GameSession {
     }
 
     static fromData(data: any) {
-        return new GameSession(data.id, data.creatorId, data.config, data.gameState, data.players);
+        return new GameSession(data.id, data.creatorId, GameSessionConfig.fromData(data.config), data.gameState, data.players);
     }
 }
