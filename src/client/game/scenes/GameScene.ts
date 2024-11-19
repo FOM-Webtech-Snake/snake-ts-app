@@ -79,8 +79,9 @@ export class GameScene extends Phaser.Scene {
         this.inputHandler[inputHandler.getType()] = inputHandler;
     }
 
-    handleGameSession(session: GameSession){
+    handleGameSession(session: GameSession) {
         console.log("updating game from game session", session);
+        this.setConfig(session.getConfig());
     }
 
     setConfig(conf: GameSessionConfig) {
@@ -109,6 +110,7 @@ export class GameScene extends Phaser.Scene {
 
         if (this.snakes[this.playerId]) {
             this.snakes[this.playerId].update();
+            this.multiplayerManager.emitSnake(this.snakes[this.playerId])
 
             if (this.collectables) {
                 Object.keys(this.collectables).forEach(uuid => {
