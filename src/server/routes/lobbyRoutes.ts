@@ -1,6 +1,7 @@
 import express, {Request, Response} from "express";
 import {sessionManager} from "../SessionManager";
 import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
+import {Player} from "../../shared/Player";
 
 const router = express.Router();
 
@@ -10,20 +11,22 @@ router.get("/available-games", (request: Request, response: Response) => {
 });
 
 router.post("/create", (request: Request, response: Response) => {
-    const {playerId} = request.body;
+    const {playerId, playerName} = request.body;
 
     // Create and store the game session
-    const newGame = sessionManager.createSession(playerId, DEFAULT_GAME_SESSION_CONFIG);
+    const newPlayer = new Player(playerId, playerName);
+    const newGame = sessionManager.createSession(newPlayer, DEFAULT_GAME_SESSION_CONFIG);
     console.log(`created new game session: ${newGame.getId()} - ${newGame.getCreatorId()}`);
 
     response.status(201).json(newGame);
 });
 
 router.post("/join", (request: Request, response: Response) => {
-    const {sessionId, playerId} = request.body;
+    const {sessionId, playerId, playerName} = request.body;
 
     try {
-        const session = sessionManager.joinSession(sessionId, playerId);
+        const newPlayer = new Player(playerId, playerName);
+        const session = sessionManager.joinSession(sessionId, newPlayer);
         console.log(`player ${playerId} joined game session: ${sessionId}`);
 
         response.status(200).json(session);

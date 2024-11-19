@@ -7,11 +7,12 @@ import GamePage from "./GamePage";
 import {io, Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameSession} from "../../shared/GameSession";
+import {Player} from "../../shared/Player";
 
 const App: React.FC = () => {
     const [gameStarted, setGameStarted] = useState(false);
     const [inLobby, setInLobby] = useState(false);
-    const [playerName, setPlayerName] = useState<string | null>(null);
+    const [player, setPlayer] = useState<Player>(null);
     const [gameSession, setGameSession] = useState<GameSession>(null);
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnecting, setIsConnecting] = useState(false);
@@ -19,12 +20,14 @@ const App: React.FC = () => {
 
     const handleStart = (playerName: string) => {
         const newSocket = io();
-        setPlayerName(playerName);
-
         // Wait for the 'connect' event
         newSocket.on(SocketEvents.Connection.CONNECT, () => {
             console.log("Socket connected:", newSocket.id);
             setSocket(newSocket); // Set the connected socket
+
+            const newPlayer = new Player(newSocket.id, playerName);
+            setPlayer(newPlayer)
+
             setInLobby(true); // Transition to the lobby
             setIsConnecting(false); // Hide "waiting" overlay
         });
@@ -64,12 +67,12 @@ const App: React.FC = () => {
             )}
 
 
-            <Header playerId={socket?.id} playerName={playerName} sessionId={gameSession?.getId()}/>
+            <Header playerId={socket?.id} playerName={player?.getName()} sessionId={gameSession?.getId()}/>
             {gameStarted ? ( // when game was started -> show the game
                 <GamePage socket={socket!}/>
             ) : inLobby ? ( // when in lobby, but game not started -> show lobby
                 <LobbyPage socket={socket!}
-                           playerName={playerName!}
+                           player={player!}
                            onJoinGame={handleJoinGame}
                            onGameStart={handleGameStart}/>
             ) : (

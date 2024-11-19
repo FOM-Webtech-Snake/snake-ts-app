@@ -1,19 +1,20 @@
 import {GameStateEnum} from "./constants/GameStateEnum";
 import {GameSessionUtil} from "./util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
+import {Player} from "./Player";
 
 export class GameSession {
     private id: string;
     private creatorId: string;
     private gameState: GameStateEnum;
     private config: GameSessionConfig;
-    private players: string[];
+    private players: Player[];
 
     constructor(id: string = null,
                 creatorId: string,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
-                players: string[] = []) {
+                players: Player[] = []) {
         this.id = id || GameSessionUtil.generateSessionId();
         this.creatorId = creatorId;
         this.gameState = gameState;
@@ -41,8 +42,8 @@ export class GameSession {
         this.config = config;
     }
 
-    addPlayer(playerId: string): void {
-        this.players.push(playerId);
+    addPlayer(player: Player): void {
+        this.players.push(player);
     }
 
     toJson() {

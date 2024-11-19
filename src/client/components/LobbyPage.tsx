@@ -1,15 +1,16 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {GameSession} from "../../shared/GameSession";
 import {Socket} from "socket.io-client";
+import {Player} from "../../shared/Player";
 
 interface LobbyPageProps {
     socket: Socket;
-    playerName: string;
+    player: Player;
     onJoinGame: (gameSession: GameSession) => void;
     onGameStart: () => void;
 }
 
-const LobbyPage: React.FC<LobbyPageProps> = ({socket, playerName, onJoinGame, onGameStart}) => {
+const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onGameStart}) => {
     const [sessionId, setSessionId] = useState("");
     // TODO use later when there is a lobby (show player, waiting for players etc.)
     //  const [gameSession, setGameSession] = useState<GameSession>(null);
@@ -22,13 +23,20 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, playerName, onJoinGame, on
                 response = await fetch(`/api/lobby/join`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({sessionId: sessionId, playerId: socket.id})
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        playerId: player.getId(),
+                        playerName: player.getName()
+                    })
                 });
             } else {
                 response = await fetch(`/api/lobby/create`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({playerId: socket.id})
+                    body: JSON.stringify({
+                        playerId: player.getId(),
+                        playerName: player.getName()
+                    })
                 });
             }
 
@@ -62,7 +70,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, playerName, onJoinGame, on
 
     return (
         <div className="d-flex flex-column justify-content-center align-items-center vh-100 bg-dark text-white">
-            <h1 className="mb-4">Welcome to the Lobby, {playerName}!</h1>
+            <h1 className="mb-4">Welcome to the Lobby, {player.getName()}!</h1>
             <div className="input-container text-center mb-3">
                 <label htmlFor="sessionCode" className="form-label">Session Code</label>
                 <input
