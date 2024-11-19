@@ -48,8 +48,8 @@ export class MultiplayerManager {
             // TODO self.scene.pauseGame(false);
         });
 
-        this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVED, function (player) {
-            console.log("player moved", player);
+        this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (player) {
+            console.log("player movement", player);
             // TODO self.scene.updateOtherPlayersMovement(player);
         });
 
