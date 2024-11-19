@@ -28,6 +28,14 @@ const configureServerSocket = (io: Server) => {
                     socket.to(sessionId).emit(SocketEvents.GameControl.START_GAME);
                 });
 
+
+                socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, (snake: string) => {
+                    console.log(`player ${socket.id} moved snake ${snake}`);
+                    socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
+                    // TODO session.updatePlayerSnake();
+                });
+
+                // player leave session event
                 socket.on(SocketEvents.Connection.LEAVE_SESSION, () => {
                     session.removePlayer(socket.id);
                     socket.to(sessionId).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
@@ -37,6 +45,7 @@ const configureServerSocket = (io: Server) => {
                     }
                 });
 
+                // player disconnected event
                 socket.on(SocketEvents.Connection.DISCONNECT, () => {
                     session.removePlayer(socket.id);
                     socket.to(sessionId).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
