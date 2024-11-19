@@ -24,6 +24,7 @@ export namespace SocketEvents {
 
     export enum SessionState {
         CONFIG = "config",
+        GET_CURRENT_SESSION = "getCurrentSession",
         CURRENT_SESSION = "currentSession",
         NEW_PLAYER = "newPlayer",
         DISCONNECTED = "disconnected"

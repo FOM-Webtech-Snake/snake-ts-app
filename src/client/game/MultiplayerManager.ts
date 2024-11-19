@@ -1,7 +1,7 @@
 import {Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
-import {GameSessionConfig} from "../../shared/GameSessionConfig";
 import {GameScene} from "./scenes/GameScene";
+import {GameSession} from "../../shared/GameSession";
 
 export class MultiplayerManager {
 
@@ -17,21 +17,14 @@ export class MultiplayerManager {
     private setup() {
         const self = this;
 
-        this.socket.on(SocketEvents.Configuration.CURRENT_CONFIGURATION, function (configuration: string) {
-            const gameSessionConfig = GameSessionConfig.fromJson(configuration);
-            self.scene.setConfig(gameSessionConfig);
+        this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (session: string) {
+            const gameSession = GameSession.fromJson(session);
+            self.scene.handleGameSession(gameSession);
         });
 
         this.socket.on(SocketEvents.Connection.DISCONNECT, function (socket) {
             console.log("disconnected", socket);
             // TODO self.scene.playerId = DEFAULT_PLAYER_1_ID;
-        });
-
-        this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (session) {
-            console.log("currentSession", session);
-            // TODO self.scene.session = session;
-            // TODO if (session.players) self.handlePlayers(session.players);
-            // TODO if (session.collectables) self.handleCollectables(session.collectables);
         });
 
         this.socket.on(SocketEvents.SessionState.NEW_PLAYER, function (playerInfo) {
@@ -81,6 +74,6 @@ export class MultiplayerManager {
     }
 
     private emitGetConfiguration() {
-        this.socket.emit(SocketEvents.Configuration.GET_CONFIGURATION);
+        this.socket.emit(SocketEvents.SessionState.GET_CURRENT_SESSION);
     }
 }

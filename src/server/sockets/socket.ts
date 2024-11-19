@@ -17,9 +17,9 @@ const configureServerSocket = (io: Server) => {
                 socket.emit(SocketEvents.Connection.JOIN_SESSION, session);
 
                 // get configuration event
-                socket.on(SocketEvents.Configuration.GET_CONFIGURATION, () => {
-                    console.log(`get configuration by ${socket.id}`);
-                    socket.emit(SocketEvents.Configuration.CURRENT_CONFIGURATION, session.getConfig().toJson());
+                socket.on(SocketEvents.SessionState.GET_CURRENT_SESSION, () => {
+                    console.log(`get session called by ${socket.id}`);
+                    socket.emit(SocketEvents.SessionState.CURRENT_SESSION, session.toJson());
                 });
 
                 // game start event

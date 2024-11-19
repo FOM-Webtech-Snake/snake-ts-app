@@ -13,6 +13,7 @@ import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
 import {Socket} from "socket.io-client";
 import {MultiplayerManager} from "../MultiplayerManager";
 import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/GameSessionConfig";
+import {GameSession} from "../../../shared/GameSession";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -78,8 +79,12 @@ export class GameScene extends Phaser.Scene {
         this.inputHandler[inputHandler.getType()] = inputHandler;
     }
 
+    handleGameSession(session: GameSession){
+        console.log("updating game from game session", session);
+    }
+
     setConfig(conf: GameSessionConfig) {
-        console.debug("updating game config", conf);
+        console.log("updating game config", conf);
         this.config = conf;
         this.loadGameConfig();
     }
