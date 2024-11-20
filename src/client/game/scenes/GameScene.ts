@@ -110,6 +110,10 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    spawnCollectable(item: any){
+        const newCollectable = PhaserCollectable.fromData(this, item);
+        this.collectables[newCollectable.getId()] = newCollectable;
+    }
 
     update() {
         if (this.inputHandler) {

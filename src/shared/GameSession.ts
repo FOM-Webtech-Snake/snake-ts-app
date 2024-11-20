@@ -30,6 +30,10 @@ export class GameSession {
         return this.id;
     }
 
+    getPlayer(playerId: string): Player {
+        return this.players[playerId];
+    }
+
     getOwnerId(): string {
         return this.ownerId;
     }
@@ -46,6 +50,10 @@ export class GameSession {
         return this.config;
     }
 
+    getCollectables() {
+        return this.collectables;
+    }
+
     setConfig(config: GameSessionConfig) {
         this.config = config;
     }
@@ -56,6 +64,12 @@ export class GameSession {
 
     addCollectable(collectable: Collectable): void {
         this.collectables[collectable.getId()] = collectable;
+    }
+
+    addCollectables(collectables: Record<string, Collectable>): void {
+        Object.keys(collectables).forEach((collectableId) => {
+            this.collectables[collectableId] = collectables[collectableId];
+        })
     }
 
     removePlayer(playerId: string): void {

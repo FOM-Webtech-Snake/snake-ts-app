@@ -24,9 +24,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
 
     useEffect(() => {
         if (socket) {
-            socket.on(SocketEvents.GameControl.START_GAME, () => {
+            socket.once(SocketEvents.GameControl.START_GAME, (callback) => {
                 log.debug("Game started by host");
                 onGameStart();
+                callback({status: "ok", playerId: player.getId()})
             });
         }
     }, []);

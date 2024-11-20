@@ -30,4 +30,8 @@ export class PhaserCollectable extends Collectable {
         }
         return false;
     }
+
+    static fromData(scene: Phaser.Scene, data: any): PhaserCollectable {
+        return new PhaserCollectable(scene, data.id, data.type, Position.fromData(data.position));
+    }
 }

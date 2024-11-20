@@ -3,6 +3,9 @@ import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameScene} from "./scenes/GameScene";
 import {GameSession} from "../../shared/GameSession";
 import {Snake} from "./ui/Snake";
+import {getLogger} from "../../shared/config/LogConfig";
+
+const log = getLogger("client.game.MultiplayerManager");
 
 export class MultiplayerManager {
 
@@ -19,62 +22,58 @@ export class MultiplayerManager {
         const self = this;
 
         this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (session: string) {
-            const gameSession = GameSession.fromJson(session);
+            const gameSession = GameSession.fromData(session);
             self.scene.handleGameSession(gameSession);
         });
 
         this.socket.on(SocketEvents.Connection.DISCONNECT, function (socket) {
-            console.log("disconnected", socket);
+            log.info("disconnected", socket);
             // TODO self.scene.playerId = DEFAULT_PLAYER_1_ID;
         });
 
         this.socket.on(SocketEvents.SessionState.NEW_PLAYER, function (playerInfo) {
-            console.log("newPlayer", playerInfo);
+            log.info("newPlayer", playerInfo);
             // TODO self.scene.addPlayerSnake(self.scene, playerInfo);
         });
 
-        this.socket.on(SocketEvents.GameControl.START_GAME, function () {
-            console.log("game started");
-            // TODO self.scene.startGame(false);
-        });
-
         this.socket.on(SocketEvents.GameStatus.RESUMED_GAME, function () {
-            console.log("resumed game");
+            log.info("resumed game");
             // TODO self.scene.resumeGame(false);
         });
 
         this.socket.on(SocketEvents.GameStatus.PAUSED_GAME, function () {
-            console.log("paused game");
+            log.info("paused game");
             // TODO self.scene.pauseGame(false);
         });
 
         this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
-            console.log("snake movement", snake);
+            log.info("snake movement", snake);
             self.scene.handleRemoteSnake(snake);
         });
 
         this.socket.on(SocketEvents.GameEvents.COLLECTABLE_COLLECTED, function (id) {
-            console.log("collectable collected", id);
+            log.info("collectable collected", id);
             // TODO if (self.scene.collectables[id]) {
             // TODO self.scene.collectables[id].item.destroy();
             // TODO delete self.scene.collectables[id];
             // TODO }
         });
 
-        this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item) {
-            // TODO console.log("spawnNewItem", item);
+        this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item: any) {
+            log.info("spawnNewItem", item);
+            self.scene.spawnCollectable(item);
             // TODO self.scene.addCollectable(self.scene, item);
         });
 
         this.socket.on(SocketEvents.SessionState.DISCONNECTED, function (playerId) {
-            console.log("player disconnected", playerId);
+            log.info("player disconnected", playerId);
             // TODO self.scene.removePlayer(playerId);
         });
 
         this.emitGetConfiguration();
     }
 
-    public emitCollect(uuid: string){
+    public emitCollect(uuid: string) {
         this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
     }
 

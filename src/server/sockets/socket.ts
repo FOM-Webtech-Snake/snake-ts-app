@@ -33,7 +33,7 @@ const configureServerSocket = (io: Server) => {
                 // get configuration event
                 socket.on(SocketEvents.SessionState.GET_CURRENT_SESSION, () => {
                     log.debug(`get session called by ${socket.id}`);
-                    socket.emit(SocketEvents.SessionState.CURRENT_SESSION, session.toJson());
+                    socket.emit(SocketEvents.SessionState.CURRENT_SESSION, session);
                 });
 
                 // game start event
@@ -45,7 +45,7 @@ const configureServerSocket = (io: Server) => {
                 });
 
                 socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, (snake: string) => {
-                    log.debug(`player ${socket.id} moved snake ${snake}`);
+                    log.trace(`player ${socket.id} moved snake ${snake}`);
                     socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
                     // TODO session.updatePlayerSnake();
                 });

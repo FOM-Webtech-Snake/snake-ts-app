@@ -28,6 +28,14 @@ export class Position {
         this.y = y;
     }
 
+    static fromJson(json: string) {
+        return this.fromData(JSON.parse(json));
+    }
+
+    static fromData(data: any) {
+        return new Position(data.x, data.y);
+    }
+
     toString(): string {
         return `Position(x: ${this.x}, y: ${this.y})`;
     }
