@@ -58,6 +58,10 @@ export class GameSession {
         return this.collectables;
     }
 
+    getCollectableById(id: string): Collectable | undefined {
+        return this.collectables[id];
+    }
+
     setConfig(config: GameSessionConfig) {
         this.config = config;
     }

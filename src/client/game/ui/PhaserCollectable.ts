@@ -23,12 +23,16 @@ export class PhaserCollectable extends Collectable {
     }
 
     checkCollision(snake: Snake): boolean {
-        if (this.item && this.item.visible && Phaser.Geom.Intersects.RectangleToRectangle(snake.getHead().getBounds(), this.item.getBounds())) {
-            childCollectables[this.type].func(snake);
-            this.item.destroy(true);
-            return true;
-        }
-        return false;
+        return this.item && this.item.visible && Phaser.Geom.Intersects.RectangleToRectangle(snake.getHead().getBounds(), this.item.getBounds());
+    }
+
+    applyAndDestroy(snake: Snake) {
+        childCollectables[this.type].func(snake);
+        this.item.destroy(true);
+    }
+
+    destroy() {
+        this.item.destroy(true);
     }
 
     static fromData(scene: Phaser.Scene, data: any): PhaserCollectable {

@@ -60,19 +60,6 @@ export class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.snakes[this.playerId] = localSnake;
 
-        /* TODO remove creation of Collectable (only for testing)
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.FOOD, {x: 100, y: 100});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.SHRINK, {x: 100, y: 130});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.GROWTH, {x: 100, y: 160});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.SLOW, {x: 100, y: 190});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.FAST, {x: 100, y: 210});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.REVERSE, {x: 100, y: 240});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.SPLIT, {x: 100, y: 270});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 300});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 400});
-        this.collectables[UUID()] = new Collectable(this, ChildCollectableTypeEnum.DOUBLE, {x: 500, y: 500});
-        */
-
         // input handler
         const inputHandler = new KeyboardInputHandler(this, localSnake, false);
         this.inputHandler[inputHandler.getType()] = inputHandler;
@@ -110,9 +97,17 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    spawnCollectable(item: any){
+    spawnCollectable(item: any) {
         const newCollectable = PhaserCollectable.fromData(this, item);
         this.collectables[newCollectable.getId()] = newCollectable;
+    }
+
+    removeCollectable(uuid: string) {
+        const collectable = this.collectables[uuid];
+        if (collectable) {
+            collectable.destroy();
+            this.collectables[uuid] = null;
+        }
     }
 
     update() {
@@ -128,9 +123,13 @@ export class GameScene extends Phaser.Scene {
 
             if (this.collectables) {
                 Object.keys(this.collectables).forEach(uuid => {
-                    if (this.collectables[uuid].checkCollision(this.snakes[this.playerId])) {
-                        this.multiplayerManager.emitCollect(uuid);
-                        delete this.collectables[uuid];
+                    if (this.collectables[uuid] && this.collectables[uuid].checkCollision(this.snakes[this.playerId])) {
+                        this.multiplayerManager.emitCollect(uuid, (success) => {
+                            if (success) {
+                                this.collectables[uuid].applyAndDestroy(this.snakes[this.playerId]);
+                            }
+                            this.removeCollectable(uuid);
+                        });
                     }
                 });
             }

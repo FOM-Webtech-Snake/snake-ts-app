@@ -64,8 +64,15 @@ const configureServerSocket = (io: Server) => {
                 socket.to(session.getId()).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
             });
 
-            socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
+            socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string, callback) => {
                 log.debug(`Item ${uuid} collected by ${socket.id}`);
+                const collectableById = session.getCollectableById(uuid);
+                if (collectableById) {
+                    callback({status: "ok"});
+                    GameSessionUtil.removeCollectable(uuid, session, socket);
+                } else {
+                    callback({status: "error"});
+                }
             });
 
             socket.on(SocketEvents.Connection.LEAVE_SESSION, () => {

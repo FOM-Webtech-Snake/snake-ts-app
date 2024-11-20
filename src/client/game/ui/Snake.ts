@@ -135,6 +135,11 @@ export class Snake {
         }
     }
 
+    increase(){
+        const spawnPos: Position = new Position(this.head.x, this.head.y);
+        this.addSegmentToBody(spawnPos, true);
+    }
+
     reverseDirection(): void {
         this.direction = DirectionUtil.getOppositeDirection(this.direction);
 

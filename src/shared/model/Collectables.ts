@@ -8,7 +8,7 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.FOOD,
         value: 1,
         imageKey: "food_item_apple",
-        func: snake => console.log("food")// TODO snake.increase();
+        func: snake => snake.increase()// TODO snake.increase();
     },
     [ChildCollectableTypeEnum.GROWTH]: {
         name: "growth",

@@ -59,6 +59,11 @@ export class MultiplayerManager {
             // TODO }
         });
 
+        this.socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
+            log.info("item collected", uuid);
+            self.scene.removeCollectable(uuid);
+        });
+
         this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item: any) {
             log.info("spawnNewItem", item);
             self.scene.spawnCollectable(item);
@@ -73,8 +78,14 @@ export class MultiplayerManager {
         this.emitGetConfiguration();
     }
 
-    public emitCollect(uuid: string) {
-        this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
+    public emitCollect(uuid: string, callback: (success: boolean) => void): void {
+        this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response) => {
+            if (response.status === "ok") {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        });
     }
 
     public emitGetConfiguration() {

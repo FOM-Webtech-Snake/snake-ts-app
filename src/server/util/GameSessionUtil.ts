@@ -1,6 +1,6 @@
 import {GameSession} from "../../shared/GameSession";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
-import {Server} from "socket.io";
+import {Server, Socket} from "socket.io";
 import SpawnerDaemon from "../SpawnerDaemon";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 
@@ -28,6 +28,11 @@ export class GameSessionUtil {
 
         console.warn(`Game Session ${session.getId()} state is not ready.`);
         return false;
+    }
+
+    static removeCollectable(collectableId: string, session: GameSession, socket: Socket): void {
+        session.removeCollectable(collectableId);
+        socket.to(session.getId()).emit(SocketEvents.GameEvents.ITEM_COLLECTED, collectableId);
     }
 
 
