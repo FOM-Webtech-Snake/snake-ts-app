@@ -1,5 +1,5 @@
 import {GameStateEnum} from "./constants/GameStateEnum";
-import {GameSessionUtil} from "./util/GameSessionUtil";
+import {GameSessionUtil} from "../server/util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
 import {Collectable} from "./model/Collectable";
@@ -36,6 +36,10 @@ export class GameSession {
 
     getGameState(): GameStateEnum {
         return this.gameState;
+    }
+
+    setGameState(state: GameStateEnum) {
+        this.gameState = state;
     }
 
     getConfig() {

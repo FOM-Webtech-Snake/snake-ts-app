@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import StartPage from './StartPage';
 import LobbyPage from './LobbyPage';
 import Footer from "./Footer";
@@ -55,11 +55,7 @@ const App: React.FC = () => {
         setGameSession(null);
     };
 
-    const handleGameStart = (remoteTriggered: boolean) => {
-        // prevent all guest from sending the start message again after it has been triggered by the host
-        if (socket && !remoteTriggered) {
-            socket.emit(SocketEvents.GameControl.START_GAME, player.getId());
-        }
+    const handleGameStart = () => {
         setGameStarted(true);
     };
 

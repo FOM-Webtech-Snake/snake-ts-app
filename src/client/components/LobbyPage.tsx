@@ -4,14 +4,17 @@ import {Socket} from "socket.io-client";
 import {Player} from "../../shared/Player";
 import {Button, Col, Container, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
+import {getLogger} from "../../shared/config/LogConfig";
 
 interface LobbyPageProps {
     socket: Socket;
     player: Player;
     onJoinGame: (gameSession: GameSession) => void;
     onLeaveGame: () => void;
-    onGameStart: (remote: boolean) => void;
+    onGameStart: () => void;
 }
+
+const log = getLogger("client.components.LobbyPage");
 
 const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeaveGame, onGameStart}) => {
     const [sessionId, setSessionId] = useState("");
@@ -22,8 +25,8 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
     useEffect(() => {
         if (socket) {
             socket.on(SocketEvents.GameControl.START_GAME, () => {
-                console.log("Game started by host");
-                onGameStart(true);
+                log.debug("Game started by host");
+                onGameStart();
             });
         }
     }, []);
@@ -74,6 +77,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
         onLeaveGame();
         setCurrentStep(1); // Move back to the first step
     };
+
+    const startGame = () => {
+        if (socket) {
+            socket.emit(SocketEvents.GameControl.START_GAME);
+        }
+    }
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter") {
@@ -144,7 +153,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
                             {(gameSession?.getOwnerId() === player.getId()) ? (
                                 <Button
                                     className="btn btn-success btn-lg mt-3"
-                                    onClick={() => onGameStart(false)}>
+                                    onClick={startGame}>
                                     Start Game
                                 </Button>
                             ) : (
