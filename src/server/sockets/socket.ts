@@ -4,78 +4,88 @@ import {sessionManager} from "../SessionManager";
 import {getLogger} from "../../shared/config/LogConfig";
 import {GameSession} from "../../shared/GameSession";
 import {GameSessionUtil} from "../util/GameSessionUtil";
+import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
+import {Player} from "../../shared/Player";
+import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
 
 const log = getLogger("server.sockets.Socket");
 const configureServerSocket = (io: Server) => {
     io.on(SocketEvents.Connection.CONNECTION, (socket: Socket) => {
         log.info(`user connected: ${socket.id}`);
 
-        // Example of handling a custom event (e.g., joining a game room)
-        socket.on(SocketEvents.Connection.JOIN_SESSION, (sessionId: string) => {
-            const session: GameSession = sessionManager.getSession(sessionId);
 
-            function removePlayerFromSession() {
-                session.removePlayer(socket.id);
-                if (!session.hasPlayers()) {
-                    log.info(`session ${sessionId} has no players left, deleting session`);
-                    sessionManager.deleteSession(session.getId());
-                } else {
-                    socket.to(sessionId).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
-                }
-            }
-
-            if (session) {
-                socket.join(sessionId);
-                log.info(`user ${socket.id} joined session: ${sessionId}`);
-
-                socket.emit(SocketEvents.Connection.JOIN_SESSION, session);
-
-                // get configuration event
-                socket.on(SocketEvents.SessionState.GET_CURRENT_SESSION, () => {
-                    log.debug(`get session called by ${socket.id}`);
-                    socket.emit(SocketEvents.SessionState.CURRENT_SESSION, session);
-                });
-
-                // game start event
-                socket.on(SocketEvents.GameControl.START_GAME, () => {
-                    log.debug(`game session (${sessionId}) started by ${socket.id}`);
-                    if (session.getOwnerId() === socket.id) { // make sure that only the owner can start a game session
-                        GameSessionUtil.startGame(session, io);
-                    }
-                });
-
-                socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, (snake: string) => {
-                    log.trace(`player ${socket.id} moved snake ${snake}`);
-                    socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
-                    // TODO session.updatePlayerSnake();
-                });
-
-                socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
-                    log.debug(`item ${uuid} collected by ${socket.id}`);
-                });
-
-                // player leave session event
-                socket.on(SocketEvents.Connection.LEAVE_SESSION, () => {
-                    removePlayerFromSession();
-                });
-
-                // player disconnected event
-                socket.on(SocketEvents.Connection.DISCONNECT, () => {
-                    removePlayerFromSession();
-                });
-
-
-            } else {
-                console.error(`session id ${sessionId} not found`);
-                socket.emit("error", {message: "session not found"});
-            }
+        socket.on(SocketEvents.Connection.CREATE_SESSION, (playerName: string, callback) => {
+            // Create and store the game session
+            const newPlayer = new Player(socket.id, playerName, PlayerRoleEnum.HOST);
+            const newGame = sessionManager.createSession(newPlayer, DEFAULT_GAME_SESSION_CONFIG);
+            log.info(`created new game session: ${newGame.getId()} - ${newGame.getOwnerId()}`);
+            callback(newGame);
+            handleSessionJoin(socket, newGame);
         });
 
+        socket.on(SocketEvents.Connection.JOIN_SESSION, (sessionId: string, playerName: string, callback) => {
+            try {
+                const newPlayer = new Player(socket.id, playerName, PlayerRoleEnum.GUEST);
+                const session = sessionManager.joinSession(sessionId, newPlayer);
+                log.info(`player ${socket.id} joined game session: ${sessionId}`);
+                callback(session);
+                handleSessionJoin(socket, session);
+            } catch (error) {
+                callback({error: "Session not found"});
+            }
+        });
 
         // Handle disconnection
         socket.on(SocketEvents.Connection.DISCONNECT, () => {
             log.info(`user disconnected: ${socket.id}`);
         });
+
+        function handleSessionJoin(socket: Socket, session: GameSession) {
+            socket.join(session.getId());
+            log.info(`User ${socket.id} joined session: ${session.getId()}`);
+
+            //socket.emit(SocketEvents.Connection.JOIN_SESSION, session);
+
+            // Set up event handlers
+            socket.on(SocketEvents.SessionState.GET_CURRENT_SESSION, () => {
+                log.debug(`Get session called by ${socket.id}`);
+                socket.emit(SocketEvents.SessionState.CURRENT_SESSION, session);
+            });
+
+            socket.on(SocketEvents.GameControl.START_GAME, () => {
+                log.debug(`Game session (${session.getId()}) started by ${socket.id}`);
+                if (session.getOwnerId() === socket.id) {
+                    GameSessionUtil.startGame(session, io);
+                }
+            });
+
+            socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, (snake: string) => {
+                log.trace(`Player ${socket.id} moved snake ${snake}`);
+                socket.to(session.getId()).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
+            });
+
+            socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
+                log.debug(`Item ${uuid} collected by ${socket.id}`);
+            });
+
+            socket.on(SocketEvents.Connection.LEAVE_SESSION, () => {
+                removePlayerFromSession();
+            });
+
+            socket.on(SocketEvents.Connection.DISCONNECT, () => {
+                removePlayerFromSession();
+            });
+
+            function removePlayerFromSession() {
+                session.removePlayer(socket.id);
+                if (!session.hasPlayers()) {
+                    log.info(`Session ${session.getId()} has no players left, deleting session`);
+                    sessionManager.deleteSession(session.getId());
+                } else {
+                    socket.to(session.getId()).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
+                }
+            }
+        }
     });
 };
 

@@ -3,11 +3,13 @@ import {GameStateEnum} from "../shared/constants/GameStateEnum";
 import {GameSessionConfig} from "../shared/GameSessionConfig";
 import {Player} from "../shared/Player";
 import {getLogger} from "../shared/config/LogConfig";
+import SpawnerDaemon from "./SpawnerDaemon";
 
 const log = getLogger("server.SessionManager");
 
 class SessionManager {
     private sessions: Record<string, GameSession> = {};
+    private spawner = SpawnerDaemon.getInstance();
 
     getSession = (sessionId: string): GameSession | undefined => {
         return this.sessions[sessionId];
@@ -36,6 +38,7 @@ class SessionManager {
     }
 
     deleteSession(sessionId: string): void {
+        this.spawner.stopSpawner(sessionId);
         delete this.sessions[sessionId];
         log.debug(`session ${sessionId} deleted`);
     }

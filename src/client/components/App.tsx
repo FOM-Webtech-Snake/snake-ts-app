@@ -4,55 +4,20 @@ import LobbyPage from './LobbyPage';
 import Footer from "./Footer";
 import Header from "./Header";
 import GamePage from "./GamePage";
-import {io, Socket} from "socket.io-client";
-import {SocketEvents} from "../../shared/constants/SocketEvents";
-import {GameSession} from "../../shared/GameSession";
 import {Player} from "../../shared/Player";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
+import {useGameSessionSocket} from "./GameSessionSocketContext";
 
 const App: React.FC = () => {
+    const {socket, isConnected} = useGameSessionSocket();
     const [gameStarted, setGameStarted] = useState(false);
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player>(null);
-    const [gameSession, setGameSession] = useState<GameSession>(null);
-    const [socket, setSocket] = useState<Socket | null>(null);
-    const [isConnecting, setIsConnecting] = useState(false);
-
 
     const handleStart = (playerName: string) => {
-        const newSocket = io();
-        // Wait for the 'connect' event
-        newSocket.on(SocketEvents.Connection.CONNECT, () => {
-            console.log("Socket connected:", newSocket.id);
-            setSocket(newSocket); // Set the connected socket
-
-            const newPlayer = new Player(newSocket.id, playerName, PlayerRoleEnum.HOST);
-            setPlayer(newPlayer)
-
-            setInLobby(true); // Transition to the lobby
-            setIsConnecting(false); // Hide "waiting" overlay
-        });
-
-        newSocket.on(SocketEvents.Connection.CONNECT_ERROR, (error) => {
-            console.error("Socket connection error:", error);
-            setIsConnecting(false); // Hide "waiting" overlay
-        });
-    };
-
-    const handleJoinGame = (session: GameSession) => {
-        setGameSession(session);
-        if (socket) {
-            socket.emit(SocketEvents.Connection.JOIN_SESSION, session.getId());
-            console.log("joined socket session", session.getId());
-        }
-    };
-
-    const handleLeaveGame = () => {
-        if (socket) {
-            socket.emit(SocketEvents.Connection.LEAVE_SESSION, gameSession.getId);
-            console.log("left socket session", gameSession.getId());
-        }
-        setGameSession(null);
+        const newPlayer = new Player(socket.id, playerName, PlayerRoleEnum.HOST);
+        setPlayer(newPlayer);
+        setInLobby(true); // transition to the lobby
     };
 
     const handleGameStart = () => {
@@ -63,7 +28,7 @@ const App: React.FC = () => {
         <div className="d-flex flex-column vh-100 bg-dark text-white">
 
             {/* TODO extract to component */}
-            {isConnecting && (
+            {!isConnected && (
                 <div
                     className="position-fixed top-0 start-0 w-100 h-100 bg-black bg-opacity-75 d-flex align-items-center justify-content-center">
                     <div className="text-center">
@@ -76,15 +41,13 @@ const App: React.FC = () => {
             )}
 
 
-            <Header playerId={socket?.id} playerName={player?.getName()} sessionId={gameSession?.getId()}/>
+            <Header playerName={player?.getName()}/>
             {gameStarted ? ( // when game was started -> show the game
-                <GamePage socket={socket!}/>
+                <GamePage/>
             ) : inLobby ? ( // when in lobby, but game not started -> show lobby
-                <LobbyPage socket={socket!}
-                           player={player!}
-                           onJoinGame={handleJoinGame}
-                           onLeaveGame={handleLeaveGame}
-                           onGameStart={handleGameStart}/>
+                <LobbyPage
+                    player={player!}
+                    onGameStart={handleGameStart}/>
             ) : (
                 <StartPage onStart={handleStart}/>
             )}

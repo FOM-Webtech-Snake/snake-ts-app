@@ -1,24 +1,20 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {GameSession} from "../../shared/GameSession";
-import {Socket} from "socket.io-client";
 import {Player} from "../../shared/Player";
 import {Button, Col, Container, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
+import {useGameSessionSocket} from "./GameSessionSocketContext";
 
 interface LobbyPageProps {
-    socket: Socket;
     player: Player;
-    onJoinGame: (gameSession: GameSession) => void;
-    onLeaveGame: () => void;
     onGameStart: () => void;
 }
 
 const log = getLogger("client.components.LobbyPage");
 
-const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeaveGame, onGameStart}) => {
+const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameStart}) => {
+    const {socket, session, joinSession, createSession, leaveSession} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
-    const [gameSession, setGameSession] = useState<GameSession>(null);
     const [currentStep, setCurrentStep] = useState(1);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -32,51 +28,23 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
         }
     }, []);
 
-    const handleButtonClick = async () => {
+
+    const createJoinSession = async () => {
         try {
-            let response;
             if (sessionId.trim()) {
-                response = await fetch(`/api/lobby/join`, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        sessionId: sessionId,
-                        playerId: player.getId(),
-                        playerName: player.getName()
-                    })
-                });
+                joinSession(sessionId.trim(), player.getName());
             } else {
-                response = await fetch(`/api/lobby/create`, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({
-                        playerId: player.getId(),
-                        playerName: player.getName()
-                    })
-                });
+                createSession(player.getName());
             }
-
-            if (!response?.ok) {
-                throw new Error('Failed to join session');
-            }
-
-            const data = await response.json();
-            const session = GameSession.fromData(data)
-            console.info("parsed game session", session);
-
-            setGameSession(session);
-            onJoinGame(session); // automatically join newly created session
             setCurrentStep(2);
         } catch (error) {
-            alert(`Error: ${(error as Error).message}`);
+            log.error(`Error: ${(error as Error).message}`);
         }
     };
 
     const handleLeaveSession = () => {
-        setSessionId("");
-        setGameSession(null);
-        onLeaveGame();
-        setCurrentStep(1); // Move back to the first step
+        leaveSession();
+        setCurrentStep(1); // move back to the first step
     };
 
     const startGame = () => {
@@ -87,7 +55,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter") {
-            handleButtonClick();
+            createJoinSession();
         }
     };
 
@@ -125,16 +93,16 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
                                     <label htmlFor="sessionCode">Session Code</label>
                                 </div>
 
-                                {sessionId.trim() && !gameSession ? (
+                                {sessionId.trim() && !session ? (
                                     <Button
                                         className="btn btn-primary btn-lg"
-                                        onClick={handleButtonClick}>
+                                        onClick={createJoinSession}>
                                         <i className="fa fa-right-to-bracket"/>
                                     </Button>
                                 ) : (
                                     <Button
                                         className="btn btn-secondary btn-lg"
-                                        onClick={handleButtonClick}>
+                                        onClick={createJoinSession}>
                                         <i className="fa fa-plus"/>
                                     </Button>
                                 )}
@@ -143,7 +111,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
                     ) : (
                         <div className="input-container text-center mb-3">
                             <div className="input-group">
-                                <span className="input-group-text">Session ID: {gameSession?.getId()}</span>
+                                <span className="input-group-text">Session ID: {session?.getId()}</span>
                                 <Button
                                     className="btn btn-danger btn-lg ml-2"
                                     onClick={handleLeaveSession}>
@@ -151,7 +119,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({socket, player, onJoinGame, onLeav
                                 </Button>
                             </div>
                             {/* check if the curren user is the owner -> show start button when true */}
-                            {(gameSession?.getOwnerId() === player.getId()) ? (
+                            {(session?.getOwnerId() === player.getId()) ? (
                                 <Button
                                     className="btn btn-success btn-lg mt-3"
                                     onClick={startGame}>

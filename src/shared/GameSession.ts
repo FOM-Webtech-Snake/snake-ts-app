@@ -34,6 +34,10 @@ export class GameSession {
         return this.players[playerId];
     }
 
+    getPlayerCount(): number {
+        return Object.keys(this.players).length;
+    }
+
     getOwnerId(): string {
         return this.ownerId;
     }

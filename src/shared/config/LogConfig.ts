@@ -5,7 +5,7 @@ const provider = Log4TSProvider.createProvider("ExampleProvider", {
     /* Specify the various group expressions to match against */
     groups: [{
         expression: new RegExp("server.+"),
-        level: LogLevel.Info,
+        level: LogLevel.Debug,
     }, {
         expression: new RegExp("client.+"),
         level: LogLevel.Info,

@@ -1,13 +1,14 @@
 import React, {useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
-import {Socket} from "socket.io-client";
+import {useGameSessionSocket} from "./GameSessionSocketContext";
+
 
 interface GamePageProps {
-    socket: Socket;
 }
 
-const GamePage: React.FC<GamePageProps> = ({socket}) => {
+const GamePage: React.FC<GamePageProps> = ({}) => {
+    const {socket} = useGameSessionSocket();
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
 
