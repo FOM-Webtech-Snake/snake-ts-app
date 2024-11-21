@@ -6,7 +6,7 @@ import {Collectable} from "../../../shared/model/Collectable";
 import {Position} from "../../../shared/model/Position";
 
 const COLLECTABLE_SCALE = 0.5;
-const ARROW_SCALE = 0.2;
+const ARROW_SCALE = 0.1;
 
 export class PhaserCollectable extends Collectable {
 
