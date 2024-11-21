@@ -290,13 +290,16 @@ export class Snake {
 
     updateFromData(data: any): void {
         this.speed = data.speed;
-        this.direction = data.direction;
-        //this.directionLock = data.directionLock;
-        //this.justReversed = data.justReversed;
-        this.primaryColor = data.primaryColor;
-        //this.darkColor = data.darkColor;
-        //this.lightColor = data.lightColor;
-        //this.lastPositions = data.lastPositions.map((pos: any) => new Position(pos.x, pos.y));
+
+        if (this.scale != data.scale) {
+            this.setScale(data.scale);
+        }
+        if (this.direction != data.direction) {
+            this.setDirection(data.direction);
+        }
+        if (this.primaryColor != data.primaryColor) {
+            this.setPrimaryColor(data.primaryColor);
+        }
 
         const currentBodyLength = this.body.getLength();
         const dataBodyLength = data.body.length;
@@ -330,6 +333,7 @@ export class Snake {
         return JSON.stringify({
             playerId: this.playerId,
             speed: this.speed,
+            scale: this.scale,
             direction: this.direction,
             //directionLock: this.directionLock,
             //justReversed: this.justReversed,
