@@ -51,10 +51,13 @@ export class PhaserCollectable extends Collectable {
         }
     }
 
-    updateArrow(camera: Phaser.Cameras.Scene2D.Camera, playerPosition: Position) {
+    updateArrow(camera: Phaser.Cameras.Scene2D.Camera) {
         if (!this.arrow) return;
 
         const {x, y, width, height} = camera.worldView;
+        const cameraCenterX = x + width / 2;
+        const cameraCenterY = y + height / 2;
+
         const collectableX = this.position.getX();
         const collectableY = this.position.getY();
 
@@ -64,10 +67,11 @@ export class PhaserCollectable extends Collectable {
             return;
         }
 
-        // If out of bounds, calculate arrow position and angle
-        const angle = Phaser.Math.Angle.Between(playerPosition.getX(), playerPosition.getY(), collectableX, collectableY);
+        // Calculate the angle and edge point
+        const angle = Phaser.Math.Angle.Between(cameraCenterX, cameraCenterY, collectableX, collectableY);
         const edgePoint = this.getEdgePoint(angle, camera.worldView);
 
+        // Position and rotate the arrow
         this.arrow.setPosition(edgePoint.x, edgePoint.y);
         this.arrow.setRotation(angle);
         this.arrow.setVisible(true);
@@ -76,13 +80,17 @@ export class PhaserCollectable extends Collectable {
     private getEdgePoint(angle: number, worldView: Phaser.Geom.Rectangle): Phaser.Math.Vector2 {
         const {x, y, width, height} = worldView;
 
-        // Calculate edge points based on angle
-        const edgeX = x + width / 2 + Math.cos(angle) * (width / 2);
-        const edgeY = y + height / 2 + Math.sin(angle) * (height / 2);
+        // Offset to keep the arrow inside the bounds (adjust this based on arrow size)
+        const arrowWidthOffset = (this.arrow.width * this.arrow.scaleX) / 2;
+        const arrowHeightOffset = (this.arrow.height * this.arrow.scaleY) / 2;
 
-        // Clamp within the camera bounds
-        const clampedX = Phaser.Math.Clamp(edgeX, x, x + width);
-        const clampedY = Phaser.Math.Clamp(edgeY, y, y + height);
+        // Determine the edge point along the rectangle
+        const edgeX = x + width / 2 + Math.cos(angle) * (width / 2 - arrowWidthOffset);
+        const edgeY = y + height / 2 + Math.sin(angle) * (height / 2 - arrowHeightOffset);
+
+        // Clamp within the camera bounds minus the offset
+        const clampedX = Phaser.Math.Clamp(edgeX, x + arrowWidthOffset, x + width - arrowWidthOffset);
+        const clampedY = Phaser.Math.Clamp(edgeY, y + arrowHeightOffset, y + height - arrowHeightOffset);
 
         return new Phaser.Math.Vector2(clampedX, clampedY);
     }
