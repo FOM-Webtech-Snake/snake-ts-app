@@ -12,6 +12,7 @@ import {Socket} from "socket.io-client";
 import {MultiplayerManager} from "../MultiplayerManager";
 import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/GameSessionConfig";
 import {GameSession} from "../../../shared/GameSession";
+import {ArrowManager} from "../ui/ArrowManager";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -111,6 +112,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     update() {
+        ArrowManager.getInstance().reset();
+
         if (this.inputHandler) {
             Object.keys(this.inputHandler).forEach(handler => {
                 this.inputHandler[handler].handleInput();

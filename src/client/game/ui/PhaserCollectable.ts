@@ -4,9 +4,10 @@ import {childCollectables} from "../../../shared/model/Collectables";
 import {Snake} from "./Snake";
 import {Collectable} from "../../../shared/model/Collectable";
 import {Position} from "../../../shared/model/Position";
+import {ArrowManager} from "./ArrowManager";
 
 const COLLECTABLE_SCALE = 0.5;
-const ARROW_SCALE = 0.1;
+const ARROW_SCALE = 0.07;
 
 export class PhaserCollectable extends Collectable {
 
@@ -71,10 +72,20 @@ export class PhaserCollectable extends Collectable {
         const angle = Phaser.Math.Angle.Between(cameraCenterX, cameraCenterY, collectableX, collectableY);
         const edgePoint = this.getEdgePoint(angle, camera.worldView);
 
+        const arrowManager = ArrowManager.getInstance();
+        // Check for overlaps with other arrows
+        if (arrowManager.isOverlapping(edgePoint)) {
+            this.arrow.setVisible(false); // Hide the arrow if it overlaps with another
+            return;
+        }
+
         // Position and rotate the arrow
         this.arrow.setPosition(edgePoint.x, edgePoint.y);
         this.arrow.setRotation(angle);
         this.arrow.setVisible(true);
+
+        // register the arrow position to prevent overlaps
+        arrowManager.addArrowPosition(edgePoint);
     }
 
     private getEdgePoint(angle: number, worldView: Phaser.Geom.Rectangle): Phaser.Math.Vector2 {
