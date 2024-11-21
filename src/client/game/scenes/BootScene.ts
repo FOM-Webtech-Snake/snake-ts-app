@@ -10,6 +10,7 @@ import SplitImage from '../../../../public/assets/split.png';
 import LogoImage from '../../../../public/assets/logo.png';
 import SnakeBody from '../../../../public/assets/snakeBody.png';
 import SnakeFace from '../../../../public/assets/snakeFace.png';
+import CollectableArrow from '../../../../public/assets/collectable_arrow.png';
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -40,6 +41,7 @@ export class BootScene extends Phaser.Scene {
         this.load.image('logo', LogoImage);
         this.load.image('snake_body', SnakeBody);
         this.load.image('snake_face', SnakeFace);
+        this.load.image('collectable_arrow', CollectableArrow);
     }
 
     create() {

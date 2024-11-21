@@ -123,13 +123,17 @@ export class GameScene extends Phaser.Scene {
 
             if (this.collectables) {
                 Object.keys(this.collectables).forEach(uuid => {
-                    if (this.collectables[uuid] && this.collectables[uuid].checkCollision(this.snakes[this.playerId])) {
-                        this.multiplayerManager.emitCollect(uuid, (success) => {
-                            if (success) {
-                                this.collectables[uuid].applyAndDestroy(this.snakes[this.playerId]);
-                            }
-                            this.removeCollectable(uuid);
-                        });
+                    // make sure the collectable is still there. it can happen, that it has been removed async by the server
+                    if (this.collectables[uuid]) {
+                        this.collectables[uuid].updateArrow(this.cameras.main, this.snakes[this.playerId].getHeadPosition());
+                        if (this.collectables[uuid].checkCollision(this.snakes[this.playerId])) {
+                            this.multiplayerManager.emitCollect(uuid, (success) => {
+                                if (success) {
+                                    this.collectables[uuid].applyAndDestroy(this.snakes[this.playerId]);
+                                }
+                                this.removeCollectable(uuid);
+                            });
+                        }
                     }
                 });
             }

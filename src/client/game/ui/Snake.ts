@@ -81,6 +81,10 @@ export class Snake {
         return this.head;
     }
 
+    getHeadPosition(): Position {
+        return new Position(this.head.x, this.head.y);
+    }
+
     getPlayerId() {
         return this.playerId;
     }
