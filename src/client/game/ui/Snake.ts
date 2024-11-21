@@ -4,9 +4,9 @@ import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {ColorUtil} from "../util/ColorUtil";
 import {Position} from "../../../shared/model/Position";
 
-const SNAKE_SCALE: number = 0.15;
 const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
+const DEFAULT_SNAKE_SCALE: number = 0.15;
 const DEFAULT_SNAKE_LENGTH: number = 4;
 const DEFAULT_SNAKE_SPEED: number = 100;
 const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
@@ -18,6 +18,7 @@ export class Snake {
 
     // movement
     private speed: number;
+    private scale: number;
     private direction: DirectionEnum;
     private directionLock: boolean;
     private justReversed: boolean;
@@ -44,6 +45,7 @@ export class Snake {
 
         // init movement
         this.speed = DEFAULT_SNAKE_SPEED;
+        this.scale = DEFAULT_SNAKE_SCALE;
         this.direction = DEFAULT_SNAKE_DIRECTION;
         this.directionLock = false;
         this.justReversed = false;
@@ -65,7 +67,7 @@ export class Snake {
 
         // create the face
         this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
-        this.face.setScale(SNAKE_SCALE);
+        this.face.setScale(this.scale);
         this.face.setDepth(2);
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
 
@@ -116,6 +118,24 @@ export class Snake {
         this.speed += value;
     }
 
+    changeScaleBy(value: number): void {
+        const newScale = this.scale + value;
+        if (newScale <= 0) {
+            throw new Error("new scale must be greater 0");
+        }
+        this.setScale(newScale);
+    }
+
+    setScale(newScale: number): void {
+        this.scale = newScale;
+        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+
+        for (let i = 0; i < bodyParts.length; i++) {
+            const bodyPart = bodyParts[i];
+            bodyPart.setScale(this.scale);
+        }
+    }
+
     splitInHalf(): void {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
         const halfLength = Math.ceil(bodyParts.length / 2);
@@ -135,7 +155,7 @@ export class Snake {
         }
     }
 
-    increase(){
+    increase() {
         const spawnPos: Position = new Position(this.head.x, this.head.y);
         this.addSegmentToBody(spawnPos, true);
     }
@@ -152,7 +172,7 @@ export class Snake {
 
     private addSegmentToBody(pos: Position, lockPosition: boolean = false) {
         const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getY(), "snake_body");
-        bodyPart.setScale(SNAKE_SCALE);
+        bodyPart.setScale(this.scale);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
         bodyPart.body.allowDrag = false;
