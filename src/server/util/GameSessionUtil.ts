@@ -17,7 +17,9 @@ export class GameSessionUtil {
             console.log(`Starting game session ${session.getId()}`);
             session.setGameState(GameStateEnum.RUNNING);
 
-            io.to(session.getId()).emit(SocketEvents.GameControl.START_GAME);
+            io.to(session.getId()).emit(SocketEvents.GameControl.START_GAME, (callback) => {
+                console.log("game session start confirmed", callback);
+            });
 
             /* Initialize Collectables Spawner */
             const spawner = SpawnerDaemon.getInstance();
