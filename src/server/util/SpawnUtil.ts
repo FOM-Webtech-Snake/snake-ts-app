@@ -5,6 +5,7 @@ import {Collectable} from "../../shared/model/Collectable";
 import {PositionUtil} from "./PositionUtil";
 import {ChildCollectableTypeEnum} from "../../shared/constants/CollectableTypeEnum";
 import {getLogger} from "../../shared/config/LogConfig";
+import {childCollectables} from "../../shared/model/Collectables";
 
 const log = getLogger("server.util.SpawnUtil");
 
@@ -37,18 +38,27 @@ export class SpawnUtil {
 
     static createCollectable(session: GameSession) {
         const position = PositionUtil.randomPosition(session.getConfig());
-        return new Collectable(null, ChildCollectableTypeEnum.FOOD, position);
+        const randomType = this.getRandomCollectableType();
+        return new Collectable(null, randomType, position);
     }
 
-    // TODO
-    static spawnCollectables(session: GameSession): void {
-        const collectables: Record<string, Collectable> = {};
+    static getRandomCollectableType(): ChildCollectableTypeEnum {
+        const weightedPool: { type: ChildCollectableTypeEnum; weight: number }[] = Object.values(childCollectables)
+            .map(({type, spawnChance}) => ({type, weight: spawnChance}));
 
-        /* TODO add more than one collectable */
-        const collectable = this.createCollectable(session);
-        collectables[collectable.getId()] = collectable;
+        const totalWeight = weightedPool.reduce((sum, item) => sum + item.weight, 0);
+        const randomWeight = Math.random() * totalWeight;
 
-        session.addCollectables(collectables);
+        let cumulativeWeight = 0;
+        for (const item of weightedPool) {
+            cumulativeWeight += item.weight;
+            if (randomWeight <= cumulativeWeight) {
+                return item.type;
+            }
+        }
+
+        // Fallback in case no collectable is selected
+        return ChildCollectableTypeEnum.FOOD;
     }
 
 }

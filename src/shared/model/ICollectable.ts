@@ -6,8 +6,9 @@ export interface ChildCollectable {
     type: ChildCollectableTypeEnum;
     parent: ParentCollectableTypeEnum;
     value: any;
-    imageKey: string,
+    imageKey: string;
     func: (snake: Snake) => void; // Lambda function
+    spawnChance: number;
 }
 
 export interface ParentCollectable {

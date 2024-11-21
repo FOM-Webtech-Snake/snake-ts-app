@@ -8,7 +8,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.FOOD,
         value: 1,
         imageKey: "food_item_apple",
-        func: snake => snake.increase()// TODO snake.increase();
+        func: snake => snake.increase(),
+        spawnChance: 50 // 50% chance for FOOD
     },
     [ChildCollectableTypeEnum.GROWTH]: {
         name: "growth",
@@ -16,7 +17,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_sprout",
-        func: snake => console.log("growth")// TODO snake.grow();
+        func: snake => console.log("growth"),// TODO snake.grow();
+        spawnChance: 10
     },
     [ChildCollectableTypeEnum.SHRINK]: {
         name: "shrink",
@@ -24,7 +26,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_magnifying_glass",
-        func: snake => console.log("shrink")// TODO snake.shrink();
+        func: snake => console.log("shrink"),// TODO snake.shrink();
+        spawnChance: 10
     },
     [ChildCollectableTypeEnum.FAST]: {
         name: "fast",
@@ -32,7 +35,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_feather",
-        func: snake => snake.changeSpeedBy(+50)
+        func: snake => snake.changeSpeedBy(+50),
+        spawnChance: 10
     },
     [ChildCollectableTypeEnum.SLOW]: {
         name: "slow",
@@ -40,7 +44,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_snail",
-        func: snake => snake.changeSpeedBy(-50)
+        func: snake => snake.changeSpeedBy(-50),
+        spawnChance: 10
     },
     [ChildCollectableTypeEnum.SPLIT]: {
         name: "split",
@@ -48,7 +53,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_split",
-        func: snake => snake.splitInHalf()
+        func: snake => snake.splitInHalf(),
+        spawnChance: 5
     },
     [ChildCollectableTypeEnum.DOUBLE]: {
         name: "double",
@@ -56,7 +62,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_orange",
-        func: snake => snake.doubleLength()
+        func: snake => snake.doubleLength(),
+        spawnChance: 3
     },
     [ChildCollectableTypeEnum.REVERSE]: {
         name: "reverse",
@@ -64,7 +71,8 @@ export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectabl
         parent: ParentCollectableTypeEnum.POWER_UP,
         value: 1,
         imageKey: "power_up_u_turn",
-        func: snake => snake.reverseDirection()
+        func: snake => snake.reverseDirection(),
+        spawnChance: 2
     }
 };
 
