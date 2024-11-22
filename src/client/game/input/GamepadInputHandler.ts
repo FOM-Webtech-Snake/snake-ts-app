@@ -26,6 +26,13 @@ export class GamepadInputHandler extends InputHandler {
             return;
         }
 
+        if (this.gamepad.A) {
+            this.startGame();
+        }
+        if (this.gamepad.buttons[9]?.pressed) {
+            this.togglePause();
+        }
+
         if (this.gamepad.left) {
             this.snake.setDirection(DirectionEnum.LEFT);
         } else if (this.gamepad.right) {
