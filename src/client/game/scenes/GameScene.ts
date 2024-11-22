@@ -67,10 +67,6 @@ export class GameScene extends Phaser.Scene {
         this.background = new Background(this);
         this.overlay = new Overlay(this);
 
-        // TODO starting overlay delayed
-        //this.overlay.show("Game is starting...");
-        //this.time.delayedCall(2000, () => this.overlay.hide());
-
         // game objects
         const localSnake = new Snake(this, this.multiplayerManager.getPlayerId(), ColorUtil.getRandomColor(), new Position(300, 300));
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
@@ -110,7 +106,10 @@ export class GameScene extends Phaser.Scene {
             this.overlay.hide();
         } else if (this.state === GameStateEnum.READY) {
             this.physics.world.pause();
-            this.overlay.showPressKeyToAction("space", "start");
+            this.overlay.showPressKeyToAction("space, tap the screen or A an a controller", "start");
+        } else if (this.state === GameStateEnum.PAUSED) {
+            this.physics.world.pause();
+            this.overlay.showPressKeyToAction("p, long tap the screen or start on a controller", "resume");
         } else {
             this.physics.world.pause();
             this.overlay.show(`current state: ${this.state}`);

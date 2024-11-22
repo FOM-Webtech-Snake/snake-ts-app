@@ -5,18 +5,28 @@ const log = getLogger("client.game.ui.Overlay");
 
 export class Overlay {
     private scene: Phaser.Scene;
+    private backgroundObject: Phaser.GameObjects.Rectangle;
     private textObject: Phaser.GameObjects.Text;
 
     constructor(scene: Phaser.Scene, defaultMessage: string = "") {
         this.scene = scene;
 
+        this.backgroundObject = this.scene.add.rectangle(this.scene.cameras.main.width / 2,
+            this.scene.cameras.main.height / 2, this.scene.cameras.main.width,
+            this.scene.cameras.main.height, 0x000000, 0.5)
+            .setOrigin(0.5)
+            .setScrollFactor(0)
+            .setVisible(false)
+            .setDepth(99);
+
         this.textObject = this.scene.add.text(
             this.scene.cameras.main.width / 2,
             this.scene.cameras.main.height / 2,
             defaultMessage,
-            {fontSize: '32px', color: '#fff', backgroundColor: '#000'}
+            {fontSize: '32px', color: '#fff', align: 'center'}
         )
             .setOrigin(0.5)
+            .setWordWrapWidth(this.scene.cameras.main.width * 0.8)
             .setScrollFactor(0) // Ensures it stays fixed on the camera
             .setVisible(false)
             .setDepth(99);
@@ -28,6 +38,7 @@ export class Overlay {
      */
     public show(message: string): void {
         log.info("show triggered");
+        this.backgroundObject.setVisible(true);
         this.textObject.setText(message);
         this.textObject.setVisible(true);
     }
@@ -47,6 +58,7 @@ export class Overlay {
      */
     public hide(): void {
         log.info("hide triggered");
+        this.backgroundObject.setVisible(false);
         this.textObject.setVisible(false);
     }
 }
