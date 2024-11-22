@@ -85,11 +85,10 @@ const configureServerSocket = (io: Server) => {
 
             function removePlayerFromSession() {
                 session.removePlayer(socket.id);
+                socket.to(session.getId()).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
                 if (!session.hasPlayers()) {
                     log.info(`Session ${session.getId()} has no players left, deleting session`);
                     sessionManager.deleteSession(session.getId());
-                } else {
-                    socket.to(session.getId()).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
                 }
             }
         }

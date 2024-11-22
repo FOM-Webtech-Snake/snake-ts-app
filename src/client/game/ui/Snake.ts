@@ -30,8 +30,8 @@ export class Snake {
 
     // physics
     private scene: Phaser.Scene;
-    private readonly head: Phaser.Physics.Arcade.Sprite;
-    private readonly face: Phaser.Physics.Arcade.Sprite;
+    private head: Phaser.Physics.Arcade.Sprite;
+    private face: Phaser.Physics.Arcade.Sprite;
     private headGroup: Phaser.Physics.Arcade.Group;
     private body: Phaser.Physics.Arcade.Group;
     private lockedSegments: Phaser.Physics.Arcade.Group;
@@ -172,6 +172,29 @@ export class Snake {
 
         // set justReversed to true, to temp. disable self collision detection
         this.justReversed = true;
+    }
+
+    destroy(): void {
+        if (this.body) {
+            this.body.destroy(true);
+            this.body = null;
+        }
+        if (this.headGroup) {
+            this.headGroup.destroy(true);
+            this.headGroup = null;
+        }
+        if (this.head) {
+            this.head.destroy(true);
+            this.head = null;
+        }
+        if (this.face) {
+            this.face.destroy(true);
+            this.face = null;
+        }
+        if (this.lockedSegments) {
+            this.lockedSegments.destroy(true);
+            this.lockedSegments = null;
+        }
     }
 
     private addSegmentToBody(pos: Position, lockPosition: boolean = false) {

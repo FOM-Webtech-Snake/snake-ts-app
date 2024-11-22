@@ -5,6 +5,7 @@ import {GameSession} from "../../shared/GameSession";
 import {Snake} from "./ui/Snake";
 import {getLogger} from "../../shared/config/LogConfig";
 import {CollectableManager} from "./ui/CollectableManager";
+import {PlayerManager} from "./ui/PlayerManager";
 
 const log = getLogger("client.game.MultiplayerManager");
 
@@ -13,11 +14,17 @@ export class MultiplayerManager {
     private scene: GameScene;
     private socket: Socket;
     private collectableManager: CollectableManager;
+    private playerManager: PlayerManager;
 
-    constructor(scene: GameScene, socket: Socket, collectableManager: CollectableManager) {
+    constructor(
+        scene: GameScene,
+        socket: Socket,
+        collectableManager: CollectableManager,
+        playerManager: PlayerManager) {
         this.scene = scene;
         this.socket = socket;
         this.collectableManager = collectableManager;
+        this.playerManager = playerManager;
         this.setup();
     }
 
@@ -27,11 +34,6 @@ export class MultiplayerManager {
         this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (session: string) {
             const gameSession = GameSession.fromData(session);
             self.scene.handleGameSession(gameSession);
-        });
-
-        this.socket.on(SocketEvents.Connection.DISCONNECT, function (socket) {
-            log.debug("disconnected", socket);
-            // TODO self.scene.playerId = DEFAULT_PLAYER_1_ID;
         });
 
         this.socket.on(SocketEvents.SessionState.NEW_PLAYER, function (playerInfo) {
@@ -66,7 +68,8 @@ export class MultiplayerManager {
         });
 
         this.socket.on(SocketEvents.SessionState.DISCONNECTED, function (playerId) {
-            log.debug("player disconnected", playerId);
+            log.info("player disconnected", playerId);
+            self.playerManager.removePlayer(playerId);
             // TODO self.scene.removePlayer(playerId);
         });
 

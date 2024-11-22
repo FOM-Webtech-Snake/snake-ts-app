@@ -13,6 +13,7 @@ import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/Ga
 import {GameSession} from "../../../shared/GameSession";
 import {ArrowManager} from "../ui/ArrowManager";
 import {CollectableManager} from "../ui/CollectableManager";
+import {PlayerManager} from "../ui/PlayerManager";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -27,8 +28,8 @@ export class GameScene extends Phaser.Scene {
     private config: GameSessionConfig;
     private multiplayerManager: MultiplayerManager
     private collectableManager: CollectableManager;
+    private playerManager: PlayerManager;
     private playerId: string;
-    private snakes: Record<string, Snake>;
 
     private inputHandler: Record<InputTypeEnum, InputHandler>;
 
@@ -39,8 +40,8 @@ export class GameScene extends Phaser.Scene {
         this.config = DEFAULT_GAME_SESSION_CONFIG;
         this.multiplayerManager = null;
         this.collectableManager = null;
+        this.playerManager = null;
         this.playerId = null;
-        this.snakes = {} as Record<string, Snake>;
         this.inputHandler = {} as Record<InputTypeEnum, InputHandler>;
     }
 
@@ -52,7 +53,8 @@ export class GameScene extends Phaser.Scene {
 
         // setup manager
         this.collectableManager = new CollectableManager(this);
-        this.multiplayerManager = new MultiplayerManager(this, this.socket, this.collectableManager);
+        this.playerManager = new PlayerManager();
+        this.multiplayerManager = new MultiplayerManager(this, this.socket, this.collectableManager, this.playerManager);
 
         // setup world & camera
         this.physics.world.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // push the world bounds to (e.g. 1600x1200px)
@@ -62,7 +64,7 @@ export class GameScene extends Phaser.Scene {
         // game objects
         const localSnake = new Snake(this, this.playerId, ColorUtil.getRandomColor(), new Position(300, 300));
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
-        this.snakes[this.playerId] = localSnake;
+        this.playerManager.addPlayer(this.playerId, localSnake);
 
         // input handler
         const inputHandler = new KeyboardInputHandler(this, localSnake, false);
@@ -92,12 +94,13 @@ export class GameScene extends Phaser.Scene {
     }
 
     handleRemoteSnake(snake: string) {
-        let parsedSnake = JSON.parse(snake);
-        if (this.snakes[parsedSnake?.playerId]) {
-            this.snakes[parsedSnake?.playerId].updateFromData(parsedSnake)
+        const parsedSnake = JSON.parse(snake);
+        const player = this.playerManager.getPlayer(parsedSnake?.playerId);
+        if (player) {
+            this.playerManager.updatePlayer(parsedSnake.playerId, parsedSnake);
         } else {
             const newSnake = Snake.fromData(this, parsedSnake);
-            this.snakes[newSnake.getPlayerId()] = newSnake;
+            this.playerManager.addPlayer(parsedSnake.playerId, newSnake);
         }
     }
 
@@ -110,19 +113,16 @@ export class GameScene extends Phaser.Scene {
             })
         }
 
-        if (this.snakes && this.snakes[this.playerId]) {
-            const playerSnake = this.snakes[this.playerId];
-            playerSnake.update();
-
-            this.multiplayerManager.emitSnake(this.snakes[this.playerId])
+        const player = this.playerManager.getPlayer(this.playerId);
+        if (player) {
+            player.update();
+            this.multiplayerManager.emitSnake(player)
 
             this.collectableManager.update(
-                playerSnake,
+                player,
                 this.cameras.main,
-                (uuid: string) => this.multiplayerManager.handleCollectableCollision(uuid, playerSnake)
+                (uuid: string) => this.multiplayerManager.handleCollectableCollision(uuid, player)
             );
         }
-
-
     }
 }
