@@ -36,6 +36,9 @@ class SpawnerDaemon {
         const interval = setInterval(() => {
             if (session.getGameState() === GameStateEnum.RUNNING) {
                 SpawnUtil.spawnNewCollectableWithDelay(io, session);
+            } else if (session.getGameState() === GameStateEnum.PAUSED
+                || session.getGameState() === GameStateEnum.WAITING_FOR_PLAYERS) {
+                // do nothing, just wait for the status to change
             } else {
                 log.warn(`Session ${session.getId()} is not running. Stopping spawner.`);
                 this.stopSpawner(session.getId());
