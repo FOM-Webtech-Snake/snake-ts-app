@@ -53,7 +53,7 @@ export class MultiplayerManager {
 
         this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
             log.debug("snake movement", snake);
-            self.scene.handleRemoteSnake(snake);
+            self.handleRemoteSnake(snake);
         });
 
         this.socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
@@ -74,6 +74,39 @@ export class MultiplayerManager {
         });
 
         this.emitGetConfiguration();
+    }
+
+    public getPlayerId(): string {
+        return this.socket.id;
+    }
+
+    public handleRemoteSnake(snakeData: string) {
+        const parsedData = JSON.parse(snakeData);
+        const player = this.playerManager.getPlayer(parsedData.playerId);
+        if (player) {
+            this.playerManager.updatePlayer(parsedData.playerId, parsedData);
+        } else {
+            const newSnake = Snake.fromData(this.scene, parsedData);
+            this.playerManager.addPlayer(parsedData.playerId, newSnake);
+        }
+    }
+
+    public syncPlayerState() {
+        const player = this.playerManager.getPlayer(this.getPlayerId());
+        if (player) {
+            this.emitSnake(player);
+        }
+    }
+
+    public handleCollisionUpdate() {
+        const player = this.playerManager.getPlayer(this.getPlayerId());
+        if (player) {
+            this.collectableManager.update(
+                player,
+                this.scene.cameras.main,
+                (uuid: string) => this.handleCollectableCollision(uuid, player)
+            );
+        }
     }
 
     public handleCollectableCollision(uuid: string, playerSnake: Snake): void {

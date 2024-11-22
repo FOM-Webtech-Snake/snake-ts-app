@@ -29,7 +29,6 @@ export class GameScene extends Phaser.Scene {
     private multiplayerManager: MultiplayerManager
     private collectableManager: CollectableManager;
     private playerManager: PlayerManager;
-    private playerId: string;
 
     private inputHandler: Record<InputTypeEnum, InputHandler>;
 
@@ -41,15 +40,12 @@ export class GameScene extends Phaser.Scene {
         this.multiplayerManager = null;
         this.collectableManager = null;
         this.playerManager = null;
-        this.playerId = null;
         this.inputHandler = {} as Record<InputTypeEnum, InputHandler>;
     }
 
     create() {
         // get necessary global properties
         this.socket = this.registry.get(GlobalPropKeyEnum.SOCKET);
-
-        this.playerId = this.socket.id;
 
         // setup manager
         this.collectableManager = new CollectableManager(this);
@@ -62,9 +58,9 @@ export class GameScene extends Phaser.Scene {
         this.background = new Background(this);
 
         // game objects
-        const localSnake = new Snake(this, this.playerId, ColorUtil.getRandomColor(), new Position(300, 300));
+        const localSnake = new Snake(this, this.multiplayerManager.getPlayerId(), ColorUtil.getRandomColor(), new Position(300, 300));
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
-        this.playerManager.addPlayer(this.playerId, localSnake);
+        this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
 
         // input handler
         const inputHandler = new KeyboardInputHandler(this, localSnake, false);
@@ -93,17 +89,6 @@ export class GameScene extends Phaser.Scene {
         this.background = new Background(this);
     }
 
-    handleRemoteSnake(snake: string) {
-        const parsedSnake = JSON.parse(snake);
-        const player = this.playerManager.getPlayer(parsedSnake?.playerId);
-        if (player) {
-            this.playerManager.updatePlayer(parsedSnake.playerId, parsedSnake);
-        } else {
-            const newSnake = Snake.fromData(this, parsedSnake);
-            this.playerManager.addPlayer(parsedSnake.playerId, newSnake);
-        }
-    }
-
     update() {
         ArrowManager.getInstance().reset();
 
@@ -113,16 +98,9 @@ export class GameScene extends Phaser.Scene {
             })
         }
 
-        const player = this.playerManager.getPlayer(this.playerId);
-        if (player) {
-            player.update();
-            this.multiplayerManager.emitSnake(player)
+        this.playerManager.getPlayer(this.multiplayerManager.getPlayerId()).update();
 
-            this.collectableManager.update(
-                player,
-                this.cameras.main,
-                (uuid: string) => this.multiplayerManager.handleCollectableCollision(uuid, player)
-            );
-        }
+        this.multiplayerManager.syncPlayerState();
+        this.multiplayerManager.handleCollisionUpdate();
     }
 }
