@@ -1,9 +1,6 @@
 import Phaser from "phaser";
 import {Background} from "../ui/Background";
 import {Snake} from "../ui/Snake";
-import {KeyboardInputHandler} from "../input/KeyboardInputHandler";
-import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
-import {InputHandler} from "../input/InputHandler";
 import {ColorUtil} from "../util/ColorUtil";
 import {Position} from "../../../shared/model/Position";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
@@ -14,6 +11,7 @@ import {GameSession} from "../../../shared/GameSession";
 import {ArrowManager} from "../ui/ArrowManager";
 import {CollectableManager} from "../ui/CollectableManager";
 import {PlayerManager} from "../ui/PlayerManager";
+import {InputManager} from "../input/InputManager";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -29,8 +27,7 @@ export class GameScene extends Phaser.Scene {
     private multiplayerManager: MultiplayerManager
     private collectableManager: CollectableManager;
     private playerManager: PlayerManager;
-
-    private inputHandler: Record<InputTypeEnum, InputHandler>;
+    private inputManager: InputManager;
 
     constructor() {
         super(sceneConfig);
@@ -40,7 +37,7 @@ export class GameScene extends Phaser.Scene {
         this.multiplayerManager = null;
         this.collectableManager = null;
         this.playerManager = null;
-        this.inputHandler = {} as Record<InputTypeEnum, InputHandler>;
+        this.inputManager = null;
     }
 
     create() {
@@ -62,9 +59,8 @@ export class GameScene extends Phaser.Scene {
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
 
-        // input handler
-        const inputHandler = new KeyboardInputHandler(this, localSnake, false);
-        this.inputHandler[inputHandler.getType()] = inputHandler;
+        // input manager
+        this.inputManager = new InputManager(this, localSnake)
     }
 
     handleGameSession(session: GameSession) {
@@ -91,15 +87,8 @@ export class GameScene extends Phaser.Scene {
 
     update() {
         ArrowManager.getInstance().reset();
-
-        if (this.inputHandler) {
-            Object.keys(this.inputHandler).forEach(handler => {
-                this.inputHandler[handler].handleInput();
-            })
-        }
-
+        this.inputManager.handleInput();
         this.playerManager.getPlayer(this.multiplayerManager.getPlayerId()).update();
-
         this.multiplayerManager.syncPlayerState();
         this.multiplayerManager.handleCollisionUpdate();
     }
