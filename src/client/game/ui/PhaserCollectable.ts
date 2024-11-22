@@ -4,7 +4,7 @@ import {childCollectables} from "../../../shared/model/Collectables";
 import {Snake} from "./Snake";
 import {Collectable} from "../../../shared/model/Collectable";
 import {Position} from "../../../shared/model/Position";
-import {ArrowManager} from "./ArrowManager";
+import {ArrowManager} from "./manager/ArrowManager";
 
 const COLLECTABLE_SCALE = 0.5;
 const ARROW_SCALE = 0.07;

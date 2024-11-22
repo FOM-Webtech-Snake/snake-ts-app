@@ -8,9 +8,9 @@ import {Socket} from "socket.io-client";
 import {MultiplayerManager} from "../MultiplayerManager";
 import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/GameSessionConfig";
 import {GameSession} from "../../../shared/GameSession";
-import {ArrowManager} from "../ui/ArrowManager";
-import {CollectableManager} from "../ui/CollectableManager";
-import {PlayerManager} from "../ui/PlayerManager";
+import {ArrowManager} from "../ui/manager/ArrowManager";
+import {CollectableManager} from "../ui/manager/CollectableManager";
+import {PlayerManager} from "../ui/manager/PlayerManager";
 import {InputManager} from "../input/InputManager";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {

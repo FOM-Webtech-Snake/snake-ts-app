@@ -4,8 +4,8 @@ import {GameScene} from "./scenes/GameScene";
 import {GameSession} from "../../shared/GameSession";
 import {Snake} from "./ui/Snake";
 import {getLogger} from "../../shared/config/LogConfig";
-import {CollectableManager} from "./ui/CollectableManager";
-import {PlayerManager} from "./ui/PlayerManager";
+import {CollectableManager} from "./ui/manager/CollectableManager";
+import {PlayerManager} from "./ui/manager/PlayerManager";
 
 const log = getLogger("client.game.MultiplayerManager");
 
@@ -32,13 +32,10 @@ export class MultiplayerManager {
         const self = this;
 
         this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (session: string) {
+            log.debug("received session");
+            log.trace(`session: ${session}`);
             const gameSession = GameSession.fromData(session);
             self.scene.handleGameSession(gameSession);
-        });
-
-        this.socket.on(SocketEvents.SessionState.NEW_PLAYER, function (playerInfo) {
-            log.debug("newPlayer", playerInfo);
-            // TODO self.scene.addPlayerSnake(self.scene, playerInfo);
         });
 
         this.socket.on(SocketEvents.GameStatus.RESUMED_GAME, function () {
@@ -52,7 +49,8 @@ export class MultiplayerManager {
         });
 
         this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
-            log.debug("snake movement", snake);
+            log.debug("snake movement");
+            log.trace(`snake: ${snake}`);
             self.handleRemoteSnake(snake);
         });
 
@@ -62,13 +60,14 @@ export class MultiplayerManager {
         });
 
         this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item: any) {
-            log.debug("spawnNewItem", item);
+            log.debug("spawnNewItem");
+            log.trace(`item: ${item}`);
             self.collectableManager.spawnCollectable(item);
             // TODO self.scene.addCollectable(self.scene, item);
         });
 
         this.socket.on(SocketEvents.SessionState.DISCONNECTED, function (playerId) {
-            log.info("player disconnected", playerId);
+            log.debug("player disconnected", playerId);
             self.playerManager.removePlayer(playerId);
             // TODO self.scene.removePlayer(playerId);
         });

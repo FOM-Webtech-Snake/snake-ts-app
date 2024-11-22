@@ -1,5 +1,8 @@
-import {Snake} from "./Snake";
-import {PhaserCollectable} from "./PhaserCollectable";
+import {Snake} from "../Snake";
+import {PhaserCollectable} from "../PhaserCollectable";
+import {getLogger} from "../../../../shared/config/LogConfig";
+
+const log = getLogger("client.game.ui.manager.CollectableManager");
 
 export class CollectableManager {
     private scene: Phaser.Scene;
@@ -11,11 +14,13 @@ export class CollectableManager {
     }
 
     spawnCollectable(data: any): void {
+        log.debug("spawnCollectable", data);
         const newCollectable = PhaserCollectable.fromData(this.scene, data);
         this.collectables[newCollectable.getId()] = newCollectable;
     }
 
     removeCollectable(uuid: string): void {
+        log.debug("removeCollectable", uuid);
         const collectable = this.collectables[uuid];
         if (collectable) {
             collectable.destroy();
@@ -24,11 +29,13 @@ export class CollectableManager {
     }
 
     getCollectable(uuid: string): PhaserCollectable | null {
+        log.debug("getCollectable", uuid);
         return this.collectables[uuid] || null;
     }
 
     // update all collectables (incl. arrows and collisions)
     update(snake: Snake, camera: Phaser.Cameras.Scene2D.Camera, onCollect: (uuid: string) => void): void {
+        log.debug("updating collectables");
         Object.keys(this.collectables).forEach(uuid => {
             const collectable = this.collectables[uuid];
 
@@ -45,8 +52,8 @@ export class CollectableManager {
         });
     }
 
-    // Clear all collectables
     clear(): void {
+        log.debug("clear all collectables");
         Object.values(this.collectables).forEach(collectable => collectable?.destroy());
         this.collectables = {};
     }
