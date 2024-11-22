@@ -3,7 +3,9 @@ import {Server as SocketIOServer} from 'socket.io'
 import dotenv from 'dotenv';
 import app from "./server";
 import configureServerSocket from "./sockets/socket";
-import {GameSession} from "../shared/GameSession";
+import {getLogger} from "../shared/config/LogConfig";
+
+const log = getLogger("server.index");
 
 // load environment variables
 dotenv.config();
@@ -17,5 +19,5 @@ const io = new SocketIOServer(httpServer);
 configureServerSocket(io);
 
 httpServer.listen(PORT, () => {
-    console.log(`Express is listening at port ${PORT}`);
+    log.info(`Express is listening at port ${PORT}`);
 })

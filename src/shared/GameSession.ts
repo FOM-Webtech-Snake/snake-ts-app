@@ -3,6 +3,12 @@ import {GameSessionUtil} from "../server/util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
 import {Collectable} from "./model/Collectable";
+import {Server} from "socket.io";
+import {SocketEvents} from "./constants/SocketEvents";
+import SpawnerDaemon from "../server/SpawnerDaemon";
+import {getLogger} from "./config/LogConfig";
+
+const log = getLogger("shared.GameSession");
 
 export class GameSession {
     private id: string;
@@ -84,12 +90,51 @@ export class GameSession {
         delete this.players[playerId];
     }
 
-    removeCollectable(collectableId: string): void {
-        delete this.collectables[collectableId];
+    removeCollectable(io: Server, collectableId: string): void {
+        if (this.collectables[collectableId]) {
+            delete this.collectables[collectableId];
+            io.to(this.id).emit(SocketEvents.GameEvents.ITEM_COLLECTED, collectableId);
+        }
     }
 
     hasPlayers(): boolean {
         return Object.keys(this.players).length > 0;
+    }
+
+    ready(io: Server): boolean {
+        if (this.gameState === GameStateEnum.WAITING_FOR_PLAYERS) {
+            log.info(`Starting game session ${this.id}`);
+
+            io.to(this.id).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err) => {
+                if (err) {
+                    log.warn(
+                        `Not all clients responded in time for session ${this.id}`
+                    );
+                    return false;
+                } else {
+                    log.debug(`game session start confirmed from all clients`);
+                    this.setGameState(GameStateEnum.READY);
+                    return true;
+                }
+            });
+        }
+
+        log.warn(`Game Session ${this.id} state not waiting for players.`);
+        return false;
+    }
+
+    start(io: Server): boolean {
+        if (this.gameState === GameStateEnum.READY) {
+            this.setGameState(GameStateEnum.RUNNING);
+
+            /* initialize collectables spawner */
+            const spawner = SpawnerDaemon.getInstance();
+            spawner.startSpawner(this, io);
+            return true;
+        }
+
+        log.warn(`Game Session ${this.id} state is not ready.`);
+        return false;
     }
 
     toJson() {

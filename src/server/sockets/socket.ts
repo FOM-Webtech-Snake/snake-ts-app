@@ -54,13 +54,13 @@ const configureServerSocket = (io: Server) => {
             socket.on(SocketEvents.GameControl.GET_READY, () => {
                 log.debug(`Game session (${session.getId()}) ready by ${socket.id}`);
                 if (session.getOwnerId() === socket.id) {
-                    GameSessionUtil.readyGame(session, io);
+                    session.ready(io);
                 }
             });
 
             socket.on(SocketEvents.GameControl.START_GAME, () => {
                 log.info(`Game session (${session.getId()}) started by ${socket.id}`);
-                if (GameSessionUtil.startGame(session, io)) {
+                if (session.start(io)) {
                     io.to(session.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, session.getGameState());
                 }
             });
@@ -82,7 +82,7 @@ const configureServerSocket = (io: Server) => {
                 const collectableById = session.getCollectableById(uuid);
                 if (collectableById) {
                     callback({status: "ok"});
-                    GameSessionUtil.removeCollectable(uuid, session, socket);
+                    session.removeCollectable(io, uuid);
                 } else {
                     callback({status: "error"});
                 }

@@ -9,6 +9,9 @@ const provider = Log4TSProvider.createProvider("Log4TSProvider", {
     }, {
         expression: new RegExp("client.+"),
         level: LogLevel.Info,
+    }, {
+        expression: new RegExp("shared.+"),
+        level: LogLevel.Info,
     }],
 });
 
