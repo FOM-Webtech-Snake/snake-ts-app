@@ -16,19 +16,15 @@ export abstract class InputHandler {
         this.type = type;
     }
 
-    getType(): InputTypeEnum {
-        return this.type;
-    }
-
     abstract handleInput(): void;
 
     togglePause(): void {
-        log.info("togglePause");
+        log.debug("togglePause");
         this.scene.togglePause();
     }
 
     startGame(): void {
-        log.info("startGame");
+        log.debug("startGame");
         this.scene.startGame();
     }
 }
