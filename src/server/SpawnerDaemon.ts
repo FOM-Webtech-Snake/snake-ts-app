@@ -48,16 +48,6 @@ class SpawnerDaemon {
         this.activeSpawners.set(session.getId(), interval);
     }
 
-    calculateSpawnInterval(playerCount: number): number {
-        if (playerCount < 3) {
-            return 5000; // 5 seconds if there are fewer snakes
-        } else if (playerCount <= 5) {
-            return 3000; // 3 seconds if there are a moderate number of snakes
-        } else {
-            return 2000; // 2 seconds for many snakes (faster spawning)
-        }
-    }
-
     stopSpawner(sessionId: string): void {
         const interval = this.activeSpawners.get(sessionId);
         if (interval) {
@@ -75,6 +65,16 @@ class SpawnerDaemon {
             log.info(`Stopped spawner for session ${sessionId}`);
         });
         this.activeSpawners.clear();
+    }
+
+    private calculateSpawnInterval(playerCount: number): number {
+        if (playerCount < 3) {
+            return 5000; // 5 seconds if there are fewer snakes
+        } else if (playerCount <= 5) {
+            return 3000; // 3 seconds if there are a moderate number of snakes
+        } else {
+            return 2000; // 2 seconds for many snakes (faster spawning)
+        }
     }
 }
 
