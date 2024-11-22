@@ -7,6 +7,7 @@ import {GameSessionUtil} from "../util/GameSessionUtil";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {Player} from "../../shared/Player";
 import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
+import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 
 const log = getLogger("server.sockets.Socket");
 const configureServerSocket = (io: Server) => {
@@ -44,18 +45,30 @@ const configureServerSocket = (io: Server) => {
             socket.join(session.getId());
             log.info(`User ${socket.id} joined session: ${session.getId()}`);
 
-            //socket.emit(SocketEvents.Connection.JOIN_SESSION, session);
-
             // Set up event handlers
             socket.on(SocketEvents.SessionState.GET_CURRENT_SESSION, () => {
                 log.debug(`Get session called by ${socket.id}`);
                 socket.emit(SocketEvents.SessionState.CURRENT_SESSION, session);
             });
 
-            socket.on(SocketEvents.GameControl.START_GAME, () => {
-                log.debug(`Game session (${session.getId()}) started by ${socket.id}`);
+            socket.on(SocketEvents.GameControl.GET_READY, () => {
+                log.debug(`Game session (${session.getId()}) ready by ${socket.id}`);
                 if (session.getOwnerId() === socket.id) {
-                    GameSessionUtil.startGame(session, io);
+                    GameSessionUtil.readyGame(session, io);
+                }
+            });
+
+            socket.on(SocketEvents.GameControl.START_GAME, () => {
+                log.info(`Game session (${session.getId()}) started by ${socket.id}`);
+                if (GameSessionUtil.startGame(session, io)) {
+                    io.to(session.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, session.getGameState());
+                }
+            });
+
+            socket.on(SocketEvents.GameControl.STATE_CHANGED, (state: GameStateEnum) => {
+                if (session.getGameState() !== state) {
+                    session.setGameState(state);
+                    io.to(session.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, state);
                 }
             });
 

@@ -10,7 +10,7 @@ import {useGameSessionSocket} from "./GameSessionSocketContext";
 
 const App: React.FC = () => {
     const {socket, isConnected} = useGameSessionSocket();
-    const [gameStarted, setGameStarted] = useState(false);
+    const [gameReady, setGameReady] = useState(false);
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player>(null);
 
@@ -20,8 +20,8 @@ const App: React.FC = () => {
         setInLobby(true); // transition to the lobby
     };
 
-    const handleGameStart = () => {
-        setGameStarted(true);
+    const handleGameReady = () => {
+        setGameReady(true);
     };
 
     return (
@@ -42,12 +42,12 @@ const App: React.FC = () => {
 
 
             <Header playerName={player?.getName()}/>
-            {gameStarted ? ( // when game was started -> show the game
+            {gameReady ? ( // when game is ready -> show the game
                 <GamePage/>
-            ) : inLobby ? ( // when in lobby, but game not started -> show lobby
+            ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
                 <LobbyPage
                     player={player!}
-                    onGameStart={handleGameStart}/>
+                    onGameReady={handleGameReady}/>
             ) : (
                 <StartPage onStart={handleStart}/>
             )}

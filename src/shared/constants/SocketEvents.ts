@@ -18,7 +18,9 @@ export namespace SocketEvents {
     }
 
     export enum GameControl {
+        STATE_CHANGED= "stateChanged",
         START_GAME = "startGame",
+        GET_READY = "getReady",
         PAUSE_GAME = "pauseGame",
         RESUME_GAME = "resumeGame",
     }

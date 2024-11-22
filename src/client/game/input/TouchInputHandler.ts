@@ -2,6 +2,7 @@ import {InputHandler} from "./InputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {Snake} from "../ui/Snake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
+import {GameScene} from "../scenes/GameScene";
 
 const SENSITIVITY = 20;
 
@@ -10,7 +11,7 @@ export class TouchInputHandler extends InputHandler {
 
     private startY: number;
 
-    constructor(scene: Phaser.Scene, snake: Snake) {
+    constructor(scene: GameScene, snake: Snake) {
         super(scene, snake, InputTypeEnum.TOUCH);
         this.startX = 0;
         this.startY = 0;

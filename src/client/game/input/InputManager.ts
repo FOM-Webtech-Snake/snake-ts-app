@@ -4,11 +4,12 @@ import {TouchInputHandler} from "./TouchInputHandler";
 import {GamepadInputHandler} from "./GamepadInputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {Snake} from "../ui/Snake";
+import {GameScene} from "../scenes/GameScene";
 
 export class InputManager {
     private handlers: Map<InputTypeEnum, InputHandler>;
 
-    constructor(scene: Phaser.Scene, snake: Snake) {
+    constructor(scene: GameScene, snake: Snake) {
         this.handlers = new Map();
 
         // Add input handlers

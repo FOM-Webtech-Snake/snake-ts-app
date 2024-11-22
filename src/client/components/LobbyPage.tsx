@@ -7,12 +7,12 @@ import {useGameSessionSocket} from "./GameSessionSocketContext";
 
 interface LobbyPageProps {
     player: Player;
-    onGameStart: () => void;
+    onGameReady: () => void;
 }
 
 const log = getLogger("client.components.LobbyPage");
 
-const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameStart}) => {
+const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const {socket, session, joinSession, createSession, leaveSession} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
     const [currentStep, setCurrentStep] = useState(1);
@@ -20,10 +20,11 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameStart}) => {
 
     useEffect(() => {
         if (socket) {
-            socket.once(SocketEvents.GameControl.START_GAME, (callback) => {
-                log.debug("Game started by host");
-                onGameStart();
-                callback({status: "ok", playerId: player.getId()})
+            socket.once(SocketEvents.GameControl.GET_READY, (callback: any) => {
+                log.debug("Getting ready, triggered by host");
+                onGameReady();
+                log.info("callback");
+                callback(); // ack the server when ready
             });
         }
     }, []);
@@ -49,7 +50,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameStart}) => {
 
     const startGame = () => {
         if (socket) {
-            socket.emit(SocketEvents.GameControl.START_GAME);
+            socket.emit(SocketEvents.GameControl.GET_READY);
         }
     }
 

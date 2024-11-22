@@ -12,19 +12,35 @@ export class GameSessionUtil {
     }
 
     /* game control methods */
-    static startGame(session: GameSession, io: Server): boolean {
+    static readyGame(session: GameSession, io: Server): boolean {
         if (session.getGameState() === GameStateEnum.WAITING_FOR_PLAYERS) {
             console.log(`Starting game session ${session.getId()}`);
+
+            io.to(session.getId()).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err) => {
+                if (err) {
+                    console.warn(
+                        `Not all clients responded in time for session ${session.getId()}`
+                    );
+                    return false;
+                } else {
+                    console.log(`game session start confirmed from all clients`);
+                    session.setGameState(GameStateEnum.READY);
+                    return true;
+                }
+            });
+        }
+
+        console.warn(`Game Session ${session.getId()} state not waiting for players.`);
+        return false;
+    }
+
+    static startGame(session: GameSession, io: Server): boolean {
+        if (session.getGameState() === GameStateEnum.READY) {
             session.setGameState(GameStateEnum.RUNNING);
 
-            io.to(session.getId()).emit(SocketEvents.GameControl.START_GAME, (callback) => {
-                console.log("game session start confirmed", callback);
-            });
-
-            /* Initialize Collectables Spawner */
+            /* initialize collectables spawner */
             const spawner = SpawnerDaemon.getInstance();
             spawner.startSpawner(session, io);
-
             return true;
         }
 

@@ -2,13 +2,16 @@ import {InputHandler} from "./InputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {Snake} from "../ui/Snake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
+import {GameScene} from "../scenes/GameScene";
 
 
 export class KeyboardInputHandler extends InputHandler {
     private useWASD: boolean;
     private cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
+    private pauseKey: Phaser.Input.Keyboard.Key;
+    private startKey: Phaser.Input.Keyboard.Key;
 
-    constructor(scene: Phaser.Scene, snake: Snake, useWASD: boolean = false) {
+    constructor(scene: GameScene, snake: Snake, useWASD: boolean = false) {
         super(scene, snake, InputTypeEnum.KEYBOARD);
 
         this.useWASD = useWASD;
@@ -26,6 +29,12 @@ export class KeyboardInputHandler extends InputHandler {
         } else {
             this.cursorKeys = this.scene.input.keyboard.createCursorKeys();
         }
+
+        this.pauseKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+        this.pauseKey.on('down', () => this.togglePause());
+
+        this.startKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.startKey.on('down', () => this.startGame());
     }
 
     handleInput(): void {

@@ -12,6 +12,9 @@ import {ArrowManager} from "../ui/manager/ArrowManager";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 import {PlayerManager} from "../ui/manager/PlayerManager";
 import {InputManager} from "../input/InputManager";
+import {GameStateEnum} from "../../../shared/constants/GameStateEnum";
+import {Overlay} from "../ui/Overlay";
+import {getLogger} from "../../../shared/config/LogConfig";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -19,9 +22,15 @@ const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     key: 'GameScene',
 };
 
+const log = getLogger("client.game.scenes.GameScene");
+
 export class GameScene extends Phaser.Scene {
 
+    private state: GameStateEnum;
+
     private background: Background;
+    private overlay: Overlay;
+
     private socket: Socket;
     private config: GameSessionConfig;
     private multiplayerManager: MultiplayerManager
@@ -31,7 +40,10 @@ export class GameScene extends Phaser.Scene {
 
     constructor() {
         super(sceneConfig);
+
         this.background = null;
+        this.overlay = null;
+
         this.socket = null;
         this.config = DEFAULT_GAME_SESSION_CONFIG;
         this.multiplayerManager = null;
@@ -53,6 +65,11 @@ export class GameScene extends Phaser.Scene {
         this.physics.world.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // push the world bounds to (e.g. 1600x1200px)
         this.cameras.main.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // setup camera not to leave the world
         this.background = new Background(this);
+        this.overlay = new Overlay(this);
+
+        // TODO starting overlay delayed
+        //this.overlay.show("Game is starting...");
+        //this.time.delayedCall(2000, () => this.overlay.hide());
 
         // game objects
         const localSnake = new Snake(this, this.multiplayerManager.getPlayerId(), ColorUtil.getRandomColor(), new Position(300, 300));
@@ -64,12 +81,44 @@ export class GameScene extends Phaser.Scene {
     }
 
     handleGameSession(session: GameSession) {
-        console.log("updating game from game session", session);
+        log.debug("updating game from game session", session);
         this.setConfig(session.getConfig());
+        this.setState(session.getGameState());
+    }
+
+    togglePause(): void {
+        log.debug("game state toggled running/pause");
+        if (this.state === GameStateEnum.RUNNING) {
+            this.multiplayerManager.emitGameStateChange(GameStateEnum.PAUSED);
+        } else if (this.state === GameStateEnum.PAUSED) {
+            this.multiplayerManager.emitGameStateChange(GameStateEnum.RUNNING);
+        }
+    }
+
+    startGame(): void {
+        log.debug(`game state ${this.state} - try to start`);
+        if (this.state === GameStateEnum.READY) {
+            this.multiplayerManager.emitGameStart();
+        }
+    }
+
+    setState(state: GameStateEnum) {
+        log.info("updating game state", state);
+        this.state = state;
+        if (this.state === GameStateEnum.RUNNING) {
+            this.physics.world.resume();
+            this.overlay.hide();
+        } else if (this.state === GameStateEnum.READY) {
+            this.physics.world.pause();
+            this.overlay.showPressKeyToAction("space", "start");
+        } else {
+            this.physics.world.pause();
+            this.overlay.show(`current state: ${this.state}`);
+        }
     }
 
     setConfig(conf: GameSessionConfig) {
-        console.log("updating game config", conf);
+        log.info("updating game config", conf);
         this.config = conf;
         this.loadGameConfig();
     }
@@ -86,6 +135,10 @@ export class GameScene extends Phaser.Scene {
     }
 
     update() {
+        if (this.state !== GameStateEnum.RUNNING) {
+            return;
+        }
+
         ArrowManager.getInstance().reset();
         this.inputManager.handleInput();
         this.playerManager.getPlayer(this.multiplayerManager.getPlayerId()).update();

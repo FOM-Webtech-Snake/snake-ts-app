@@ -6,6 +6,7 @@ import {Snake} from "./ui/Snake";
 import {getLogger} from "../../shared/config/LogConfig";
 import {CollectableManager} from "./ui/manager/CollectableManager";
 import {PlayerManager} from "./ui/manager/PlayerManager";
+import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 
 const log = getLogger("client.game.MultiplayerManager");
 
@@ -31,6 +32,8 @@ export class MultiplayerManager {
     private setup() {
         const self = this;
 
+        log.debug("setting up multiplayer");
+
         this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (session: string) {
             log.debug("received session");
             log.trace(`session: ${session}`);
@@ -38,14 +41,14 @@ export class MultiplayerManager {
             self.scene.handleGameSession(gameSession);
         });
 
-        this.socket.on(SocketEvents.GameStatus.RESUMED_GAME, function () {
-            log.debug("resumed game");
-            // TODO self.scene.resumeGame(false);
+        this.socket.on(SocketEvents.GameControl.START_GAME, () => {
+            log.debug(`game started`);
+            self.scene.setState(GameStateEnum.RUNNING);
         });
 
-        this.socket.on(SocketEvents.GameStatus.PAUSED_GAME, function () {
-            log.debug("paused game");
-            // TODO self.scene.pauseGame(false);
+        this.socket.on(SocketEvents.GameControl.STATE_CHANGED, (state: GameStateEnum) => {
+            log.info(`game state change ${state}`);
+            self.scene.setState(state);
         });
 
         this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
@@ -80,6 +83,7 @@ export class MultiplayerManager {
     }
 
     public handleRemoteSnake(snakeData: string) {
+        log.debug("received remote snake", snakeData);
         const parsedData = JSON.parse(snakeData);
         const player = this.playerManager.getPlayer(parsedData.playerId);
         if (player) {
@@ -91,6 +95,7 @@ export class MultiplayerManager {
     }
 
     public syncPlayerState() {
+        log.debug("syncPlayerState");
         const player = this.playerManager.getPlayer(this.getPlayerId());
         if (player) {
             this.emitSnake(player);
@@ -98,6 +103,7 @@ export class MultiplayerManager {
     }
 
     public handleCollisionUpdate() {
+        log.debug("collision update");
         const player = this.playerManager.getPlayer(this.getPlayerId());
         if (player) {
             this.collectableManager.update(
@@ -109,9 +115,11 @@ export class MultiplayerManager {
     }
 
     public handleCollectableCollision(uuid: string, playerSnake: Snake): void {
+        log.debug(`collectableCollision: ${uuid}`);
         const collectable = this.collectableManager.getCollectable(uuid);
         if (!collectable) return;
 
+        log.debug(`emitting collectable collision ${uuid}`);
         this.emitCollect(uuid, (success) => {
             if (success) {
                 collectable.applyAndDestroy(playerSnake);
@@ -121,6 +129,7 @@ export class MultiplayerManager {
     }
 
     public emitCollect(uuid: string, callback: (success: boolean) => void): void {
+        log.debug(`emitting collect ${uuid}`);
         this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response) => {
             if (response.status === "ok") {
                 callback(true);
@@ -131,10 +140,23 @@ export class MultiplayerManager {
     }
 
     public emitGetConfiguration() {
+        log.debug(`getting configuration`);
         this.socket.emit(SocketEvents.SessionState.GET_CURRENT_SESSION);
     }
 
     public emitSnake(snake: Snake) {
+        log.debug(`emitting snake`);
+        log.trace(`snake: ${snake}`);
         this.socket.emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake.toJson())
+    }
+
+    public emitGameStateChange(state: GameStateEnum) {
+        log.debug("emitting game state change ", state);
+        this.socket.emit(SocketEvents.GameControl.STATE_CHANGED, state);
+    }
+
+    public emitGameStart() {
+        log.debug("emitting game start");
+        this.socket.emit(SocketEvents.GameControl.START_GAME);
     }
 }
