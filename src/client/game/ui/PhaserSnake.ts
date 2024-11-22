@@ -11,7 +11,7 @@ const DEFAULT_SNAKE_LENGTH: number = 4;
 const DEFAULT_SNAKE_SPEED: number = 100;
 const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
 
-export class Snake {
+export class PhaserSnake {
 
     // identifier
     private playerId: string;
@@ -304,13 +304,13 @@ export class Snake {
         }
     }
 
-    static fromJson(scene: Phaser.Scene, json: string): Snake {
+    static fromJson(scene: Phaser.Scene, json: string): PhaserSnake {
         const data = JSON.parse(json);
         return this.fromData(scene, data);
     }
 
     static fromData(scene: Phaser.Scene, data: any) {
-        const snake = new Snake(scene, data.playerId, data.primaryColor, new Position(data.head.x, data.head.y));
+        const snake = new PhaserSnake(scene, data.playerId, data.primaryColor, new Position(data.head.x, data.head.y));
         snake.updateFromData(data);
         return snake;
     }

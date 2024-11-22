@@ -1,6 +1,6 @@
 import {InputHandler} from "./InputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
-import {Snake} from "../ui/Snake";
+import {PhaserSnake} from "../ui/PhaserSnake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {GameScene} from "../scenes/GameScene";
 
@@ -11,7 +11,7 @@ export class KeyboardInputHandler extends InputHandler {
     private pauseKey: Phaser.Input.Keyboard.Key;
     private startKey: Phaser.Input.Keyboard.Key;
 
-    constructor(scene: GameScene, snake: Snake, useWASD: boolean = false) {
+    constructor(scene: GameScene, snake: PhaserSnake, useWASD: boolean = false) {
         super(scene, snake, InputTypeEnum.KEYBOARD);
 
         this.useWASD = useWASD;

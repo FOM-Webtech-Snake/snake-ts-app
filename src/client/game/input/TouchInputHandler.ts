@@ -1,6 +1,6 @@
 import {InputHandler} from "./InputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
-import {Snake} from "../ui/Snake";
+import {PhaserSnake} from "../ui/PhaserSnake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {GameScene} from "../scenes/GameScene";
 
@@ -12,7 +12,7 @@ export class TouchInputHandler extends InputHandler {
     private startY: number;
     private longPressTimer: NodeJS.Timeout | null;
 
-    constructor(scene: GameScene, snake: Snake) {
+    constructor(scene: GameScene, snake: PhaserSnake) {
         super(scene, snake, InputTypeEnum.TOUCH);
         this.startX = 0;
         this.startY = 0;

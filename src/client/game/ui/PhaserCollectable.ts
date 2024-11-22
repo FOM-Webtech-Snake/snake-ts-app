@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import {ChildCollectableTypeEnum} from "../../../shared/constants/CollectableTypeEnum";
 import {childCollectables} from "../../../shared/model/Collectables";
-import {Snake} from "./Snake";
+import {PhaserSnake} from "./PhaserSnake";
 import {Collectable} from "../../../shared/model/Collectable";
 import {Position} from "../../../shared/model/Position";
 import {ArrowManager} from "./manager/ArrowManager";
@@ -32,11 +32,11 @@ export class PhaserCollectable extends Collectable {
         this.arrow.setVisible(false);
     }
 
-    checkCollision(snake: Snake): boolean {
+    checkCollision(snake: PhaserSnake): boolean {
         return this.item && this.item.visible && Phaser.Geom.Intersects.RectangleToRectangle(snake.getHead().getBounds(), this.item.getBounds());
     }
 
-    applyAndDestroy(snake: Snake) {
+    applyAndDestroy(snake: PhaserSnake) {
         childCollectables[this.type].func(snake);
         this.item.destroy(true);
     }

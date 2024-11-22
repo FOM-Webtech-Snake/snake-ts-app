@@ -1,16 +1,16 @@
-import {Snake} from "../Snake";
+import {PhaserSnake} from "../PhaserSnake";
 import {getLogger} from "../../../../shared/config/LogConfig";
 
 const log = getLogger("client.game.ui.manager.PlayerManager");
 
 export class PlayerManager {
-    private players: Record<string, Snake>;
+    private players: Record<string, PhaserSnake>;
 
     constructor() {
         this.players = {};
     }
 
-    addPlayer(playerId: string, snake: Snake): void {
+    addPlayer(playerId: string, snake: PhaserSnake): void {
         log.debug("add player", playerId);
         if (this.players[playerId]) {
             log.warn(`Player ${playerId} already exists.`);
@@ -32,7 +32,7 @@ export class PlayerManager {
         }
     }
 
-    getPlayer(playerId: string): Snake | null {
+    getPlayer(playerId: string): PhaserSnake | null {
         log.debug("getPlayer", playerId);
         return this.players[playerId] || null;
     }
@@ -47,7 +47,7 @@ export class PlayerManager {
         }
     }
 
-    getAllPlayers(): Record<string, Snake> {
+    getAllPlayers(): Record<string, PhaserSnake> {
         return this.players;
     }
 

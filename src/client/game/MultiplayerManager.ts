@@ -2,7 +2,7 @@ import {Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameScene} from "./scenes/GameScene";
 import {GameSession} from "../../shared/GameSession";
-import {Snake} from "./ui/Snake";
+import {PhaserSnake} from "./ui/PhaserSnake";
 import {getLogger} from "../../shared/config/LogConfig";
 import {CollectableManager} from "./ui/manager/CollectableManager";
 import {PlayerManager} from "./ui/manager/PlayerManager";
@@ -89,7 +89,7 @@ export class MultiplayerManager {
         if (player) {
             this.playerManager.updatePlayer(parsedData.playerId, parsedData);
         } else {
-            const newSnake = Snake.fromData(this.scene, parsedData);
+            const newSnake = PhaserSnake.fromData(this.scene, parsedData);
             this.playerManager.addPlayer(parsedData.playerId, newSnake);
         }
     }
@@ -114,7 +114,7 @@ export class MultiplayerManager {
         }
     }
 
-    public handleCollectableCollision(uuid: string, playerSnake: Snake): void {
+    public handleCollectableCollision(uuid: string, playerSnake: PhaserSnake): void {
         log.debug(`collectableCollision: ${uuid}`);
         const collectable = this.collectableManager.getCollectable(uuid);
         if (!collectable) return;
@@ -144,7 +144,7 @@ export class MultiplayerManager {
         this.socket.emit(SocketEvents.SessionState.GET_CURRENT_SESSION);
     }
 
-    public emitSnake(snake: Snake) {
+    public emitSnake(snake: PhaserSnake) {
         log.debug(`emitting snake`);
         log.trace(`snake: ${snake}`);
         this.socket.emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake.toJson())

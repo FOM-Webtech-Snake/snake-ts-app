@@ -1,4 +1,4 @@
-import {Snake} from "../Snake";
+import {PhaserSnake} from "../PhaserSnake";
 import {PhaserCollectable} from "../PhaserCollectable";
 import {getLogger} from "../../../../shared/config/LogConfig";
 
@@ -34,7 +34,7 @@ export class CollectableManager {
     }
 
     // update all collectables (incl. arrows and collisions)
-    update(snake: Snake, camera: Phaser.Cameras.Scene2D.Camera, onCollect: (uuid: string) => void): void {
+    update(snake: PhaserSnake, camera: Phaser.Cameras.Scene2D.Camera, onCollect: (uuid: string) => void): void {
         log.debug("updating collectables");
         Object.keys(this.collectables).forEach(uuid => {
             const collectable = this.collectables[uuid];

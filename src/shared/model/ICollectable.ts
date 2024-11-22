@@ -1,5 +1,5 @@
 import {ChildCollectableTypeEnum, ParentCollectableTypeEnum} from "../constants/CollectableTypeEnum";
-import {Snake} from "../../client/game/ui/Snake";
+import {PhaserSnake} from "../../client/game/ui/PhaserSnake";
 
 export interface ChildCollectable {
     name: string;
@@ -7,7 +7,7 @@ export interface ChildCollectable {
     parent: ParentCollectableTypeEnum;
     value: any;
     imageKey: string;
-    func: (snake: Snake) => void; // Lambda function
+    func: (snake: PhaserSnake) => void; // Lambda function
     spawnChance: number;
 }
 

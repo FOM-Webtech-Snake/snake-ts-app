@@ -1,6 +1,6 @@
 import {InputHandler} from "./InputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
-import {Snake} from "../ui/Snake";
+import {PhaserSnake} from "../ui/PhaserSnake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {GameScene} from "../scenes/GameScene";
 
@@ -9,7 +9,7 @@ import {GameScene} from "../scenes/GameScene";
 export class GamepadInputHandler extends InputHandler {
     private gamepad: Phaser.Input.Gamepad.Gamepad;
 
-    constructor(scene: GameScene, snake: Snake) {
+    constructor(scene: GameScene, snake: PhaserSnake) {
         super(scene, snake, InputTypeEnum.GAMEPAD);
 
         if (!this.scene.input.gamepad) {

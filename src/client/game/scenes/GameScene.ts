@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import {Background} from "../ui/Background";
-import {Snake} from "../ui/Snake";
+import {PhaserSnake} from "../ui/PhaserSnake";
 import {ColorUtil} from "../util/ColorUtil";
 import {Position} from "../../../shared/model/Position";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
@@ -68,7 +68,7 @@ export class GameScene extends Phaser.Scene {
         this.overlay = new Overlay(this);
 
         // game objects
-        const localSnake = new Snake(this, this.multiplayerManager.getPlayerId(), ColorUtil.getRandomColor(), new Position(300, 300));
+        const localSnake = new PhaserSnake(this, this.multiplayerManager.getPlayerId(), ColorUtil.getRandomColor(), new Position(300, 300));
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
 
