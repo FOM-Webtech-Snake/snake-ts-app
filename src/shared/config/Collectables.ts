@@ -1,4 +1,4 @@
-import {ChildCollectable, ParentCollectable} from "./ICollectable";
+import {ChildCollectable, ParentCollectable} from "../model/ICollectable";
 import {ChildCollectableTypeEnum, ParentCollectableTypeEnum} from "../constants/CollectableTypeEnum";
 
 export const childCollectables: Record<ChildCollectableTypeEnum, ChildCollectable> = {

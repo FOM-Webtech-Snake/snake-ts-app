@@ -5,7 +5,7 @@ import {Collectable} from "../../shared/model/Collectable";
 import {PositionUtil} from "./PositionUtil";
 import {ChildCollectableTypeEnum} from "../../shared/constants/CollectableTypeEnum";
 import {getLogger} from "../../shared/config/LogConfig";
-import {childCollectables} from "../../shared/model/Collectables";
+import {childCollectables} from "../../shared/config/Collectables";
 
 const log = getLogger("server.util.SpawnUtil");
 

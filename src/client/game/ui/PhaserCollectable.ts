@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import {ChildCollectableTypeEnum} from "../../../shared/constants/CollectableTypeEnum";
-import {childCollectables} from "../../../shared/model/Collectables";
+import {childCollectables} from "../../../shared/config/Collectables";
 import {PhaserSnake} from "./PhaserSnake";
 import {Collectable} from "../../../shared/model/Collectable";
 import {Position} from "../../../shared/model/Position";
