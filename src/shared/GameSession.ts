@@ -7,6 +7,7 @@ import {Server} from "socket.io";
 import {SocketEvents} from "./constants/SocketEvents";
 import SpawnerDaemon from "../server/SpawnerDaemon";
 import {getLogger} from "./config/LogConfig";
+import {PlayerRoleEnum} from "./constants/PlayerRoleEnum";
 
 const log = getLogger("shared.GameSession");
 
@@ -92,6 +93,13 @@ export class GameSession {
 
     removePlayer(playerId: string): void {
         delete this.players[playerId];
+        if (this.ownerId === playerId) {
+            if (this.getPlayersAsArray().length > 0) {
+                const firstPlayerInList = this.getPlayersAsArray()[0];
+                this.ownerId = firstPlayerInList.getId();
+                firstPlayerInList.setRole(PlayerRoleEnum.HOST);
+            }
+        }
     }
 
     removeCollectable(io: Server, collectableId: string): void {
