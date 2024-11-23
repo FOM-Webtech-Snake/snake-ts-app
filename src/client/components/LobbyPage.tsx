@@ -24,11 +24,18 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             socket.once(SocketEvents.GameControl.GET_READY, (callback: any) => {
                 log.debug("Getting ready, triggered by host");
                 onGameReady();
-                log.info("callback");
                 callback(); // ack the server when ready
             });
         }
     }, [socket]);
+
+    useEffect(() => {
+        if (session) {
+            setCurrentStep(2);
+        } else {
+            setCurrentStep(1);
+        }
+    }, [session]);
 
 
     const createJoinSession = async () => {
@@ -38,7 +45,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             } else {
                 createSession(player.getName());
             }
-            setCurrentStep(2);
         } catch (error) {
             log.error(`Error: ${(error as Error).message}`);
         }
@@ -46,7 +52,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
 
     const handleLeaveSession = () => {
         leaveSession();
-        setCurrentStep(1); // move back to the first step
     };
 
     const startGame = () => {

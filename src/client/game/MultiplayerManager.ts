@@ -34,10 +34,10 @@ export class MultiplayerManager {
 
         log.debug("setting up multiplayer");
 
-        this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (session: string) {
+        this.socket.on(SocketEvents.SessionState.CURRENT_SESSION, function (data: any) {
             log.debug("received session");
-            log.trace(`session: ${session}`);
-            const gameSession = GameSession.fromData(session);
+            log.trace(`session: ${data}`);
+            const gameSession: GameSession = GameSession.fromData(data);
             self.scene.handleGameSession(gameSession);
         });
 

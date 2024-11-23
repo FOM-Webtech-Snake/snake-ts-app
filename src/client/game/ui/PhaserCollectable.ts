@@ -38,7 +38,7 @@ export class PhaserCollectable extends Collectable {
 
     applyAndDestroy(snake: PhaserSnake) {
         childCollectables[this.type].func(snake);
-        this.item.destroy(true);
+        if (this.item) this.item.destroy(true);
     }
 
     destroy() {

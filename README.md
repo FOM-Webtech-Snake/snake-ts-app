@@ -30,7 +30,7 @@ browser-based multiplayer games.
       for a user visiting the App.
     * `server/`: Holds the server code, which includes setting up Express and Socket.IO. Key subdirectories include:
         * `controllers/`: Contains functions that handle specific game actions, managing game state, user events, etc.
-        * `sockets/`: Organizes Socket.IO events, with socket.ts handling connection logic and event routing.
+        * `sockets/`: Organizes Socket.IO events, with configureServerSocket.ts handling connection logic and event routing.
         * `routes/`: For RESTful API routes if the server needs additional API endpoints besides Socket.IO.
 
 * `dist/`: Output directory for the transpiled TypeScript code for both the client and server. By keeping the compiled

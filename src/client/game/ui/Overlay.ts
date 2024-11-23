@@ -57,7 +57,7 @@ export class Overlay {
      * Hide the overlay.
      */
     public hide(): void {
-        log.info("hide triggered");
+        log.debug("hide triggered");
         this.backgroundObject.setVisible(false);
         this.textObject.setVisible(false);
     }

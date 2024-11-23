@@ -2,7 +2,7 @@ import {createServer} from "http";
 import {Server as SocketIOServer} from 'socket.io'
 import dotenv from 'dotenv';
 import app from "./server";
-import configureServerSocket from "./sockets/socket";
+import configureServerSocket from "./sockets/configureServerSocket";
 import {getLogger} from "../shared/config/LogConfig";
 
 const log = getLogger("server.index");

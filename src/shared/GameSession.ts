@@ -105,26 +105,9 @@ export class GameSession {
         return Object.keys(this.players).length > 0;
     }
 
-    ready(io: Server): boolean {
-        if (this.gameState === GameStateEnum.WAITING_FOR_PLAYERS) {
-            log.info(`Starting game session ${this.id}`);
-
-            io.to(this.id).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err) => {
-                if (err) {
-                    log.warn(
-                        `Not all clients responded in time for session ${this.id}`
-                    );
-                    return false;
-                } else {
-                    log.debug(`game session start confirmed from all clients`);
-                    this.setGameState(GameStateEnum.READY);
-                    return true;
-                }
-            });
-        }
-
-        log.warn(`Game Session ${this.id} state not waiting for players.`);
-        return false;
+    isWaitingForPlayers(): boolean {
+        log.debug(`game session ${this.id} waiting for players`);
+        return this.gameState === GameStateEnum.WAITING_FOR_PLAYERS;
     }
 
     start(io: Server): boolean {
