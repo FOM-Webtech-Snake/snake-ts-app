@@ -82,15 +82,14 @@ export class MultiplayerManager {
         return this.socket.id;
     }
 
-    public handleRemoteSnake(snakeData: string) {
-        log.debug("received remote snake", snakeData);
-        const parsedData = JSON.parse(snakeData);
-        const player = this.playerManager.getPlayer(parsedData.playerId);
+    public handleRemoteSnake(data: any) {
+        log.info("received remote snake", data);
+        const player = this.playerManager.getPlayer(data.playerId);
         if (player) {
-            this.playerManager.updatePlayer(parsedData.playerId, parsedData);
+            this.playerManager.updatePlayer(data.playerId, data);
         } else {
-            const newSnake = PhaserSnake.fromData(this.scene, parsedData);
-            this.playerManager.addPlayer(parsedData.playerId, newSnake);
+            const newSnake = PhaserSnake.fromData(this.scene, data);
+            this.playerManager.addPlayer(data.playerId, newSnake);
         }
     }
 

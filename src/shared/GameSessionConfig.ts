@@ -1,8 +1,13 @@
+import {Size} from "./model/Size";
+import {getLogger} from "./config/LogConfig";
+
+const log = getLogger("shared.GameSessionConfig");
+
 export class GameSessionConfig {
     private maxPlayers: number;
-    private size: { height: number, width: number };
+    private size: Size;
 
-    constructor(maxPlayers: number, size: { height: number, width: number }) {
+    constructor(maxPlayers: number, size: Size) {
         this.maxPlayers = maxPlayers;
         this.size = size;
     }
@@ -11,33 +16,21 @@ export class GameSessionConfig {
         return this.maxPlayers;
     }
 
-    getSize(): { height: number, width: number } {
+    getSize(): Size {
         return this.size;
     }
 
-    getWidth(): number {
-        return this.size.width;
-    }
-
-    getHeight(): number {
-        return this.size.height;
-    }
-
     toJson() {
-        return JSON.stringify({
+        return {
             maxPlayers: this.maxPlayers,
-            size: this.size,
-        });
+            size: this.size.toJSON(),
+        };
     }
 
     static fromData(data: any) {
-        return new GameSessionConfig(data.maxPlayers, data.size);
-    }
-
-    static fromJson(json: string) {
-        const data = JSON.parse(json);
-        return this.fromData(data);
+        log.info("fromData", data);
+        return new GameSessionConfig(data.maxPlayers, Size.fromData(data.size));
     }
 }
 
-export const DEFAULT_GAME_SESSION_CONFIG = new GameSessionConfig(4, {height: 1600, width: 1600});
+export const DEFAULT_GAME_SESSION_CONFIG = new GameSessionConfig(4, new Size(1600, 1600));

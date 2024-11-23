@@ -106,7 +106,7 @@ export class PhaserCollectable extends Collectable {
         return new Phaser.Math.Vector2(clampedX, clampedY);
     }
 
-    static fromData(scene: Phaser.Scene, data: any): PhaserCollectable {
-        return new PhaserCollectable(scene, data.id, data.type, Position.fromData(data.position));
+    static fromCollectable(scene: Phaser.Scene, collectable: Collectable): PhaserCollectable {
+        return new PhaserCollectable(scene, collectable.getId(), collectable.getType(), collectable.getPosition());
     }
 }

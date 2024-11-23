@@ -46,18 +46,13 @@ export class Player {
     }
 
     toJson() {
-        return JSON.stringify({
+        return {
             id: this.id,
             name: this.name,
             status: this.status,
             role: this.role,
             score: this.score,
-        });
-    }
-
-    static fromJson(json: string) {
-        const data = JSON.parse(json);
-        return this.fromData(data);
+        };
     }
 
     static fromData(data: any) {

@@ -26,4 +26,19 @@ export class Collectable {
     getPosition() {
         return this.position;
     }
+
+    toJson() {
+        return {
+            id: this.id,
+            type: this.type,
+            position: this.position.toJson()
+        };
+    }
+
+    static fromData(data: any): Collectable {
+        return new Collectable(
+            data.id,
+            data.type,
+            Position.fromData(data.position));
+    }
 }

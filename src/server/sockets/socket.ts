@@ -3,7 +3,6 @@ import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {sessionManager} from "../SessionManager";
 import {getLogger} from "../../shared/config/LogConfig";
 import {GameSession} from "../../shared/GameSession";
-import {GameSessionUtil} from "../util/GameSessionUtil";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {Player} from "../../shared/Player";
 import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
@@ -18,18 +17,18 @@ const configureServerSocket = (io: Server) => {
         socket.on(SocketEvents.Connection.CREATE_SESSION, (playerName: string, callback) => {
             // Create and store the game session
             const newPlayer = new Player(socket.id, playerName, PlayerRoleEnum.HOST);
-            const newGame = sessionManager.createSession(newPlayer, DEFAULT_GAME_SESSION_CONFIG);
+            const newGame: GameSession = sessionManager.createSession(newPlayer, DEFAULT_GAME_SESSION_CONFIG);
             log.info(`created new game session: ${newGame.getId()} - ${newGame.getOwnerId()}`);
-            callback(newGame);
+            callback(newGame.toJson());
             handleSessionJoin(socket, newGame);
         });
 
         socket.on(SocketEvents.Connection.JOIN_SESSION, (sessionId: string, playerName: string, callback) => {
             try {
                 const newPlayer = new Player(socket.id, playerName, PlayerRoleEnum.GUEST);
-                const session = sessionManager.joinSession(sessionId, newPlayer);
+                const session: GameSession = sessionManager.joinSession(sessionId, newPlayer);
                 log.info(`player ${socket.id} joined game session: ${sessionId}`);
-                callback(session);
+                callback(session.toJson());
                 handleSessionJoin(socket, session);
             } catch (error) {
                 callback({error: "Session not found"});

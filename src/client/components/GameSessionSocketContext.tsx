@@ -3,6 +3,7 @@ import {io, Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameSession} from "../../shared/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
+import {GameScene} from "../game/scenes/GameScene";
 
 
 interface GameSessionSocketContextType {
@@ -59,28 +60,21 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
 
     const createSession = (playerName: string) => {
         if (!socket || session) return;
-        socket.emit(SocketEvents.Connection.CREATE_SESSION, playerName, (response: any) => {
-            if (response.error) {
-                log.error(`Failed to create session: ${response.error}`);
-            } else {
-                const gameSession = GameSession.fromData(response);
-                log.debug("created session", gameSession);
-                setSession(gameSession); // Save session locally
-            }
+        socket.emit(SocketEvents.Connection.CREATE_SESSION, playerName, (data: any) => {
+            const gameSession = GameSession.fromData(data);
+            log.debug("created session", gameSession);
+            setSession(gameSession); // Save session locally
+
         });
     };
 
     const joinSession =
         (sessionId: string, playerName: string) => {
             if (!socket || session) return;
-            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, playerName, (response: any) => {
-                if (response.error) {
-                    log.error(`Failed to join session: ${response.error}`);
-                } else {
-                    const gameSession = GameSession.fromData(response);
-                    log.debug("joined session", gameSession);
-                    setSession(gameSession); // Save session locally
-                }
+            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, playerName, (data: any) => {
+                const gameSession = GameSession.fromData(data);
+                log.debug("joined session", gameSession);
+                setSession(gameSession); // Save session locally
             });
         };
 

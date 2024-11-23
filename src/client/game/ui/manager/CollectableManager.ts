@@ -1,6 +1,7 @@
 import {PhaserSnake} from "../PhaserSnake";
 import {PhaserCollectable} from "../PhaserCollectable";
 import {getLogger} from "../../../../shared/config/LogConfig";
+import {Collectable} from "../../../../shared/model/Collectable";
 
 const log = getLogger("client.game.ui.manager.CollectableManager");
 
@@ -15,8 +16,8 @@ export class CollectableManager {
 
     spawnCollectable(data: any): void {
         log.debug("spawnCollectable", data);
-        const newCollectable = PhaserCollectable.fromData(this.scene, data);
-        this.collectables[newCollectable.getId()] = newCollectable;
+        const phaserCollectable = PhaserCollectable.fromCollectable(this.scene, Collectable.fromData(data));
+        this.collectables[phaserCollectable.getId()] = phaserCollectable;
     }
 
     removeCollectable(uuid: string): void {

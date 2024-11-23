@@ -4,7 +4,7 @@ import {GameSessionConfig} from "../../shared/GameSessionConfig";
 export class PositionUtil {
     static randomPosition(config: GameSessionConfig): Position {
         return new Position(
-            Math.floor(Math.random() * (config.getSize().height)),
-            Math.floor(Math.random() * (config.getSize().width)));
+            Math.floor(Math.random() * (config.getSize().getHeight())),
+            Math.floor(Math.random() * (config.getSize().getWidth())));
     }
 }

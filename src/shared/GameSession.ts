@@ -138,21 +138,33 @@ export class GameSession {
     }
 
     toJson() {
-        return JSON.stringify({
+        return {
             id: this.id,
             ownerId: this.ownerId,
             gameState: this.gameState,
-            config: this.config,
-            players: this.players
-        });
-    }
-
-    static fromJson(json: string): GameSession {
-        const data = JSON.parse(json);
-        return this.fromData(data);
+            config: this.config.toJson(),
+            players: Object.fromEntries(
+                Object.entries(this.players).map(([id, player]) => [id, player.toJson()])
+            ),
+            collectables: Object.fromEntries(
+                Object.entries(this.collectables).map(([id, collectable]) => [id, collectable.toJson()])
+            ),
+        };
     }
 
     static fromData(data: any): GameSession {
-        return new GameSession(data.id, data.ownerId, GameSessionConfig.fromData(data.config), data.gameState, data.players);
+        log.info("fromData", data);
+        return new GameSession(
+            data.id,
+            data.ownerId,
+            GameSessionConfig.fromData(data.config),
+            data.gameState,
+            Object.fromEntries(
+                Object.entries(data.players).map(([id, playerData]) => [id, Player.fromData(playerData)])
+            ),
+            Object.fromEntries(
+                Object.entries(data.collectables).map(([id, collectableData]) => [id, Collectable.fromData(collectableData)])
+            )
+        );
     }
 }

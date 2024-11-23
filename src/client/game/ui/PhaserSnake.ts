@@ -304,11 +304,6 @@ export class PhaserSnake {
         }
     }
 
-    static fromJson(scene: Phaser.Scene, json: string): PhaserSnake {
-        const data = JSON.parse(json);
-        return this.fromData(scene, data);
-    }
-
     static fromData(scene: Phaser.Scene, data: any) {
         const snake = new PhaserSnake(scene, data.playerId, data.primaryColor, new Position(data.head.x, data.head.y));
         snake.updateFromData(data);
@@ -356,8 +351,8 @@ export class PhaserSnake {
         this.face.setRotation(data.face.rotation);
     }
 
-    toJson(): string {
-        return JSON.stringify({
+    toJson() {
+        return {
             playerId: this.playerId,
             speed: this.speed,
             scale: this.scale,
@@ -375,12 +370,6 @@ export class PhaserSnake {
                 y: segment.y
             })),
             //lockedSegments: this.lockedSegments.getChildren().map((_: any, index: number) => index) // Store indices of locked segments
-        });
+        };
     }
-
-    updateFromJson(json: string) {
-        const data = JSON.parse(json);
-        this.updateFromData(data);
-    }
-
 }

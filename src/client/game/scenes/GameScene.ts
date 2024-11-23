@@ -62,8 +62,8 @@ export class GameScene extends Phaser.Scene {
         this.multiplayerManager = new MultiplayerManager(this, this.socket, this.collectableManager, this.playerManager);
 
         // setup world & camera
-        this.physics.world.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // push the world bounds to (e.g. 1600x1200px)
-        this.cameras.main.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // setup camera not to leave the world
+        this.physics.world.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // push the world bounds to (e.g. 1600x1200px)
+        this.cameras.main.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // setup camera not to leave the world
         this.background = new Background(this);
         this.overlay = new Overlay(this);
 
@@ -124,8 +124,8 @@ export class GameScene extends Phaser.Scene {
 
     loadGameConfig() {
         // setup world & camera
-        this.physics.world.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // push the world bounds to (e.g. 1600x1200px)
-        this.cameras.main.setBounds(0, 0, this.config.getWidth(), this.config.getHeight()); // setup camera not to leave the world
+        this.physics.world.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // push the world bounds to (e.g. 1600x1200px)
+        this.cameras.main.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // setup camera not to leave the world
 
         if (this.background) {
             this.background.destroy();
