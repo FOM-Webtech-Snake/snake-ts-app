@@ -40,6 +40,10 @@ export class GameSession {
         return this.players[playerId];
     }
 
+    getPlayersAsArray(): Player[] {
+        return Object.values(this.players);
+    }
+
     getPlayerCount(): number {
         return Object.keys(this.players).length;
     }

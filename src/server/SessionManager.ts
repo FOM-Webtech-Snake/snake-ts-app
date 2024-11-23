@@ -19,11 +19,10 @@ class SessionManager {
         return this.sessions;
     }
 
-    createSession(player: Player, config: GameSessionConfig) {
-        const newGame = new GameSession(null, player.getId(), config);
-        newGame.addPlayer(player);
+    createSession(creatorId: string, config: GameSessionConfig) {
+        const newGame = new GameSession(null, creatorId, config);
         this.sessions[newGame.getId()] = newGame;
-        log.debug(`new session created by ${player.getId()}`);
+        log.debug(`new session created by ${creatorId}`);
         return newGame;
     }
 

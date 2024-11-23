@@ -4,6 +4,7 @@ import {Button, Col, Container, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
+import PlayerList from "./PlayerList";
 
 interface LobbyPageProps {
     player: Player;
@@ -27,7 +28,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                 callback(); // ack the server when ready
             });
         }
-    }, []);
+    }, [socket]);
 
 
     const createJoinSession = async () => {
@@ -136,6 +137,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                     )}
                 </Col>
             </Row>
+            {session && (<PlayerList/>)}
         </Container>
     );
 };

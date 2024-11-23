@@ -28,7 +28,7 @@ export class GameSessionConfig {
     }
 
     static fromData(data: any) {
-        log.info("fromData", data);
+        log.debug("fromData", data);
         return new GameSessionConfig(data.maxPlayers, Size.fromData(data.size));
     }
 }

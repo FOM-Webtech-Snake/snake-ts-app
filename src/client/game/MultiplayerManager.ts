@@ -47,7 +47,7 @@ export class MultiplayerManager {
         });
 
         this.socket.on(SocketEvents.GameControl.STATE_CHANGED, (state: GameStateEnum) => {
-            log.info(`game state change ${state}`);
+            log.debug(`game state change ${state}`);
             self.scene.setState(state);
         });
 
@@ -83,7 +83,7 @@ export class MultiplayerManager {
     }
 
     public handleRemoteSnake(data: any) {
-        log.info("received remote snake", data);
+        log.trace("received remote snake", data);
         const player = this.playerManager.getPlayer(data.playerId);
         if (player) {
             this.playerManager.updatePlayer(data.playerId, data);

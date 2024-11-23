@@ -21,6 +21,10 @@ export class Player {
         this.status = status;
     }
 
+    setName(name: string): void {
+        this.name = name;
+    }
+
     getStatus(): PlayerStatusEnum {
         return this.status;
     }

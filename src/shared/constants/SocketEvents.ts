@@ -30,6 +30,7 @@ export namespace SocketEvents {
         GET_CURRENT_SESSION = "getCurrentSession",
         CURRENT_SESSION = "currentSession",
         NEW_PLAYER = "newPlayer",
+        SESSION_UPDATED = "sessionUpdated",
         DISCONNECTED = "disconnected",
     }
 

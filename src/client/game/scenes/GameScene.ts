@@ -99,7 +99,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     setState(state: GameStateEnum) {
-        log.info("updating game state", state);
+        log.debug("updating game state", state);
         this.state = state;
         if (this.state === GameStateEnum.RUNNING) {
             this.physics.world.resume();
@@ -117,7 +117,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     setConfig(conf: GameSessionConfig) {
-        log.info("updating game config", conf);
+        log.debug("updating game config", conf);
         this.config = conf;
         this.loadGameConfig();
     }

@@ -37,7 +37,7 @@ export class Overlay {
      * @param message The message to display
      */
     public show(message: string): void {
-        log.info("show triggered");
+        log.debug("show triggered");
         this.backgroundObject.setVisible(true);
         this.textObject.setText(message);
         this.textObject.setVisible(true);
