@@ -157,7 +157,7 @@ export class GameSession {
     }
 
     static fromData(data: any): GameSession {
-        log.info("fromData", data);
+        log.debug("fromData", data);
         return new GameSession(
             data.id,
             data.ownerId,
