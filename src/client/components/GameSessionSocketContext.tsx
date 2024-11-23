@@ -64,19 +64,13 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
 
     const createSession = (playerName: string) => {
         if (!socket || session) return;
-        socket.emit(SocketEvents.Connection.CREATE_SESSION, playerName, (data: any) => {
-            log.debug("create session", data);
-        });
+        socket.emit(SocketEvents.Connection.CREATE_SESSION, playerName);
     };
 
     const joinSession =
         (sessionId: string, playerName: string) => {
             if (!socket || session) return;
-            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, playerName, (data: any) => {
-                const gameSession = GameSession.fromData(data);
-                log.debug("joined session", gameSession);
-                setSession(gameSession); // Save session locally
-            });
+            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, playerName);
         };
 
     const leaveSession = () => {

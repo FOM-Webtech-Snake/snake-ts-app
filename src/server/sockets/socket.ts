@@ -15,13 +15,12 @@ const configureServerSocket = (io: Server) => {
 
                 const player = new Player(socket.id, "", PlayerRoleEnum.HOST);
 
-                socket.on(SocketEvents.Connection.CREATE_SESSION, (playerName: string, callback) => {
+                socket.on(SocketEvents.Connection.CREATE_SESSION, (playerName: string) => {
                     player.setName(playerName);
                     player.setRole(PlayerRoleEnum.HOST);
                     // Create and store the game session
                     const gameSession: GameSession = sessionManager.createSession(socket.id, DEFAULT_GAME_SESSION_CONFIG);
                     log.info(`created new game session: ${gameSession.getId()} - ${gameSession.getOwnerId()}`);
-                    callback({id: gameSession.getId()});
                     joinSession(gameSession);
                 });
 
