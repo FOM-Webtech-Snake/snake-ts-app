@@ -357,19 +357,13 @@ export class PhaserSnake {
             speed: this.speed,
             scale: this.scale,
             direction: this.direction,
-            //directionLock: this.directionLock,
-            //justReversed: this.justReversed,
             primaryColor: this.primaryColor,
-            //darkColor: this.darkColor,
-            //lightColor: this.lightColor,
             head: {x: this.head.x, y: this.head.y},
             face: {x: this.face.x, y: this.face.y, rotation: this.face.rotation},
-            //lastPositions: this.lastPositions.map(pos => ({x: pos.getX(), y: pos.getY()})),
             body: this.body.getChildren().map((segment: Phaser.Physics.Arcade.Sprite) => ({
                 x: segment.x,
                 y: segment.y
             })),
-            //lockedSegments: this.lockedSegments.getChildren().map((_: any, index: number) => index) // Store indices of locked segments
         };
     }
 }
