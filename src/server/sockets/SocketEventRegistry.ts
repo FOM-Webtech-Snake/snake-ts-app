@@ -7,6 +7,7 @@ import {GameSession} from "../../shared/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
 import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
+import {childCollectables} from "../../shared/config/Collectables";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -153,11 +154,14 @@ const SocketEventRegistry: {
         if (!sessionId) return;
 
         const gameSession = sessionManager.getSession(sessionId);
-
         const collectable = gameSession?.getCollectableById(uuid);
+        
         if (collectable) {
-            gameSession.removeCollectable(io, uuid);
+            gameSession.getPlayer(socket.id).addScore(childCollectables[collectable.getType()].value);
+            gameSession.removeCollectable(uuid);
             callback({status: "ok"});
+            io.to(sessionId).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
+            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
         } else {
             callback({status: "error"});
         }

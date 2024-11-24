@@ -16,8 +16,11 @@ const PlayerList: React.FC<PlayerListProps> = ({}) => {
     useEffect(() => {
         if (session) {
             // Listen for updates to the session and players
-            setPlayers(session.getPlayersAsArray() || null);
-            log.debug(`session ${session}`);
+            const sortedPlayers = (session.getPlayersAsArray() || []).sort(
+                (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
+            );
+            setPlayers(sortedPlayers);
+            log.debug(`updated players ${sortedPlayers}`);
         }
     }, [session]);
 
@@ -39,9 +42,12 @@ const PlayerList: React.FC<PlayerListProps> = ({}) => {
                             border: '1px solid #fff',
                         }}>
                         <span>{player.getName()}</span>
-                        {player.getRole() === PlayerRoleEnum.HOST && (
-                            <span className="badge bg-success text-white">Host</span>
-                        )}
+                        <span className="d-flex align-items-center">
+                            <span className="me-3">Score: {player.getScore()}</span>
+                            {player.getRole() === PlayerRoleEnum.HOST && (
+                                <span className="badge bg-success text-white">Host</span>
+                            )}
+                        </span>
                     </li>
                 ))}
             </ul>

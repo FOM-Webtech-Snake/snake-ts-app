@@ -17,8 +17,12 @@ export class Player {
         this.score = score;
     }
 
-    setState(status: PlayerStatusEnum): void {
-        this.status = status;
+    getId() {
+        return this.id;
+    }
+
+    getName(): string {
+        return this.name;
     }
 
     setName(name: string): void {
@@ -29,24 +33,25 @@ export class Player {
         return this.status;
     }
 
-    getName(): string {
-        return this.name;
+    setStatus(status: PlayerStatusEnum): void {
+        this.status = status;
     }
 
     getRole(): PlayerRoleEnum {
         return this.role;
     }
 
-    getId() {
-        return this.id;
+    setRole(newRole: PlayerRoleEnum) {
+        this.role = newRole;
     }
 
     getScore() {
         return this.score;
     }
 
-    setRole(newRole: PlayerRoleEnum) {
-        this.role = newRole;
+    addScore(value: number): number {
+        this.score += value;
+        return this.score;
     }
 
     toJson() {

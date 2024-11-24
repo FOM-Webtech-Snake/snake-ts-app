@@ -102,10 +102,9 @@ export class GameSession {
         }
     }
 
-    removeCollectable(io: Server, collectableId: string): void {
+    removeCollectable(collectableId: string): void {
         if (this.collectables[collectableId]) {
             delete this.collectables[collectableId];
-            io.to(this.id).emit(SocketEvents.GameEvents.ITEM_COLLECTED, collectableId);
         }
     }
 
