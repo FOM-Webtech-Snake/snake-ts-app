@@ -1,0 +1,10 @@
+services:
+  snake-app:
+    build: .
+    container_name: snake-app
+    env_file:
+      - .env
+    ports:
+      - "${PORT}:${PORT}" # use the PORT variable from the .env file
+    security_opt:
+      - no-new-privileges:true
