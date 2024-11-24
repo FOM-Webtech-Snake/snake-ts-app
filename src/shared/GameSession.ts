@@ -4,10 +4,10 @@ import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
 import {Collectable} from "./model/Collectable";
 import {Server} from "socket.io";
-import {SocketEvents} from "./constants/SocketEvents";
 import SpawnerDaemon from "../server/SpawnerDaemon";
 import {getLogger} from "./config/LogConfig";
 import {PlayerRoleEnum} from "./constants/PlayerRoleEnum";
+import {PositionUtil} from "../server/util/PositionUtil";
 
 const log = getLogger("shared.GameSession");
 
@@ -78,6 +78,8 @@ export class GameSession {
     }
 
     addPlayer(player: Player): void {
+        // TODO move it somewhere else
+        player.setBodyPositions([PositionUtil.randomPosition(this.config)]);
         this.players[player.getId()] = player;
     }
 

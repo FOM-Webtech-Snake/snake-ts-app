@@ -1,7 +1,6 @@
 import {Server, Socket} from "socket.io";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {sessionManager} from "../SessionManager";
-import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {Player} from "../../shared/Player";
 import {GameSession} from "../../shared/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
@@ -159,7 +158,7 @@ const SocketEventRegistry: {
 
         const gameSession = sessionManager.getSession(sessionId);
         const collectable = gameSession?.getCollectableById(uuid);
-        
+
         if (collectable) {
             gameSession.getPlayer(socket.id).addScore(childCollectables[collectable.getType()].value);
             gameSession.removeCollectable(uuid);

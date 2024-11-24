@@ -76,7 +76,7 @@ export class GameScene extends Phaser.Scene {
 
     private initSnake(player: Player) {
         // game objects
-        const localSnake = new PhaserSnake(this, player.getId(), ColorUtil.rgbToHex(player.getColor()), new Position(300, 300));
+        const localSnake = new PhaserSnake(this, player.getId(), ColorUtil.rgbToHex(player.getColor()), player.getBodyPositions() ? player.getBodyPositions()[0] : new Position(300, 300));
         this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
         this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
 
