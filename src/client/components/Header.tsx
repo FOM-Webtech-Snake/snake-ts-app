@@ -1,26 +1,56 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {Player} from "../../shared/Player";
+import {Col, Container, Row} from "react-bootstrap";
 
 interface HeaderProps {
-    playerName: string | null;
+    player: Player | null;
 }
 
-const Header: React.FC<HeaderProps> = ({playerName}) => {
+const Header: React.FC<HeaderProps> = ({player}) => {
 
     const {socket, session} = useGameSessionSocket()
 
     return (
-        <header className="d-flex justify-content-between align-items-center p-2 bg-secondary text-white">
-            <div>
-                {playerName && <span><strong>Player Name: </strong>{playerName}</span>}
-                <div className="text-muted small">
-                    {socket?.id && <span>Player ID: {socket?.id}</span>}
-                </div>
-            </div>
-            <div>
-                {session?.getId() && <span><strong>Session ID: </strong>{session?.getId()}</span>}
-            </div>
+        <header className="bg-secondary text-white">
+            <Container fluid>
+                <Row className="align-items-center py-2">
+                    <Col md={6}>
+                        <div>
+                            {player?.getName() && (
+                                <div className="d-inline-flex align-items-center">
+                                    <strong>Player:</strong>
+                                    <span className="ms-1">{player.getName()}</span>
+                                    {player?.getColor() && (
+                                        <div
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                backgroundColor: player.getColor(),
+                                                marginLeft: '10px',
+                                                border: '1px solid #fff',
+                                                borderRadius: '50%',
+                                            }}
+                                        ></div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        {socket?.id && (
+                            <div className="text-muted small">
+                                ID: {socket.id}
+                            </div>
+                        )}
+                    </Col>
+                    <Col md={6} className="text-md-end mt-2 mt-md-0">
+                        {session?.getId() && (
+                            <span>
+                                <strong>Session ID:</strong> {session.getId()}
+                            </span>
+                        )}
+                    </Col>
+                </Row>
+            </Container>
         </header>
     );
 };

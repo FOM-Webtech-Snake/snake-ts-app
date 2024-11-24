@@ -3,14 +3,15 @@ import {io, Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameSession} from "../../shared/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
+import {Player} from "../../shared/Player";
 
 
 interface GameSessionSocketContextType {
     socket: Socket;
     session: GameSession;
     isConnected: boolean,
-    createSession: (playerName: string) => void;
-    joinSession: (sessionId: string, playerName: string) => void;
+    createSession: (player: Player) => void;
+    joinSession: (sessionId: string, player: Player) => void;
     leaveSession: () => void;
 }
 
@@ -29,12 +30,12 @@ const GameSessionSocketContext = createContext<GameSessionSocketContextType>({
 interface SocketProviderProps {
     children: ReactNode;
 }
+const log = getLogger("client.components.LobbyPage");
 
 export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({children}) => {
     const [socket, setSocket] = useState<Socket>(null);
     const [session, setSession] = useState<GameSession>(null);
     const [isConnected, setIsConnected] = useState(false);
-    const log = getLogger("client.components.LobbyPage");
 
     useEffect(() => {
         const newSocket = io(); // TODO: add SocketURL as parameter
@@ -62,15 +63,15 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
         };
     }, []);
 
-    const createSession = (playerName: string) => {
+    const createSession = (player: Player) => {
         if (!socket || session) return;
-        socket.emit(SocketEvents.Connection.CREATE_SESSION, playerName);
+        socket.emit(SocketEvents.Connection.CREATE_SESSION, player.toJson());
     };
 
     const joinSession =
-        (sessionId: string, playerName: string) => {
+        (sessionId: string, player: Player) => {
             if (!socket || session) return;
-            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, playerName);
+            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, player.toJson());
         };
 
     const leaveSession = () => {
