@@ -13,6 +13,15 @@ export class ColorUtil {
         return COLOR_WHITE & Math.floor(Math.random() * 0x1000000);
     }
 
+    /**
+     * Generates a random color and returns it.
+     *
+     * @return {string} A random color in #RRGGBB formatted string.
+     */
+    static getRandomColorRGB(): string {
+        return `#${this.getRandomColor().toString(16).padStart(6, "0")}`;
+    }
+
 
     /**
      * lightens a given color by a fixed factor.
