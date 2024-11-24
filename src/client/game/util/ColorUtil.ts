@@ -5,6 +5,20 @@ export const LIGHTEN_FACTOR: number = 5;
 export class ColorUtil {
 
     /**
+     * Converts a color from #RRGGBB format to a hexadecimal 0xRRGGBB number format.
+     *
+     * @param {string} color - A string representing the color in #RRGGBB format.
+     * @return {number} - The color as a hexadecimal number (e.g., 0xRRGGBB).
+     */
+    static rgbToHex(color: string): number {
+        if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
+            throw new Error("Invalid color format. Expected #RRGGBB.");
+        }
+        // Parse the hex string (ignoring the #) and convert to a number
+        return parseInt(color.substring(1), 16);
+    }
+
+    /**
      * Generates a random color and returns it.
      *
      * @return {number} A random color represented as a hexadecimal number.
