@@ -61,4 +61,13 @@ export class Overlay {
         this.backgroundObject.setVisible(false);
         this.textObject.setVisible(false);
     }
+
+    public destroy(): void {
+        if (this.backgroundObject) {
+            this.backgroundObject.destroy(true);
+        }
+        if (this.textObject) {
+            this.textObject.destroy(true);
+        }
+    }
 }
