@@ -3,6 +3,7 @@ import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {Player} from "../../shared/Player";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {getLogger} from "../../shared/config/LogConfig";
+import {Badge, Col, Container, ListGroup, Row} from "react-bootstrap";
 
 interface PlayerListProps {
 }
@@ -29,29 +30,51 @@ const PlayerList: React.FC<PlayerListProps> = ({}) => {
     }
 
     return (
-        <div className="player-list text-white">
-            <h2 className="text-center mb-3">Players in Lobby</h2>
-            <ul className="list-group">
-                {Object.entries(players).map(([key, player]) => (
-                    <li
-                        key={key}
-                        className="list-group-item d-flex justify-content-between align-items-center"
-                        style={{
-                            backgroundColor: '#343a40',
-                            color: '#fff',
-                            border: '1px solid #fff',
-                        }}>
-                        <span>{player.getName()}</span>
-                        <span className="d-flex align-items-center">
-                            <span className="me-3">Score: {player.getScore()}</span>
-                            {player.getRole() === PlayerRoleEnum.HOST && (
-                                <span className="badge bg-success text-white">Host</span>
-                            )}
-                        </span>
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <Container className="text-white">
+            <Row>
+                <Col>
+                    <h2 className="text-center mb-3">Players in Lobby</h2>
+                </Col>
+            </Row>
+            <Row>
+                <Col>
+                    <ListGroup>
+                        {Object.entries(players).map(([key, player]) => (
+                            <ListGroup.Item
+                                key={key}
+                                className="d-flex justify-content-between align-items-center"
+                                style={{
+                                    backgroundColor: '#343a40',
+                                    color: '#fff',
+                                }}
+                            >
+                                <span className="d-flex align-items-center">
+                                    {player.getColor() && (
+                                        <div
+                                            style={{
+                                                width: '20px',
+                                                height: '20px',
+                                                backgroundColor: player.getColor(),
+                                                borderRadius: '50%',
+                                                border: '1px solid #fff',
+                                                marginRight: '10px',
+                                            }}
+                                        ></div>
+                                    )}
+                                    {player.getName()}
+                                </span>
+                                <span className="d-flex align-items-center">
+                                    <span className="me-3">Score: {player.getScore()}</span>
+                                    {player.getRole() === PlayerRoleEnum.HOST && (
+                                        <Badge bg="success">Host</Badge>
+                                    )}
+                                </span>
+                            </ListGroup.Item>
+                        ))}
+                    </ListGroup>
+                </Col>
+            </Row>
+        </Container>
     );
 };
 

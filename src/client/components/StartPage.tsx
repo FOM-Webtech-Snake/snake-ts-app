@@ -1,16 +1,20 @@
 import React, {useState, useRef, useEffect} from "react";
+import {ColorUtil} from "../game/util/ColorUtil";
+import {Button, Col, Container, FloatingLabel, Form, InputGroup, Row} from "react-bootstrap";
 
 interface StartPageProps {
-    onStart: (playerName: string) => void;
+    onStart: (playerName: string, color: string) => void;
 }
 
 const StartPage: React.FC<StartPageProps> = ({onStart}) => {
     const [playerName, setPlayerName] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
 
+    const [color, setColor] = useState<string>(ColorUtil.getRandomColorRGB());
+
     const handleStart = () => {
         if (playerName.trim()) {
-            onStart(playerName);
+            onStart(playerName, color);
         } else {
             alert("Please enter your name");
         }
@@ -29,34 +33,61 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
     }, []);
 
     return (
-        <div className="d-flex flex-column justify-content-center align-items-center vh-100">
-            <h1 className="mb-4">Welcome to Snake Extreme!</h1>
-            <div className="input-container text-center mb-3">
-                <div className="input-group">
-                    <span className="input-group-text"><i className="fa fa-user"></i></span>
-                    <div className="form-floating">
-                        <input
-                            type="text"
-                            id="playerName"
-                            className="form-control"
-                            placeholder="Enter your name"
-                            value={playerName}
-                            onChange={(e) => setPlayerName(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            ref={inputRef}
-                            style={{maxWidth: '300px'}}
-                        />
-                        <label htmlFor="playerName">Player Name</label>
-                    </div>
-                </div>
-            </div>
-            <button
-                className="btn btn-primary btn-lg"
-                onClick={handleStart}
-            >
-                Start
-            </button>
-        </div>
+        <Container className="d-flex flex-column justify-content-center align-items-center vh-100">
+            <Row className="text-center mb-4">
+                <Col>
+                    <h1>Welcome to Snake Extreme!</h1>
+                </Col>
+            </Row>
+            <Form className="w-100" style={{maxWidth: "400px"}}>
+                <Row>
+                    <Col>
+                        <Form.Group controlId="playerName" className="mb-3">
+                            <Form.Label>Player Name</Form.Label>
+                            <InputGroup>
+                                <InputGroup.Text id="playerNameAddon">
+                                    <i className="fa fa-user"></i>
+                                </InputGroup.Text>
+                                <Form.Control
+                                    type="text"
+                                    aria-label="Player Name"
+                                    aria-describedby="playerNameAddon"
+                                    placeholder="Enter your name"
+                                    value={playerName}
+                                    onChange={(e) => setPlayerName(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    ref={inputRef}
+                                />
+                            </InputGroup>
+                        </Form.Group>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Form.Group controlId="colorPicker" className="mb-4">
+                            <Form.Label>Pick Your Snake Color</Form.Label>
+                            <Form.Control
+                                type="color"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                style={{maxWidth: "50px"}}
+                            />
+                        </Form.Group>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col className="text-center">
+                        <Button
+                            variant="primary"
+                            size="lg"
+                            onClick={handleStart}
+                        >
+                            Start
+                        </Button>
+                    </Col>
+                </Row>
+            </Form>
+        </Container>
     );
 };
 

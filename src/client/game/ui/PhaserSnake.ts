@@ -81,14 +81,6 @@ export class PhaserSnake {
         return this.head;
     }
 
-    getHeadPosition(): Position {
-        return new Position(this.head.x, this.head.y);
-    }
-
-    getPlayerId() {
-        return this.playerId;
-    }
-
     update(): void {
         this.moveBodyParts(); // move the body parts since the head is moving automatically by phaser
 

@@ -15,6 +15,7 @@ import {InputManager} from "../input/InputManager";
 import {GameStateEnum} from "../../../shared/constants/GameStateEnum";
 import {Overlay} from "../ui/Overlay";
 import {getLogger} from "../../../shared/config/LogConfig";
+import {Player} from "../../../shared/Player";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -57,29 +58,30 @@ export class GameScene extends Phaser.Scene {
         this.socket = this.registry.get(GlobalPropKeyEnum.SOCKET);
 
         // setup manager
+        this.overlay = new Overlay(this);
+        this.overlay.show("loading...");
+
         this.collectableManager = new CollectableManager(this);
         this.playerManager = new PlayerManager();
         this.multiplayerManager = new MultiplayerManager(this, this.socket, this.collectableManager, this.playerManager);
 
-        // setup world & camera
-        this.physics.world.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // push the world bounds to (e.g. 1600x1200px)
-        this.cameras.main.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // setup camera not to leave the world
-        this.background = new Background(this);
-        this.overlay = new Overlay(this);
-
-        // game objects
-        const localSnake = new PhaserSnake(this, this.multiplayerManager.getPlayerId(), ColorUtil.getRandomColor(), new Position(300, 300));
-        this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
-        this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
-
-        // input manager
-        this.inputManager = new InputManager(this, localSnake)
     }
 
     handleGameSession(session: GameSession) {
         log.debug("updating game from game session", session);
-        this.setConfig(session.getConfig());
+        this.loadGameConfig(session.getConfig());
+        this.initSnake(session.getPlayer(this.multiplayerManager.getPlayerId()));
         this.setState(session.getGameState());
+    }
+
+    private initSnake(player: Player) {
+        // game objects
+        const localSnake = new PhaserSnake(this, player.getId(), ColorUtil.rgbToHex(player.getColor()), player.getBodyPositions() ? player.getBodyPositions()[0] : new Position(300, 300));
+        this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
+        this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
+
+        // input manager
+        this.inputManager = new InputManager(this, localSnake);
     }
 
     togglePause(): void {
@@ -116,13 +118,9 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
-    setConfig(conf: GameSessionConfig) {
-        log.debug("updating game config", conf);
+    loadGameConfig(conf: GameSessionConfig) {
+        log.debug("loading game config", conf);
         this.config = conf;
-        this.loadGameConfig();
-    }
-
-    loadGameConfig() {
         // setup world & camera
         this.physics.world.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // push the world bounds to (e.g. 1600x1200px)
         this.cameras.main.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // setup camera not to leave the world
@@ -131,6 +129,11 @@ export class GameScene extends Phaser.Scene {
             this.background.destroy();
         }
         this.background = new Background(this);
+
+        if (this.overlay) {
+            this.overlay.destroy();
+        }
+        this.overlay = new Overlay(this);
     }
 
     update() {
@@ -139,9 +142,11 @@ export class GameScene extends Phaser.Scene {
         }
 
         ArrowManager.getInstance().reset();
-        this.inputManager.handleInput();
-        this.playerManager.getPlayer(this.multiplayerManager.getPlayerId()).update();
-        this.multiplayerManager.syncPlayerState();
-        this.multiplayerManager.handleCollisionUpdate();
+        this.inputManager?.handleInput();
+        this.playerManager?.getPlayer(this.multiplayerManager.getPlayerId())?.update();
+        this.multiplayerManager?.syncPlayerState();
+        this.multiplayerManager?.handleCollisionUpdate();
     }
+
+
 }

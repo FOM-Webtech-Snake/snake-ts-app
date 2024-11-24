@@ -41,9 +41,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const createJoinSession = async () => {
         try {
             if (sessionId.trim()) {
-                joinSession(sessionId.trim(), player.getName());
+                joinSession(sessionId.trim(), player);
             } else {
-                createSession(player.getName());
+                createSession(player);
             }
         } catch (error) {
             log.error(`Error: ${(error as Error).message}`);

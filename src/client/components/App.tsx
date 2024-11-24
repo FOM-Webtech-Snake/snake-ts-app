@@ -14,8 +14,8 @@ const App: React.FC = () => {
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player>(null);
 
-    const handleStart = (playerName: string) => {
-        const newPlayer = new Player(socket.id, playerName, PlayerRoleEnum.HOST);
+    const handleStart = (playerName: string, color: string) => {
+        const newPlayer = new Player(socket.id, playerName, color, PlayerRoleEnum.HOST);
         setPlayer(newPlayer);
         setInLobby(true); // transition to the lobby
     };
@@ -41,7 +41,7 @@ const App: React.FC = () => {
             )}
 
 
-            <Header playerName={player?.getName()}/>
+            <Header player={player}/>
             {gameReady ? ( // when game is ready -> show the game
                 <GamePage/>
             ) : inLobby ? ( // when in lobby, but game not ready -> show lobby

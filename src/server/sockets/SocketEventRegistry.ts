@@ -1,7 +1,6 @@
 import {Server, Socket} from "socket.io";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {sessionManager} from "../SessionManager";
-import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {Player} from "../../shared/Player";
 import {GameSession} from "../../shared/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
@@ -12,8 +11,8 @@ import {childCollectables} from "../../shared/config/Collectables";
 const log = getLogger("server.sockets.SocketEventRegistry");
 
 interface EventHandlers {
-    [SocketEvents.Connection.CREATE_SESSION]: [string];
-    [SocketEvents.Connection.JOIN_SESSION]: [string, string];
+    [SocketEvents.Connection.CREATE_SESSION]: [any];
+    [SocketEvents.Connection.JOIN_SESSION]: [string, any];
     [SocketEvents.GameControl.GET_READY]: [];
     [SocketEvents.SessionState.GET_CURRENT_SESSION]: []
     [SocketEvents.GameControl.START_GAME]: [];
@@ -37,13 +36,16 @@ const SocketEventRegistry: {
     [SocketEvents.Connection.CREATE_SESSION]: async (
         io: Server,
         socket: Socket,
-        [playerName]: [string]
+        [playerData]: [any]
     ) => {
-        const player = new Player(socket.id, playerName, PlayerRoleEnum.HOST);
+        //const player = new Player(socket.id, playerName, PlayerRoleEnum.HOST);
+        const player = Player.fromData(playerData);
         const gameSession: GameSession = sessionManager.createSession(
             socket.id,
             DEFAULT_GAME_SESSION_CONFIG
         );
+
+        log.info("parsed player from data", player);
 
         gameSession.addPlayer(player);
         socket.join(gameSession.getId());
@@ -55,9 +57,10 @@ const SocketEventRegistry: {
     [SocketEvents.Connection.JOIN_SESSION]: async (
         io: Server,
         socket: Socket,
-        [sessionId, playerName]: [string, string]
+        [sessionId, playerData]: [string, any]
     ) => {
-        const player = new Player(socket.id, playerName, PlayerRoleEnum.GUEST);
+        //const player = new Player(socket.id, playerName, PlayerRoleEnum.GUEST);
+        const player = Player.fromData(playerData);
         const gameSession = sessionManager.getSession(sessionId);
         if (!gameSession) {
             log.warn(`Session ${sessionId} not found`);
@@ -155,7 +158,7 @@ const SocketEventRegistry: {
 
         const gameSession = sessionManager.getSession(sessionId);
         const collectable = gameSession?.getCollectableById(uuid);
-        
+
         if (collectable) {
             gameSession.getPlayer(socket.id).addScore(childCollectables[collectable.getType()].value);
             gameSession.removeCollectable(uuid);
