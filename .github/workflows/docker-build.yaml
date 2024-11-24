@@ -4,7 +4,6 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - 'fabian-migration' #TODO remove this branch after migration
       - 'main'
     tags:
       - 'v*'  # Match version tags like v1.0, v1.1.1, etc.
