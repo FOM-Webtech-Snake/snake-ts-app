@@ -64,6 +64,13 @@ export class MultiplayerManager {
             self.collectableManager.removeCollectable(uuid);
         });
 
+        this.socket.on(SocketEvents.PlayerActions.PLAYER_DIED, (playerId: string) => {
+            self.playerManager.removePlayer(playerId);
+            if (playerId === this.getPlayerId()) {
+                self.scene.cameraFollow(self.playerManager.getFirstPlayer());
+            }
+        });
+
         this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item: any) {
             log.debug("spawnNewItem");
             log.trace(`item: ${item}`);
