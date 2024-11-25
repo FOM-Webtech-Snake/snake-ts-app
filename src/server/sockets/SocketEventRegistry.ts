@@ -201,10 +201,12 @@ const SocketEventRegistry: {
             callback({status: true});
             gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
             io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+            io.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
         } else if (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) {
             callback({status: true});
             gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
             io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+            io.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
         } else {
             callback({status: false});
         }
