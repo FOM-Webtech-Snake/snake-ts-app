@@ -15,7 +15,13 @@ export class Player {
     private bodyPositions: Position[];
 
     // TODO change the default status for a player when lobby is implemented
-    constructor(id: string, name: string, color: string, role: PlayerRoleEnum, status: PlayerStatusEnum = PlayerStatusEnum.READY, score: number = 0, bodyPositions: Position[] = []) {
+    constructor(id: string,
+                name: string,
+                color: string,
+                role: PlayerRoleEnum,
+                status: PlayerStatusEnum = PlayerStatusEnum.READY,
+                score: number = 0,
+                bodyPositions: Position[] = []) {
         this.id = id;
         this.name = name;
         this.color = color;
