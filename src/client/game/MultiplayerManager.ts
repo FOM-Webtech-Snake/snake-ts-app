@@ -7,6 +7,8 @@ import {getLogger} from "../../shared/config/LogConfig";
 import {CollectableManager} from "./ui/manager/CollectableManager";
 import {PlayerManager} from "./ui/manager/PlayerManager";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
+import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
+import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 
 const log = getLogger("client.game.MultiplayerManager");
 
@@ -84,8 +86,9 @@ export class MultiplayerManager {
 
     public handleRemoteSnake(data: any) {
         log.trace("received remote snake", data);
-        const player = this.playerManager.getPlayer(data.playerId);
+        const player: PhaserSnake = this.playerManager.getPlayer(data.playerId);
         if (player) {
+            log.trace(`player found with status: ${player.getStatus()}`);
             this.playerManager.updatePlayer(data.playerId, data);
         } else {
             const newSnake = PhaserSnake.fromData(this.scene, data);
@@ -103,14 +106,28 @@ export class MultiplayerManager {
 
     public handleCollisionUpdate() {
         log.debug("collision update");
+
         const player = this.playerManager.getPlayer(this.getPlayerId());
-        if (player) {
-            this.collectableManager.update(
-                player,
-                this.scene.cameras.main,
-                (uuid: string) => this.handleCollectableCollision(uuid, player)
-            );
-        }
+        if (!player) return;
+
+
+        this.collectableManager.checkCollisions(player, (uuid: string) =>
+            this.handleCollectableCollision(uuid, player)
+        );
+
+        const handleCollision = (collisionType: CollisionTypeEnum, hasCollision: boolean) => {
+            if (hasCollision) {
+                this.emitCollision(collisionType, (success) => {
+                    if (success) {
+                        player.setStatus(PlayerStatusEnum.DEAD);
+                    }
+                });
+            }
+        };
+
+        const {worldCollision, selfCollision} = player.checkCollisions();
+        handleCollision(CollisionTypeEnum.WORLD, worldCollision);
+        handleCollision(CollisionTypeEnum.SELF, selfCollision);
     }
 
     public handleCollectableCollision(uuid: string, playerSnake: PhaserSnake): void {
@@ -130,7 +147,18 @@ export class MultiplayerManager {
     public emitCollect(uuid: string, callback: (success: boolean) => void): void {
         log.debug(`emitting collect ${uuid}`);
         this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response) => {
-            if (response.status === "ok") {
+            if (response.status) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        });
+    }
+
+    public emitCollision(type: CollisionTypeEnum, callback: (success: boolean) => void): void {
+        log.debug(`emitting collision with ${type}`);
+        this.socket.emit(SocketEvents.GameEvents.COLLISION, type, (response) => {
+            if (response.status) {
                 callback(true);
             } else {
                 callback(false);
