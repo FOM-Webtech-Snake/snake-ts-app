@@ -1,8 +1,6 @@
 import Phaser from "phaser";
 import {Background} from "../ui/Background";
 import {PhaserSnake} from "../ui/PhaserSnake";
-import {ColorUtil} from "../util/ColorUtil";
-import {Position} from "../../../shared/model/Position";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
 import {Socket} from "socket.io-client";
 import {MultiplayerManager} from "../MultiplayerManager";
@@ -80,12 +78,17 @@ export class GameScene extends Phaser.Scene {
 
     private initSnake(player: Player) {
         // game objects
-        const localSnake = new PhaserSnake(this, player.getId(), player.getStatus(), ColorUtil.rgbToHex(player.getColor()), player.getBodyPositions() ? player.getBodyPositions()[0] : new Position(300, 300));
-        this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
-        this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
+        const phaserSnake = this.playerManager.addPlayer(
+            this.multiplayerManager.getPlayerId(),
+            PhaserSnake.fromPlayer(this, player)
+        );
 
-        // input manager
-        this.inputManager = new InputManager(this, localSnake);
+        this.cameraFollow(phaserSnake);
+        this.inputManager = new InputManager(this, phaserSnake);
+    }
+
+    cameraFollow(snake: PhaserSnake) {
+        this.cameras.main.startFollow(snake.getHead(), false, 0.1, 0.1);
     }
 
     togglePause(): void {
