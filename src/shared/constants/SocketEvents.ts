@@ -48,6 +48,7 @@ export namespace SocketEvents {
     export enum PlayerActions {
         PLAYER_MOVEMENT = "playerMovement",
         PLAYER_MOVED = "playerMoved",
+        PLAYER_DIED = "playerDied",
     }
 
     export enum GameStatus {
