@@ -2,6 +2,7 @@ import {PhaserSnake} from "../PhaserSnake";
 import {PhaserCollectable} from "../PhaserCollectable";
 import {getLogger} from "../../../../shared/config/LogConfig";
 import {Collectable} from "../../../../shared/model/Collectable";
+import {Position} from "../../../../shared/model/Position";
 
 const log = getLogger("client.game.ui.manager.CollectableManager");
 
@@ -27,6 +28,14 @@ export class CollectableManager {
             collectable.destroy();
             delete this.collectables[uuid];
         }
+    }
+
+    getAllCollectables(): PhaserCollectable[] {
+        return Object.values(this.collectables);
+    }
+
+    getPositionsFromAllCollectables(): Position[] {
+        return this.getAllCollectables().map(collectable => collectable.getPosition());
     }
 
     getCollectable(uuid: string): PhaserCollectable | null {

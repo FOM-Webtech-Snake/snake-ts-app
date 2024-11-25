@@ -3,18 +3,27 @@ import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {PhaserSnake} from "../ui/PhaserSnake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {GameScene} from "../scenes/GameScene";
+import {getLogger} from "../../../shared/config/LogConfig";
+import {AutopilotInputHandler} from "./AutopilotInputHandler";
 
+const log = getLogger("client.game.input.KeyboardInputHandler");
 
 export class KeyboardInputHandler extends InputHandler {
     private useWASD: boolean;
     private cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys;
     private pauseKey: Phaser.Input.Keyboard.Key;
     private startKey: Phaser.Input.Keyboard.Key;
+    private autopilotKey: Phaser.Input.Keyboard.Key;
+    private autopilotActive: boolean;
+    private autopilotInputHandler: AutopilotInputHandler;
 
     constructor(scene: GameScene, snake: PhaserSnake, useWASD: boolean = false) {
         super(scene, snake, InputTypeEnum.KEYBOARD);
 
         this.useWASD = useWASD;
+        this.autopilotActive = false;
+        this.autopilotInputHandler = new AutopilotInputHandler(this.scene, this.snake);
+
         if (!this.scene.input.keyboard) {
             throw new Error("Input handler keyboard is not supported");
         }
@@ -35,17 +44,36 @@ export class KeyboardInputHandler extends InputHandler {
 
         this.startKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.startKey.on('down', () => this.startGame());
+
+        // POS1 key for toggling autopilot
+        this.autopilotKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.HOME);
+        this.autopilotKey.on("down", () => this.toggleAutopilot());
     }
 
     handleInput(): void {
-        if (this.cursorKeys.left.isDown) {
-            this.snake.setDirection(DirectionEnum.LEFT);
-        } else if (this.cursorKeys.right.isDown) {
-            this.snake.setDirection(DirectionEnum.RIGHT);
-        } else if (this.cursorKeys.up.isDown) {
-            this.snake.setDirection(DirectionEnum.UP);
-        } else if (this.cursorKeys.down.isDown) {
-            this.snake.setDirection(DirectionEnum.DOWN);
+        if (this.autopilotActive) {
+            this.autopilotInputHandler.handleInput();
+            return;
+        } else {
+            if (this.cursorKeys.left.isDown) {
+                this.snake.setDirection(DirectionEnum.LEFT);
+            } else if (this.cursorKeys.right.isDown) {
+                this.snake.setDirection(DirectionEnum.RIGHT);
+            } else if (this.cursorKeys.up.isDown) {
+                this.snake.setDirection(DirectionEnum.UP);
+            } else if (this.cursorKeys.down.isDown) {
+                this.snake.setDirection(DirectionEnum.DOWN);
+            }
+        }
+    }
+
+    private toggleAutopilot(): void {
+        this.autopilotActive = !this.autopilotActive;
+
+        if (this.autopilotActive) {
+            log.info("Autopilot activated.");
+        } else {
+            log.info("Autopilot deactivated.");
         }
     }
 }

@@ -39,8 +39,8 @@ export class Position {
         return new Position(data.x, data.y);
     }
 
-    toString(): string {
-        return `Position(x: ${this.x}, y: ${this.y})`;
+    encode(): string {
+        return `${this.getX()},${this.getY()}`;
     }
 
 }

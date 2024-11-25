@@ -7,6 +7,7 @@ import {getLogger} from "../../shared/config/LogConfig";
 import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {childCollectables} from "../../shared/config/Collectables";
+import {Position} from "../../shared/model/Position";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -106,10 +107,20 @@ const SocketEventRegistry: {
     [SocketEvents.PlayerActions.PLAYER_MOVEMENT]: async (
         io: Server,
         socket: Socket,
-        [snake]: [string]
+        [snake]: [any]
     ) => {
         const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
         if (!sessionId) return;
+
+        const gameSession = sessionManager.getSession(sessionId);
+        const player = gameSession.getPlayer(socket.id);
+
+        const bodyPositions: Position[] = [];
+        snake.body.forEach((pos: any) => {
+            bodyPositions.push(Position.fromData(pos));
+        });
+        log.trace("updated bodyPositions", bodyPositions);
+        player.setBodyPositions(bodyPositions)
 
         log.trace(`Player ${socket.id} moved snake ${snake}`);
         socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
