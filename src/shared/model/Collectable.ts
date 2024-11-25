@@ -19,11 +19,11 @@ export class Collectable {
         return this.id;
     }
 
-    getType() {
+    getType(): ChildCollectableTypeEnum {
         return this.type;
     }
 
-    getPosition() {
+    getPosition(): Position {
         return this.position;
     }
 

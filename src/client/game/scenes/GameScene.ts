@@ -67,6 +67,10 @@ export class GameScene extends Phaser.Scene {
 
     }
 
+    getCollectableManager(): CollectableManager {
+        return this.collectableManager;
+    }
+
     handleGameSession(session: GameSession) {
         log.debug("updating game from game session", session);
         this.loadGameConfig(session.getConfig());

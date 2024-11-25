@@ -71,9 +71,9 @@ export class KeyboardInputHandler extends InputHandler {
         this.autopilotActive = !this.autopilotActive;
 
         if (this.autopilotActive) {
-            log.debug("Autopilot activated.");
+            log.info("Autopilot activated.");
         } else {
-            log.debug("Autopilot deactivated.");
+            log.info("Autopilot deactivated.");
         }
     }
 }

@@ -11,8 +11,8 @@ export class AutopilotInputHandler extends InputHandler {
     }
 
     handleInput(): void {
-        const headPosition = this.snake.getHeadPosition(); // Assuming this method exists
-        const bounds = this.scene.physics.world.bounds; // Get the game world boundaries
+        const headPosition = this.snake.getHeadPosition();
+        const bounds = this.scene.physics.world.bounds;
 
         // Determine when to change direction for circular movement
         switch (this.snake.getDirection()) {
