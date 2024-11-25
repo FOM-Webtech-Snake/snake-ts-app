@@ -44,8 +44,8 @@ export class CollectableManager {
     }
 
     // update all collectables (incl. arrows and collisions)
-    update(snake: PhaserSnake, camera: Phaser.Cameras.Scene2D.Camera, onCollect: (uuid: string) => void): void {
-        log.debug("updating collectables");
+    update(): void {
+        log.debug("updating collectables and arrows");
         Object.keys(this.collectables).forEach(uuid => {
             const collectable = this.collectables[uuid];
 
@@ -53,11 +53,19 @@ export class CollectableManager {
             if (!collectable) return;
 
             // update arrow visibility and position
-            collectable.updateArrow(camera);
+            collectable.updateArrow(this.scene.cameras.main);
+        });
+    }
+
+    checkCollisions(snake: PhaserSnake, onCollision: (uuid: string) => void): void {
+        log.debug("checking collectables for collisions");
+        Object.keys(this.collectables).forEach(uuid => {
+            const collectable = this.collectables[uuid];
+            if (!collectable) return;
 
             // check for collisions with the snake
             if (collectable.checkCollision(snake)) {
-                onCollect(uuid); // Callback to handle the collect event
+                onCollision(uuid); // Callback to handle the collect event
             }
         });
     }

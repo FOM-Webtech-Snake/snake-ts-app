@@ -10,7 +10,7 @@ export class PlayerManager {
         this.players = {};
     }
 
-    addPlayer(playerId: string, snake: PhaserSnake): void {
+    addPlayer(playerId: string, snake: PhaserSnake): PhaserSnake {
         log.debug("add player", playerId);
         if (this.players[playerId]) {
             log.warn(`Player ${playerId} already exists.`);
@@ -18,6 +18,7 @@ export class PlayerManager {
         }
         this.players[playerId] = snake;
         log.debug(`Player ${playerId} added.`);
+        return this.players[playerId];
     }
 
     removePlayer(playerId: string): void {
@@ -47,8 +48,19 @@ export class PlayerManager {
         }
     }
 
-    getAllPlayers(): Record<string, PhaserSnake> {
-        return this.players;
-    }
+    getFirstPlayer(): PhaserSnake {
+        log.debug("getting first player");
 
+        const playerList = Object.values(this.players);
+        log.trace("player list", playerList);
+
+        if (playerList.length === 0) {
+            log.warn("No players found");
+            return null; // Handle case where no players exist
+        }
+
+        return playerList.reduce((highestScorer, currentPlayer) =>
+            currentPlayer.getScore() > highestScorer.getScore() ? currentPlayer : highestScorer
+        );
+    }
 }

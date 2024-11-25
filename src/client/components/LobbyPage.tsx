@@ -5,6 +5,7 @@ import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import PlayerList from "./PlayerList";
+import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 
 interface LobbyPageProps {
     player: Player;
@@ -126,7 +127,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                 </Button>
                             </div>
                             {/* check if the curren user is the owner -> show start button when true */}
-                            {(session?.getOwnerId() === player.getId()) ? (
+                            {(session?.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) ? (
                                 <Button
                                     className="btn btn-success btn-lg mt-3"
                                     onClick={startGame}>
