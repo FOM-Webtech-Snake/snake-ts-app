@@ -47,7 +47,6 @@ const SocketEventRegistry: {
         player.setRole(PlayerRoleEnum.HOST);
 
         const gameSession: GameSession = sessionManager.createSession(
-            socket.id,
             DEFAULT_GAME_SESSION_CONFIG
         );
 
@@ -90,8 +89,10 @@ const SocketEventRegistry: {
         if (!sessionId) return;
 
         const gameSession = sessionManager.getSession(sessionId);
-        if (gameSession?.getOwnerId() === socket.id && gameSession.start(io)) {
-            io.to(sessionId).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+            if (gameSession.start(io)) {
+                io.to(sessionId).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+            }
         }
     },
 
@@ -144,15 +145,17 @@ const SocketEventRegistry: {
         if (!sessionId) return;
 
         const gameSession = sessionManager.getSession(sessionId);
-        if (gameSession?.getOwnerId() === socket.id && gameSession.isWaitingForPlayers()) {
-            io.to(sessionId).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
-                if (err) {
-                    log.warn(`Not all clients responded in time for session ${sessionId}`);
-                } else {
-                    log.info(`game session start confirmed from all clients`);
-                    gameSession.setGameState(GameStateEnum.READY);
-                }
-            });
+        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+            if (gameSession.isWaitingForPlayers()) {
+                io.to(sessionId).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
+                    if (err) {
+                        log.warn(`Not all clients responded in time for session ${sessionId}`);
+                    } else {
+                        log.info(`game session start confirmed from all clients`);
+                        gameSession.setGameState(GameStateEnum.READY);
+                    }
+                });
+            }
         }
     },
 
