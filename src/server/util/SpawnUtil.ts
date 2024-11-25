@@ -22,12 +22,12 @@ export class SpawnUtil {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
-    static spawnNewCollectableWithDelay(io: Server, session: GameSession) { // TODO , parentType) {
+    static spawnNewCollectableWithDelay(io: Server, session: GameSession) {
         const delay = this.getRandomSpawnDelay(1000, 5000);// TODO, parentType.maxSpawnDelay);
         log.debug(`spawning collectables with delay for game session ${session.getId()}`);
         setTimeout(() => {
             // Generate a new item for the session
-            const newCollectable: Collectable = this.createCollectable(session); // TODO parentType);
+            const newCollectable: Collectable = this.createCollectable(session);
             session.addCollectable(newCollectable);
 
             // notify all players in the session that a new item has been spawned
@@ -37,7 +37,7 @@ export class SpawnUtil {
     }
 
     static createCollectable(session: GameSession) {
-        const position = PositionUtil.randomPosition(session.getConfig());
+        const position = PositionUtil.randomUniquePosition(session);
         const randomType = this.getRandomCollectableType();
         return new Collectable(null, randomType, position);
     }

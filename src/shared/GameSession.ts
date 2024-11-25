@@ -78,8 +78,7 @@ export class GameSession {
     }
 
     addPlayer(player: Player): void {
-        // TODO move it somewhere else
-        player.setBodyPositions([PositionUtil.randomPosition(this.config)]);
+        player.setBodyPositions([PositionUtil.randomUniquePosition(this)]);
         this.players[player.getId()] = player;
     }
 
