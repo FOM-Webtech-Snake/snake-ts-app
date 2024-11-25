@@ -8,6 +8,8 @@ import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {childCollectables} from "../../shared/config/Collectables";
 import {Position} from "../../shared/model/Position";
+import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
+import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -19,7 +21,8 @@ interface EventHandlers {
     [SocketEvents.GameControl.START_GAME]: [];
     [SocketEvents.GameControl.STATE_CHANGED]: [GameStateEnum];
     [SocketEvents.PlayerActions.PLAYER_MOVEMENT]: [string];
-    [SocketEvents.GameEvents.ITEM_COLLECTED]: [string, (response: { status: string }) => void];
+    [SocketEvents.GameEvents.ITEM_COLLECTED]: [string, (response: { status: boolean }) => void];
+    [SocketEvents.GameEvents.COLLISION]: [CollisionTypeEnum, (response: { status: boolean }) => void];
     [SocketEvents.Connection.LEAVE_SESSION]: [];
     [SocketEvents.Connection.DISCONNECT]: [];
 }
@@ -113,17 +116,20 @@ const SocketEventRegistry: {
         if (!sessionId) return;
 
         const gameSession = sessionManager.getSession(sessionId);
-        const player = gameSession.getPlayer(socket.id);
+        if (gameSession) {
+            const player = gameSession.getPlayer(socket.id);
+            if (player) {
+                const bodyPositions: Position[] = [];
+                snake.body.forEach((pos: any) => {
+                    bodyPositions.push(Position.fromData(pos));
+                });
+                log.trace("updated bodyPositions", bodyPositions);
+                player.setBodyPositions(bodyPositions);
 
-        const bodyPositions: Position[] = [];
-        snake.body.forEach((pos: any) => {
-            bodyPositions.push(Position.fromData(pos));
-        });
-        log.trace("updated bodyPositions", bodyPositions);
-        player.setBodyPositions(bodyPositions)
-
-        log.trace(`Player ${socket.id} moved snake ${snake}`);
-        socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
+                log.trace(`Player ${socket.id} moved snake ${snake}`);
+                socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
+            }
+        }
     },
 
     [SocketEvents.GameControl.GET_READY]: async (
@@ -162,7 +168,7 @@ const SocketEventRegistry: {
     [SocketEvents.GameEvents.ITEM_COLLECTED]: async (
         io: Server,
         socket: Socket,
-        [uuid, callback]: [string, (response: { status: string }) => void]
+        [uuid, callback]: [string, (response: { status: boolean }) => void]
     ) => {
         const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
         if (!sessionId) return;
@@ -173,11 +179,34 @@ const SocketEventRegistry: {
         if (collectable) {
             gameSession.getPlayer(socket.id).addScore(childCollectables[collectable.getType()].value);
             gameSession.removeCollectable(uuid);
-            callback({status: "ok"});
+            callback({status: true});
             io.to(sessionId).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
             io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
         } else {
-            callback({status: "error"});
+            callback({status: false});
+        }
+    },
+
+
+    [SocketEvents.GameEvents.COLLISION]: async (
+        io: Server,
+        socket: Socket,
+        [type, callback]: [CollisionTypeEnum, (response: { status: boolean }) => void]
+    ) => {
+        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
+        if (!sessionId) return;
+
+        const gameSession = sessionManager.getSession(sessionId);
+        if (type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) {
+            callback({status: true});
+            gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
+            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        } else if (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) {
+            callback({status: true});
+            gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
+            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        } else {
+            callback({status: false});
         }
     },
 
@@ -224,5 +253,6 @@ const SocketEventRegistry: {
         }
     },
 };
+
 
 export default SocketEventRegistry;
