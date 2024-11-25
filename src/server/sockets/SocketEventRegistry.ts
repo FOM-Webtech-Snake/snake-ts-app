@@ -10,6 +10,7 @@ import {childCollectables} from "../../shared/config/Collectables";
 import {Position} from "../../shared/model/Position";
 import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
+import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -42,8 +43,9 @@ const SocketEventRegistry: {
         socket: Socket,
         [playerData]: [any]
     ) => {
-        //const player = new Player(socket.id, playerName, PlayerRoleEnum.HOST);
         const player = Player.fromData(playerData);
+        player.setRole(PlayerRoleEnum.HOST);
+
         const gameSession: GameSession = sessionManager.createSession(
             socket.id,
             DEFAULT_GAME_SESSION_CONFIG
@@ -63,8 +65,9 @@ const SocketEventRegistry: {
         socket: Socket,
         [sessionId, playerData]: [string, any]
     ) => {
-        //const player = new Player(socket.id, playerName, PlayerRoleEnum.GUEST);
         const player = Player.fromData(playerData);
+        player.setRole(PlayerRoleEnum.GUEST);
+
         const gameSession = sessionManager.getSession(sessionId);
         if (!gameSession) {
             log.warn(`Session ${sessionId} not found`);
