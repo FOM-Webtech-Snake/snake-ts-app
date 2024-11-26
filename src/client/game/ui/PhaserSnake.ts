@@ -99,9 +99,15 @@ export class PhaserSnake {
         return this.head;
     }
 
-    getHeadPosition() {
+    getHeadPosition(): Position {
         if (!this.head) return null;
         return new Position(this.head.x, this.head.y);
+    }
+
+    getBodyPositions(): Position[] {
+        return this.getBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
+            return new Position(segment.x, segment.y);
+        });
     }
 
     getDirection() {
