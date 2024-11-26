@@ -113,7 +113,7 @@ the likelihood of each item being selected (higher weights mean higher probabili
 
 ```typescript
 const weightedPool: { type: ChildCollectableTypeEnum; weight: number }[] = Object.values(childCollectables)
-.map(({type, spawnChance}) => ({type, weight: spawnChance}));
+    .map(({type, spawnChance}) => ({type, weight: spawnChance}));
 ```
 
 This converts the `childCollectables` object into an array where each item has a type and a weight (from `spawnChance`).
@@ -155,7 +155,8 @@ This adds up all the weights in the weightedPool.
 const randomWeight = Math.random() * totalWeight;
 ```
 
-`Math.random()` generates a number between `0` and `1`. Multiplying by `totalWeight` scales it to a range from `0` to `totalWeight`.
+`Math.random()` generates a number between `0` and `1`. Multiplying by `totalWeight` scales it to a range from `0` to
+`totalWeight`.
 
 * Example if `Math.random()` returns `0.4`
   ``` typescript
@@ -176,7 +177,8 @@ for (const item of weightedPool) {
 }
 ```
 
-This loop accumulates weights (`cumulativeWeight`) and checks if the `randomWeight` falls within the current cumulative range.
+This loop accumulates weights (`cumulativeWeight`) and checks if the `randomWeight` falls within the current cumulative
+range.
 
 * Example - Suppose `randomWeight = 28` and the `weightedPool` is
   ``` json
@@ -186,11 +188,17 @@ This loop accumulates weights (`cumulativeWeight`) and checks if the `randomWeig
     { type: "SHRINK", weight: 10 }
   ]
   ```
-  * Iteration 1:
+    * Iteration 1:
   ```
     cumulativeWeight = 0 + 50 = 50
     Check: 28 <= 50 (true)
     Select: "FOOD"
   ```
   The loop stops, and `"FOOD"` is returned.
-  
+
+## SpatialGrid (class)
+
+`SpatialGrid` is used to keep collision detection (player to player) efficient. It improves performance in the game by
+partitioning the game world. It reduces the number of collision checks by limiting the search area to nearby grid cells.
+Imagine just checking for collision in a specific area of the whole world.
+
