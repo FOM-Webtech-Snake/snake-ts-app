@@ -38,6 +38,11 @@ export class PlayerManager {
         return this.players[playerId] || null;
     }
 
+    getAllPlayers(): PhaserSnake[] {
+        log.debug("getAllPlayers");
+        return Object.values(this.players);
+    }
+
     updatePlayer(playerId: string, snakeData: any): void {
         log.debug(`updatePlayer ${playerId} with ${snakeData}`);
         const playerSnake = this.players[playerId];

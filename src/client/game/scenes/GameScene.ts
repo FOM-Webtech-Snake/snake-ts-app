@@ -3,7 +3,7 @@ import {Background} from "../ui/Background";
 import {PhaserSnake} from "../ui/PhaserSnake";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
 import {Socket} from "socket.io-client";
-import {MultiplayerManager} from "../MultiplayerManager";
+import {MultiplayerManager} from "../ui/manager/MultiplayerManager";
 import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/GameSessionConfig";
 import {GameSession} from "../../../shared/GameSession";
 import {ArrowManager} from "../ui/manager/ArrowManager";

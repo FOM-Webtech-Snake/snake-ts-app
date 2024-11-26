@@ -87,6 +87,14 @@ export class PhaserSnake {
         this.headGroup.add(this.face);
     }
 
+    getBody() {
+        return this.body.getChildren();
+    }
+
+    getPlayerId(){
+        return this.playerId;
+    }
+
     getHead(): Phaser.Physics.Arcade.Sprite {
         return this.head;
     }
@@ -107,7 +115,7 @@ export class PhaserSnake {
         this.status = status;
     }
 
-    getScore(){
+    getScore() {
         return this.score;
     }
 

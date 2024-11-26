@@ -1,14 +1,14 @@
 import {Socket} from "socket.io-client";
-import {SocketEvents} from "../../shared/constants/SocketEvents";
-import {GameScene} from "./scenes/GameScene";
-import {GameSession} from "../../shared/GameSession";
-import {PhaserSnake} from "./ui/PhaserSnake";
-import {getLogger} from "../../shared/config/LogConfig";
-import {CollectableManager} from "./ui/manager/CollectableManager";
-import {PlayerManager} from "./ui/manager/PlayerManager";
-import {GameStateEnum} from "../../shared/constants/GameStateEnum";
-import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
-import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
+import {SocketEvents} from "../../../../shared/constants/SocketEvents";
+import {GameScene} from "../../scenes/GameScene";
+import {GameSession} from "../../../../shared/GameSession";
+import {PhaserSnake} from "../PhaserSnake";
+import {getLogger} from "../../../../shared/config/LogConfig";
+import {CollectableManager} from "./CollectableManager";
+import {PlayerManager} from "./PlayerManager";
+import {GameStateEnum} from "../../../../shared/constants/GameStateEnum";
+import {CollisionTypeEnum} from "../../../../shared/constants/CollisionTypeEnum";
+import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
 
 const log = getLogger("client.game.MultiplayerManager");
 
@@ -117,25 +117,50 @@ export class MultiplayerManager {
         const player = this.playerManager.getPlayer(this.getPlayerId());
         if (!player) return;
 
-
         this.collectableManager.checkCollisions(player, (uuid: string) =>
             this.handleCollectableCollision(uuid, player)
         );
 
-        const handleCollision = (collisionType: CollisionTypeEnum, hasCollision: boolean) => {
-            if (hasCollision) {
-                this.emitCollision(collisionType, (success) => {
-                    if (success) {
-                        player.setStatus(PlayerStatusEnum.DEAD);
-                    }
-                });
-            }
-        };
-
         const {worldCollision, selfCollision} = player.checkCollisions();
-        handleCollision(CollisionTypeEnum.WORLD, worldCollision);
-        handleCollision(CollisionTypeEnum.SELF, selfCollision);
+        if (worldCollision) {
+            this.handlePlayerCollision(player, CollisionTypeEnum.WORLD);
+        }
+        if (selfCollision) {
+            this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
+        }
+
+        this.checkPlayerToPlayerCollisions(player, this.playerManager.getAllPlayers());
     }
+
+    private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
+        this.emitCollision(collisionType, (success) => {
+            if (success) {
+                player.setStatus(PlayerStatusEnum.DEAD);
+            }
+        });
+
+    }
+
+    private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake, otherPlayers: PhaserSnake[]) {
+        const localPlayerHead = localPlayer.getHead();
+
+        for (const otherPlayer of otherPlayers) {
+            if (otherPlayer.getPlayerId() === localPlayer.getPlayerId()) {
+                continue; // skip when local player is also other player.
+            }
+
+            const otherPlayerBodyParts = otherPlayer.getBody();
+            for (const bodyPart of otherPlayerBodyParts) {
+                const bodySegment = bodyPart as Phaser.Physics.Arcade.Sprite;
+                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), bodySegment.getBounds())) {
+                    log.debug(`Player-to-player collision: ${localPlayer.getPlayerId()} collided with ${otherPlayer.getPlayerId()}`);
+                    this.handlePlayerCollision(localPlayer, CollisionTypeEnum.PLAYER);
+                    return; // Only handle the first collision
+                }
+            }
+        }
+    }
+
 
     public handleCollectableCollision(uuid: string, playerSnake: PhaserSnake): void {
         log.debug(`collectableCollision: ${uuid}`);
