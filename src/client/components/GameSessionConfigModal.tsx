@@ -1,17 +1,17 @@
 import React, {useState} from 'react';
 import {Button, Col, Form, Modal, Row} from 'react-bootstrap';
-import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../shared/GameSessionConfig";
-import {Size} from "../../shared/model/Size";
 
+import {Size} from "../../shared/model/Size";
+import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../shared/model/GameSessionConfig";
 
 
 interface SessionOptionsModalProps {
     show: boolean;
     onClose: () => void;
-    onCreate: (config: GameSessionConfig) => void;
+    onSave: (config: GameSessionConfig) => void;
 }
 
-const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onCreate}) => {
+const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave}) => {
     const [maxPlayers, setMaxPlayers] = useState(DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers());
     const [worldSize, setWorldSize] = useState(DEFAULT_GAME_SESSION_CONFIG.getSize());
     const [worldCollisionEnabled, setWorldCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getWorldCollisionEnabled());
@@ -26,7 +26,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
             selfCollisionEnabled,
             playerToPlayerCollisionEnabled
         );
-        onCreate(config);
+        onSave(config);
     };
 
     const handleSizeChange = (dimension: "height" | "width", value: number) => {
@@ -40,7 +40,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     return (
         <Modal show={show} onHide={onClose} centered backdrop="static">
             <Modal.Header closeButton>
-                <Modal.Title>Create a New Session</Modal.Title>
+                <Modal.Title>Configure your Session</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form>
@@ -107,7 +107,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                     Cancel
                 </Button>
                 <Button variant="primary" onClick={handleCreate}>
-                    Create Session
+                    Save
                 </Button>
             </Modal.Footer>
         </Modal>

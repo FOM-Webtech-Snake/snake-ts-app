@@ -7,6 +7,7 @@ import {useGameSessionSocket} from "./GameSessionSocketContext";
 import PlayerList from "./PlayerList";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import GameSessionConfigModal from "./GameSessionConfigModal";
+import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
 
 interface LobbyPageProps {
     player: Player;
@@ -16,21 +17,21 @@ interface LobbyPageProps {
 const log = getLogger("client.components.LobbyPage");
 
 const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
-    const {socket, session, joinSession, createSession, leaveSession} = useGameSessionSocket();
+    const {socket, session, joinSession, createSession, leaveSession, updateConfig} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
     const [currentStep, setCurrentStep] = useState(1);
     const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (socket) {
+        if (socket && session) {
             socket.once(SocketEvents.GameControl.GET_READY, (callback: any) => {
                 log.debug("Getting ready, triggered by host");
                 onGameReady();
                 callback(); // ack the server when ready
             });
         }
-    }, [socket]);
+    }, [socket, session]);
 
     useEffect(() => {
         if (session) {
@@ -39,7 +40,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             setCurrentStep(1);
         }
     }, [session]);
-
 
     const createJoinSession = async () => {
         try {
@@ -53,7 +53,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
         }
     };
 
-    const showConfigModal = ()=>{
+    const showConfigModal = () => {
         setShowCreateSessionModal(true);
     }
 
@@ -120,12 +120,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                         <i className="fa fa-plus"/>
                                     </Button>
                                 )}
-
-                                <Button
-                                    className="btn btn-primary btn-lg"
-                                    onClick={showConfigModal}>
-                                    <i className="fa fa-right-to-bracket"/>
-                                </Button>
                             </div>
                         </div>
                     ) : (
@@ -140,11 +134,20 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                             </div>
                             {/* check if the curren user is the owner -> show start button when true */}
                             {(session?.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) ? (
-                                <Button
-                                    className="btn btn-success btn-lg mt-3"
-                                    onClick={startGame}>
-                                    Start Game
-                                </Button>
+                                <>
+                                    <div className="input-group d-flex justify-content-center align-items-center mt-3">
+                                        <Button
+                                            className="btn btn-primary btn-lg"
+                                            onClick={startGame}>
+                                            Start Game
+                                        </Button>
+                                        <Button
+                                            className="btn btn-secondary btn-lg mr-2"
+                                            onClick={showConfigModal}>
+                                            <i className="fa fa-gear"/>
+                                        </Button>
+                                    </div>
+                                </>
                             ) : (
                                 <div className="text-center mt-3">
                                     <p>Waiting for the host to start the game</p>
@@ -160,7 +163,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             <GameSessionConfigModal
                 show={showCreateSessionModal}
                 onClose={() => setShowCreateSessionModal(false)}
-                onCreate={() => {}}
+                onSave={(config: GameSessionConfig) => updateConfig(config)}
             />
         </Container>
     );

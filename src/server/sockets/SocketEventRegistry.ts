@@ -4,7 +4,7 @@ import {sessionManager} from "../SessionManager";
 import {Player} from "../../shared/model/Player";
 import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
-import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/model/GameSessionConfig";
+import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {childCollectables} from "../../shared/config/Collectables";
 import {Position} from "../../shared/model/Position";
@@ -15,8 +15,9 @@ import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 const log = getLogger("server.sockets.SocketEventRegistry");
 
 interface EventHandlers {
-    [SocketEvents.Connection.CREATE_SESSION]: [any];
-    [SocketEvents.Connection.JOIN_SESSION]: [string, any];
+    [SocketEvents.Connection.CREATE_SESSION]: [any, (session: any) => void];
+    [SocketEvents.Connection.JOIN_SESSION]: [string, any, (session: any) => void];
+    [SocketEvents.SessionState.CONFIG_UPDATED]: [any];
     [SocketEvents.GameControl.GET_READY]: [];
     [SocketEvents.SessionState.GET_CURRENT_SESSION]: []
     [SocketEvents.GameControl.START_GAME]: [];
@@ -41,7 +42,7 @@ const SocketEventRegistry: {
     [SocketEvents.Connection.CREATE_SESSION]: async (
         io: Server,
         socket: Socket,
-        [playerData]: [any]
+        [playerData, callback]: [any, (session: any) => void]
     ) => {
         const player = Player.fromData(playerData);
         player.setRole(PlayerRoleEnum.HOST);
@@ -56,13 +57,13 @@ const SocketEventRegistry: {
         socket.join(gameSession.getId());
 
         log.info(`created new game session: ${gameSession.getId()} by ${socket.id}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        callback(gameSession.toJson());
     },
 
     [SocketEvents.Connection.JOIN_SESSION]: async (
         io: Server,
         socket: Socket,
-        [sessionId, playerData]: [string, any]
+        [sessionId, playerData, callback]: [string, any,(session: any) => void]
     ) => {
         const player = Player.fromData(playerData);
         player.setRole(PlayerRoleEnum.GUEST);
@@ -77,7 +78,25 @@ const SocketEventRegistry: {
         socket.join(gameSession.getId());
 
         log.info(`player ${socket.id} joined session ${sessionId}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        callback(gameSession.toJson());
+        io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_JOINED, player.toJson());
+    },
+
+    [SocketEvents.SessionState.CONFIG_UPDATED]: async (
+        io: Server,
+        socket: Socket,
+        [configData]: [any]
+    ) => {
+        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
+        if (!sessionId) return;
+
+        const gameSession = sessionManager.getSession(sessionId);
+        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+            gameSession.setConfig(GameSessionConfig.fromData(configData));
+        }
+
+        log.info(`player ${socket.id} updated config ${configData}`);
+        io.to(gameSession.getId()).emit(SocketEvents.SessionState.CONFIG_UPDATED, gameSession.getConfig().toJson());
     },
 
     [SocketEvents.GameControl.START_GAME]: async (

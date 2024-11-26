@@ -12,21 +12,23 @@ interface PlayerListProps {
 const log = getLogger("client.components.PlayerList");
 
 const PlayerList: React.FC<PlayerListProps> = ({}) => {
-    const {session} = useGameSessionSocket();
-    const [players, setPlayers] = useState<Player[] | null>(null);
+    const {session, players} = useGameSessionSocket();
+    const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(null);
 
     useEffect(() => {
         if (session) {
-            // Listen for updates to the session and players
-            const sortedPlayers = (session.getPlayersAsArray() || []).sort(
-                (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
-            );
-            setPlayers(sortedPlayers);
-            log.debug(`updated players ${sortedPlayers}`);
+            if (session.getPlayersAsArray()) {
+                // Listen for updates to the session and players
+                const sortedPlayers = (session.getPlayersAsArray() || []).sort(
+                    (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
+                );
+                setSortedPlayers(sortedPlayers);
+                log.debug(`updated players ${sortedPlayers}`);
+            }
         }
-    }, [session]);
+    }, [session, players]);
 
-    if (!players) {
+    if (!sortedPlayers) {
         return <p className="text-white text-center">Waiting for players to join...</p>;
     }
 
@@ -35,13 +37,13 @@ const PlayerList: React.FC<PlayerListProps> = ({}) => {
             <Row>
                 <Col>
                     <h2 className="text-center mb-3">Players in Lobby
-                        ({players.length} / {session.getConfig().getMaxPlayers()})</h2>
+                        ({sortedPlayers.length} / {session.getConfig().getMaxPlayers()})</h2>
                 </Col>
             </Row>
             <Row>
                 <Col>
                     <ListGroup>
-                        {Object.entries(players).map(([key, player]) => (
+                        {Object.entries(sortedPlayers).map(([key, player]) => (
                             <ListGroup.Item
                                 key={key}
                                 className="d-flex justify-content-between align-items-center"
