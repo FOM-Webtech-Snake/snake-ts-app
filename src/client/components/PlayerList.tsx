@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
-import {Player} from "../../shared/Player";
+import {Player} from "../../shared/model/Player";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {getLogger} from "../../shared/config/LogConfig";
 import {Badge, Col, Container, ListGroup, Row} from "react-bootstrap";

@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Player} from "../../shared/Player";
+import {Player} from "../../shared/model/Player";
 import {Button, Col, Container, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";

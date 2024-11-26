@@ -1,6 +1,6 @@
 import React from 'react';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
-import {Player} from "../../shared/Player";
+import {Player} from "../../shared/model/Player";
 import {Col, Container, Row} from "react-bootstrap";
 
 interface HeaderProps {

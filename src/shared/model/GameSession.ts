@@ -1,13 +1,13 @@
-import {GameStateEnum} from "./constants/GameStateEnum";
-import {GameSessionUtil} from "../server/util/GameSessionUtil";
+import {GameStateEnum} from "../constants/GameStateEnum";
+import {GameSessionUtil} from "../../server/util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
-import {Collectable} from "./model/Collectable";
+import {Collectable} from "./Collectable";
 import {Server} from "socket.io";
-import SpawnerDaemon from "../server/SpawnerDaemon";
-import {getLogger} from "./config/LogConfig";
-import {PlayerRoleEnum} from "./constants/PlayerRoleEnum";
-import {PositionUtil} from "../server/util/PositionUtil";
+import SpawnerDaemon from "../../server/SpawnerDaemon";
+import {getLogger} from "../config/LogConfig";
+import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
+import {PositionUtil} from "../../server/util/PositionUtil";
 
 const log = getLogger("shared.GameSession");
 
