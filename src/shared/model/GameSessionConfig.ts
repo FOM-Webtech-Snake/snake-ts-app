@@ -1,5 +1,5 @@
-import {Size} from "./model/Size";
-import {getLogger} from "./config/LogConfig";
+import {Size} from "./Size";
+import {getLogger} from "../config/LogConfig";
 
 const log = getLogger("shared.GameSessionConfig");
 

@@ -6,7 +6,7 @@ import {Position} from "../../../shared/model/Position";
 import {PlayerStatusEnum} from "../../../shared/constants/PlayerStatusEnum";
 import {getLogger} from "../../../shared/config/LogConfig";
 import {GameScene} from "../scenes/GameScene";
-import {Player} from "../../../shared/Player";
+import {Player} from "../../../shared/model/Player";
 
 const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;

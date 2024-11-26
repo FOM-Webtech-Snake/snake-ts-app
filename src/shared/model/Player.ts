@@ -1,7 +1,7 @@
-import {PlayerStatusEnum} from "./constants/PlayerStatusEnum";
-import {PlayerRoleEnum} from "./constants/PlayerRoleEnum";
-import {getLogger} from "./config/LogConfig";
-import {Position} from "./model/Position";
+import {PlayerStatusEnum} from "../constants/PlayerStatusEnum";
+import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
+import {getLogger} from "../config/LogConfig";
+import {Position} from "./Position";
 
 const log = getLogger("shared.Player");
 

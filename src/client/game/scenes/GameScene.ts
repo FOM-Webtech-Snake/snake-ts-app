@@ -4,8 +4,8 @@ import {PhaserSnake} from "../ui/PhaserSnake";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
 import {Socket} from "socket.io-client";
 import {MultiplayerManager} from "../ui/manager/MultiplayerManager";
-import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/GameSessionConfig";
-import {GameSession} from "../../../shared/GameSession";
+import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/model/GameSessionConfig";
+import {GameSession} from "../../../shared/model/GameSession";
 import {ArrowManager} from "../ui/manager/ArrowManager";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 import {PlayerManager} from "../ui/manager/PlayerManager";
@@ -13,7 +13,7 @@ import {InputManager} from "../input/InputManager";
 import {GameStateEnum} from "../../../shared/constants/GameStateEnum";
 import {Overlay} from "../ui/Overlay";
 import {getLogger} from "../../../shared/config/LogConfig";
-import {Player} from "../../../shared/Player";
+import {Player} from "../../../shared/model/Player";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
