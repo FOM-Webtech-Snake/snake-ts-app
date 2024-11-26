@@ -9,8 +9,11 @@ import {PlayerManager} from "./PlayerManager";
 import {GameStateEnum} from "../../../../shared/constants/GameStateEnum";
 import {CollisionTypeEnum} from "../../../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
+import {SpatialGrid} from "../SpatialGrid";
 
 const log = getLogger("client.game.MultiplayerManager");
+
+const COLLISION_CHECK_THRESHOLD = 50; // in milliseconds
 
 export class MultiplayerManager {
 
@@ -18,6 +21,7 @@ export class MultiplayerManager {
     private socket: Socket;
     private collectableManager: CollectableManager;
     private playerManager: PlayerManager;
+    private lastCollisionCheck: number;
 
     constructor(
         scene: GameScene,
@@ -28,6 +32,7 @@ export class MultiplayerManager {
         this.socket = socket;
         this.collectableManager = collectableManager;
         this.playerManager = playerManager;
+        this.lastCollisionCheck = 0;
         this.setup();
     }
 
@@ -112,6 +117,11 @@ export class MultiplayerManager {
     }
 
     public handleCollisionUpdate() {
+        // only check for collision every xxx milliseconds
+        const now = Date.now();
+        if (now - this.lastCollisionCheck < COLLISION_CHECK_THRESHOLD) return;
+        this.lastCollisionCheck = now;
+
         log.debug("collision update");
 
         const player = this.playerManager.getPlayer(this.getPlayerId());
@@ -142,15 +152,21 @@ export class MultiplayerManager {
     }
 
     private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake, otherPlayers: PhaserSnake[]) {
+        // create a spacial grip with suitable cell size
+        const spatialGrid = new SpatialGrid(100);
+        for (const player of otherPlayers) {
+            spatialGrid.addSnake(player);
+        }
+
+        const potentialColliders = spatialGrid.getPotentialColliders(localPlayer);
         const localPlayerHead = localPlayer.getHead();
 
-        for (const otherPlayer of otherPlayers) {
+        for (const otherPlayer of potentialColliders) {
             if (otherPlayer.getPlayerId() === localPlayer.getPlayerId()) {
                 continue; // skip when local player is also other player.
             }
 
-            const otherPlayerBodyParts = otherPlayer.getBody();
-            for (const bodyPart of otherPlayerBodyParts) {
+            for (const bodyPart of otherPlayer.getBody()) {
                 const bodySegment = bodyPart as Phaser.Physics.Arcade.Sprite;
                 if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), bodySegment.getBounds())) {
                     log.debug(`Player-to-player collision: ${localPlayer.getPlayerId()} collided with ${otherPlayer.getPlayerId()}`);
