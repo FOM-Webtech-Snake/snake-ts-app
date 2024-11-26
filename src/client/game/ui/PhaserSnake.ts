@@ -91,7 +91,7 @@ export class PhaserSnake {
         return this.body.getChildren();
     }
 
-    getPlayerId(){
+    getPlayerId() {
         return this.playerId;
     }
 
@@ -100,6 +100,7 @@ export class PhaserSnake {
     }
 
     getHeadPosition() {
+        if (!this.head) return null;
         return new Position(this.head.x, this.head.y);
     }
 
