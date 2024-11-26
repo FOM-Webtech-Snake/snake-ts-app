@@ -6,6 +6,7 @@ import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import PlayerList from "./PlayerList";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
+import GameSessionConfigModal from "./GameSessionConfigModal";
 
 interface LobbyPageProps {
     player: Player;
@@ -18,6 +19,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const {socket, session, joinSession, createSession, leaveSession} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
     const [currentStep, setCurrentStep] = useState(1);
+    const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -50,6 +52,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             log.error(`Error: ${(error as Error).message}`);
         }
     };
+
+    const showConfigModal = ()=>{
+        setShowCreateSessionModal(true);
+    }
 
     const handleLeaveSession = () => {
         leaveSession();
@@ -114,6 +120,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                         <i className="fa fa-plus"/>
                                     </Button>
                                 )}
+
+                                <Button
+                                    className="btn btn-primary btn-lg"
+                                    onClick={showConfigModal}>
+                                    <i className="fa fa-right-to-bracket"/>
+                                </Button>
                             </div>
                         </div>
                     ) : (
@@ -144,6 +156,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                 </Col>
             </Row>
             {session && (<PlayerList/>)}
+
+            <GameSessionConfigModal
+                show={showCreateSessionModal}
+                onClose={() => setShowCreateSessionModal(false)}
+                onCreate={() => {}}
+            />
         </Container>
     );
 };

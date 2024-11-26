@@ -34,7 +34,8 @@ const PlayerList: React.FC<PlayerListProps> = ({}) => {
         <Container className="text-white">
             <Row>
                 <Col>
-                    <h2 className="text-center mb-3">Players in Lobby</h2>
+                    <h2 className="text-center mb-3">Players in Lobby
+                        ({players.length} / {session.getConfig().getMaxPlayers()})</h2>
                 </Col>
             </Row>
             <Row>
