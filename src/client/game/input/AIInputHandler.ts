@@ -18,11 +18,9 @@ export class AIInputHandler extends InputHandler {
     constructor(scene: GameScene, snake: PhaserSnake) {
         super(scene, snake, InputTypeEnum.AI);
 
-        // Initialize EasyStar.js
+        // init easy* (a* algo)
         this.easystar = new EasyStar.js();
         this.grid = this.createGrid();
-
-        // Configure EasyStar.js
         this.easystar.setGrid(this.grid);
         this.easystar.setAcceptableTiles([0]); // 0 indicates empty space
     }
