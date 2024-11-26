@@ -1,9 +1,9 @@
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import {io, Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
-import {GameSession} from "../../shared/GameSession";
+import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
-import {Player} from "../../shared/Player";
+import {Player} from "../../shared/model/Player";
 
 
 interface GameSessionSocketContextType {
@@ -30,7 +30,7 @@ const GameSessionSocketContext = createContext<GameSessionSocketContextType>({
 interface SocketProviderProps {
     children: ReactNode;
 }
-const log = getLogger("client.components.LobbyPage");
+const log = getLogger("client.components.GameSessionSocketProvider");
 
 export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({children}) => {
     const [socket, setSocket] = useState<Socket>(null);

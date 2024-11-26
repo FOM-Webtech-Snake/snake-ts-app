@@ -1,10 +1,10 @@
 import {Server, Socket} from "socket.io";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {sessionManager} from "../SessionManager";
-import {Player} from "../../shared/Player";
-import {GameSession} from "../../shared/GameSession";
+import {Player} from "../../shared/model/Player";
+import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
-import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/GameSessionConfig";
+import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/model/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {childCollectables} from "../../shared/config/Collectables";
 import {Position} from "../../shared/model/Position";
@@ -203,17 +203,9 @@ const SocketEventRegistry: {
         if (!sessionId) return;
 
         const gameSession = sessionManager.getSession(sessionId);
-        if (type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) {
-            callback({status: true});
-            gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
-            io.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
-        } else if (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) {
-            callback({status: true});
-            gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
-            io.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
-        } else if (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled()) {
+        if ((type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) ||
+            (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) ||
+            (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
             callback({status: true});
             gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
             io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());

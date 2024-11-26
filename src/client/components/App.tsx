@@ -4,7 +4,7 @@ import LobbyPage from './LobbyPage';
 import Footer from "./Footer";
 import Header from "./Header";
 import GamePage from "./GamePage";
-import {Player} from "../../shared/Player";
+import {Player} from "../../shared/model/Player";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 
