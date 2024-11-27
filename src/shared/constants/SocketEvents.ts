@@ -23,6 +23,7 @@ export namespace SocketEvents {
         GET_READY = "getReady",
         PAUSE_GAME = "pauseGame",
         RESUME_GAME = "resumeGame",
+        END_GAME = "endGame",
     }
 
     export enum SessionState {
@@ -42,6 +43,7 @@ export namespace SocketEvents {
         SPAWN_NEW_COLLECTABLE = "spawnNewItem",
         ITEM_SPAWNED = "itemSpawned",
         ITEM_COLLECTED = "itemCollected",
+        TIMER_UPDATED = "timerUpdated",
     }
 
     export enum PlayerActions {
@@ -53,5 +55,6 @@ export namespace SocketEvents {
         STARTED_GAME = "startedGame",
         PAUSED_GAME = "pausedGame",
         RESUMED_GAME = "resumedGame",
+        ENDED_GAME = "endedGame",
     }
 }

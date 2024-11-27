@@ -87,6 +87,7 @@ const SocketEventRegistry: {
         if (gameSession?.getOwnerId() === socket.id && gameSession.start(io)) {
             io.to(sessionId).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
         }
+
     },
 
     [SocketEvents.GameControl.STATE_CHANGED]: async (

@@ -75,6 +75,16 @@ export class MultiplayerManager {
             // TODO self.scene.removePlayer(playerId);
         });
 
+        this.socket.on(SocketEvents.GameControl.END_GAME, function () {
+            log.debug("game ended");
+            // self.scene.startGameOverScene();
+        });
+
+        this.socket.on(SocketEvents.GameEvents.TIMER_UPDATED, function (time) {
+            log.debug("timer update", time);
+            // updateTimerDisplay(self.scene.timerText, time);
+        });
+
         this.emitGetConfiguration();
     }
 
