@@ -18,7 +18,7 @@ export namespace SocketEvents {
     }
 
     export enum GameControl {
-        STATE_CHANGED= "stateChanged",
+        STATE_CHANGED = "stateChanged",
         START_GAME = "startGame",
         GET_READY = "getReady",
         PAUSE_GAME = "pauseGame",
@@ -44,11 +44,13 @@ export namespace SocketEvents {
         ITEM_SPAWNED = "itemSpawned",
         ITEM_COLLECTED = "itemCollected",
         TIMER_UPDATED = "timerUpdated",
+        COLLISION = "collision"
     }
 
     export enum PlayerActions {
         PLAYER_MOVEMENT = "playerMovement",
         PLAYER_MOVED = "playerMoved",
+        PLAYER_DIED = "playerDied",
     }
 
     export enum GameStatus {

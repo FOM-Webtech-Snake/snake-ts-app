@@ -1,7 +1,7 @@
 import {Server} from "socket.io";
 
 import {GameStateEnum} from "../shared/constants/GameStateEnum";
-import {GameSession} from "../shared/GameSession";
+import {GameSession} from "../shared/model/GameSession";
 import {SpawnUtil} from "./util/SpawnUtil";
 import {getLogger} from "../shared/config/LogConfig";
 

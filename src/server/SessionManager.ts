@@ -1,7 +1,7 @@
-import {GameSession} from "../shared/GameSession";
+import {GameSession} from "../shared/model/GameSession";
 import {GameStateEnum} from "../shared/constants/GameStateEnum";
-import {GameSessionConfig} from "../shared/GameSessionConfig";
-import {Player} from "../shared/Player";
+import {GameSessionConfig} from "../shared/model/GameSessionConfig";
+import {Player} from "../shared/model/Player";
 import {getLogger} from "../shared/config/LogConfig";
 import SpawnerDaemon from "./SpawnerDaemon";
 
@@ -19,10 +19,10 @@ class SessionManager {
         return this.sessions;
     }
 
-    createSession(creatorId: string, config: GameSessionConfig) {
-        const newGame = new GameSession(null, creatorId, config);
+    createSession(config: GameSessionConfig) {
+        const newGame = new GameSession(null, config);
         this.sessions[newGame.getId()] = newGame;
-        log.debug(`new session created by ${creatorId}`);
+        log.debug(`new session created`);
         return newGame;
     }
 

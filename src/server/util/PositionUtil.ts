@@ -1,6 +1,6 @@
 import {Position} from "../../shared/model/Position";
-import {GameSessionConfig} from "../../shared/GameSessionConfig";
-import {GameSession} from "../../shared/GameSession";
+import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
+import {GameSession} from "../../shared/model/GameSession";
 
 const MIN_DISTANCE: number = 25;
 

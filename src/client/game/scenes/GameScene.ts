@@ -1,13 +1,11 @@
 import Phaser from "phaser";
 import {Background} from "../ui/Background";
 import {PhaserSnake} from "../ui/PhaserSnake";
-import {ColorUtil} from "../util/ColorUtil";
-import {Position} from "../../../shared/model/Position";
 import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
 import {Socket} from "socket.io-client";
-import {MultiplayerManager} from "../MultiplayerManager";
-import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/GameSessionConfig";
-import {GameSession} from "../../../shared/GameSession";
+import {MultiplayerManager} from "../ui/manager/MultiplayerManager";
+import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/model/GameSessionConfig";
+import {GameSession} from "../../../shared/model/GameSession";
 import {ArrowManager} from "../ui/manager/ArrowManager";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 import {PlayerManager} from "../ui/manager/PlayerManager";
@@ -15,7 +13,7 @@ import {InputManager} from "../input/InputManager";
 import {GameStateEnum} from "../../../shared/constants/GameStateEnum";
 import {Overlay} from "../ui/Overlay";
 import {getLogger} from "../../../shared/config/LogConfig";
-import {Player} from "../../../shared/Player";
+import {Player} from "../../../shared/model/Player";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -80,12 +78,17 @@ export class GameScene extends Phaser.Scene {
 
     private initSnake(player: Player) {
         // game objects
-        const localSnake = new PhaserSnake(this, player.getId(), ColorUtil.rgbToHex(player.getColor()), player.getBodyPositions() ? player.getBodyPositions()[0] : new Position(300, 300));
-        this.cameras.main.startFollow(localSnake.getHead(), false, 0.1, 0.1);
-        this.playerManager.addPlayer(this.multiplayerManager.getPlayerId(), localSnake);
+        const phaserSnake = this.playerManager.addPlayer(
+            this.multiplayerManager.getPlayerId(),
+            PhaserSnake.fromPlayer(this, player)
+        );
 
-        // input manager
-        this.inputManager = new InputManager(this, localSnake);
+        this.cameraFollow(phaserSnake);
+        this.inputManager = new InputManager(this, phaserSnake);
+    }
+
+    cameraFollow(snake: PhaserSnake) {
+        this.cameras.main.startFollow(snake.getHead(), false, 0.1, 0.1);
     }
 
     togglePause(): void {
@@ -122,6 +125,10 @@ export class GameScene extends Phaser.Scene {
         }
     }
 
+    getConfig(): GameSessionConfig {
+        return this.config;
+    }
+
     loadGameConfig(conf: GameSessionConfig) {
         log.debug("loading game config", conf);
         this.config = conf;
@@ -148,6 +155,9 @@ export class GameScene extends Phaser.Scene {
         ArrowManager.getInstance().reset();
         this.inputManager?.handleInput();
         this.playerManager?.getPlayer(this.multiplayerManager.getPlayerId())?.update();
+
+        this.collectableManager?.update();
+
         this.multiplayerManager?.syncPlayerState();
         this.multiplayerManager?.handleCollisionUpdate();
     }

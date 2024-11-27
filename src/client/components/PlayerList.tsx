@@ -1,9 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
-import {Player} from "../../shared/Player";
+import {Player} from "../../shared/model/Player";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {getLogger} from "../../shared/config/LogConfig";
 import {Badge, Col, Container, ListGroup, Row} from "react-bootstrap";
+import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 
 interface PlayerListProps {
 }
@@ -62,6 +63,18 @@ const PlayerList: React.FC<PlayerListProps> = ({}) => {
                                         ></div>
                                     )}
                                     {player.getName()}
+                                    {player.getStatus() === PlayerStatusEnum.DEAD && (
+                                        <span
+                                            style={{
+                                                marginLeft: '10px',
+                                                color: 'red',
+                                                fontSize: '1.2rem',
+                                            }}
+                                            title="Player is dead"
+                                        >
+                                            &#x2620; {/* Unicode skull and crossbones symbol */}
+                                        </span>
+                                    )}
                                 </span>
                                 <span className="d-flex align-items-center">
                                     <span className="me-3">Score: {player.getScore()}</span>

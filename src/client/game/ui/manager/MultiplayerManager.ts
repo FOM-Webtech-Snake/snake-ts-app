@@ -1,14 +1,19 @@
 import {Socket} from "socket.io-client";
-import {SocketEvents} from "../../shared/constants/SocketEvents";
-import {GameScene} from "./scenes/GameScene";
-import {GameSession} from "../../shared/GameSession";
-import {PhaserSnake} from "./ui/PhaserSnake";
-import {getLogger} from "../../shared/config/LogConfig";
-import {CollectableManager} from "./ui/manager/CollectableManager";
-import {PlayerManager} from "./ui/manager/PlayerManager";
-import {GameStateEnum} from "../../shared/constants/GameStateEnum";
+import {SocketEvents} from "../../../../shared/constants/SocketEvents";
+import {GameScene} from "../../scenes/GameScene";
+import {GameSession} from "../../../../shared/model/GameSession";
+import {PhaserSnake} from "../PhaserSnake";
+import {getLogger} from "../../../../shared/config/LogConfig";
+import {CollectableManager} from "./CollectableManager";
+import {PlayerManager} from "./PlayerManager";
+import {GameStateEnum} from "../../../../shared/constants/GameStateEnum";
+import {CollisionTypeEnum} from "../../../../shared/constants/CollisionTypeEnum";
+import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
+import {SpatialGrid} from "../SpatialGrid";
 
 const log = getLogger("client.game.MultiplayerManager");
+
+const COLLISION_CHECK_THRESHOLD = 50; // in milliseconds
 
 export class MultiplayerManager {
 
@@ -16,6 +21,7 @@ export class MultiplayerManager {
     private socket: Socket;
     private collectableManager: CollectableManager;
     private playerManager: PlayerManager;
+    private lastCollisionCheck: number;
 
     constructor(
         scene: GameScene,
@@ -26,6 +32,7 @@ export class MultiplayerManager {
         this.socket = socket;
         this.collectableManager = collectableManager;
         this.playerManager = playerManager;
+        this.lastCollisionCheck = 0;
         this.setup();
     }
 
@@ -62,6 +69,13 @@ export class MultiplayerManager {
             self.collectableManager.removeCollectable(uuid);
         });
 
+        this.socket.on(SocketEvents.PlayerActions.PLAYER_DIED, (playerId: string) => {
+            self.playerManager.removePlayer(playerId);
+            if (playerId === this.getPlayerId()) {
+                self.scene.cameraFollow(self.playerManager.getFirstPlayer());
+            }
+        });
+
         this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item: any) {
             log.debug("spawnNewItem");
             log.trace(`item: ${item}`);
@@ -94,8 +108,9 @@ export class MultiplayerManager {
 
     public handleRemoteSnake(data: any) {
         log.trace("received remote snake", data);
-        const player = this.playerManager.getPlayer(data.playerId);
+        const player: PhaserSnake = this.playerManager.getPlayer(data.playerId);
         if (player) {
+            log.trace(`player found with status: ${player.getStatus()}`);
             this.playerManager.updatePlayer(data.playerId, data);
         } else {
             const newSnake = PhaserSnake.fromData(this.scene, data);
@@ -112,16 +127,66 @@ export class MultiplayerManager {
     }
 
     public handleCollisionUpdate() {
+        // only check for collision every xxx milliseconds
+        const now = Date.now();
+        if (now - this.lastCollisionCheck < COLLISION_CHECK_THRESHOLD) return;
+        this.lastCollisionCheck = now;
+
         log.debug("collision update");
+
         const player = this.playerManager.getPlayer(this.getPlayerId());
-        if (player) {
-            this.collectableManager.update(
-                player,
-                this.scene.cameras.main,
-                (uuid: string) => this.handleCollectableCollision(uuid, player)
-            );
+        if (!player) return;
+
+        this.collectableManager.checkCollisions(player, (uuid: string) =>
+            this.handleCollectableCollision(uuid, player)
+        );
+
+        const {worldCollision, selfCollision} = player.checkCollisions();
+        if (worldCollision) {
+            this.handlePlayerCollision(player, CollisionTypeEnum.WORLD);
+        }
+        if (selfCollision) {
+            this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
+        }
+
+        this.checkPlayerToPlayerCollisions(player, this.playerManager.getAllPlayers());
+    }
+
+    private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
+        this.emitCollision(collisionType, (success) => {
+            if (success) {
+                player.setStatus(PlayerStatusEnum.DEAD);
+            }
+        });
+
+    }
+
+    private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake, otherPlayers: PhaserSnake[]) {
+        // create a spacial grip with suitable cell size
+        const spatialGrid = new SpatialGrid(100);
+        for (const player of otherPlayers) {
+            spatialGrid.addSnake(player);
+        }
+
+        const potentialColliders = spatialGrid.getPotentialColliders(localPlayer);
+        const localPlayerHead = localPlayer.getHead();
+
+        for (const otherPlayer of potentialColliders) {
+            if (otherPlayer.getPlayerId() === localPlayer.getPlayerId()) {
+                continue; // skip when local player is also other player.
+            }
+
+            for (const bodyPart of otherPlayer.getBody()) {
+                const bodySegment = bodyPart as Phaser.Physics.Arcade.Sprite;
+                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), bodySegment.getBounds())) {
+                    log.debug(`Player-to-player collision: ${localPlayer.getPlayerId()} collided with ${otherPlayer.getPlayerId()}`);
+                    this.handlePlayerCollision(localPlayer, CollisionTypeEnum.PLAYER);
+                    return; // Only handle the first collision
+                }
+            }
         }
     }
+
 
     public handleCollectableCollision(uuid: string, playerSnake: PhaserSnake): void {
         log.debug(`collectableCollision: ${uuid}`);
@@ -140,7 +205,18 @@ export class MultiplayerManager {
     public emitCollect(uuid: string, callback: (success: boolean) => void): void {
         log.debug(`emitting collect ${uuid}`);
         this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response) => {
-            if (response.status === "ok") {
+            if (response.status) {
+                callback(true);
+            } else {
+                callback(false);
+            }
+        });
+    }
+
+    public emitCollision(type: CollisionTypeEnum, callback: (success: boolean) => void): void {
+        log.debug(`emitting collision with ${type}`);
+        this.socket.emit(SocketEvents.GameEvents.COLLISION, type, (response) => {
+            if (response.status) {
                 callback(true);
             } else {
                 callback(false);

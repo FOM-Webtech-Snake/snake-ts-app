@@ -11,6 +11,10 @@ export class AutopilotInputHandler extends InputHandler {
     }
 
     handleInput(): void {
+        if (!this.snake || !this.snake.getHeadPosition()) {
+            return; // cancel when snake or the head does not exist
+        }
+
         const headPosition = this.snake.getHeadPosition();
         const bounds = this.scene.physics.world.bounds;
 

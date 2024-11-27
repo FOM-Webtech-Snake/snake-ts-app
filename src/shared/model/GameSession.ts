@@ -1,19 +1,18 @@
-import {GameStateEnum} from "./constants/GameStateEnum";
-import {GameSessionUtil} from "../server/util/GameSessionUtil";
+import {GameStateEnum} from "../constants/GameStateEnum";
+import {GameSessionUtil} from "../../server/util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
-import {Collectable} from "./model/Collectable";
+import {Collectable} from "./Collectable";
 import {Server} from "socket.io";
-import SpawnerDaemon from "../server/SpawnerDaemon";
-import {getLogger} from "./config/LogConfig";
-import {PlayerRoleEnum} from "./constants/PlayerRoleEnum";
-import {PositionUtil} from "../server/util/PositionUtil";
+import SpawnerDaemon from "../../server/SpawnerDaemon";
+import {getLogger} from "../config/LogConfig";
+import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
+import {PositionUtil} from "../../server/util/PositionUtil";
 
 const log = getLogger("shared.GameSession");
 
 export class GameSession {
     private id: string;
-    private ownerId: string;
     private gameState: GameStateEnum;
     private config: GameSessionConfig;
     private players: Record<string, Player>;
@@ -23,14 +22,12 @@ export class GameSession {
 
 
     constructor(id: string = null,
-                ownerId: string,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
                 players: Record<string, Player> = {},
                 collectables: Record<string, Collectable> = {},
                 remainingTime: number = 30) {
         this.id = id || GameSessionUtil.generateSessionId();
-        this.ownerId = ownerId;
         this.gameState = gameState;
         this.config = config;
         this.players = players;
@@ -52,10 +49,6 @@ export class GameSession {
 
     getPlayerCount(): number {
         return Object.keys(this.players).length;
-    }
-
-    getOwnerId(): string {
-        return this.ownerId;
     }
 
     getGameState(): GameStateEnum {
@@ -107,11 +100,12 @@ export class GameSession {
 
     removePlayer(playerId: string): void {
         delete this.players[playerId];
-        if (this.ownerId === playerId) {
-            if (this.getPlayersAsArray().length > 0) {
-                const firstPlayerInList = this.getPlayersAsArray()[0];
-                this.ownerId = firstPlayerInList.getId();
-                firstPlayerInList.setRole(PlayerRoleEnum.HOST);
+        const playersArray = this.getPlayersAsArray();
+        if (playersArray.length > 0) {
+            const existingHost = playersArray.find(player => player.getRole() === PlayerRoleEnum.HOST);
+            if (!existingHost) {
+                // Assign HOST to the first player in the list if no HOST exists
+                playersArray[0].setRole(PlayerRoleEnum.HOST);
             }
         }
     }
@@ -148,7 +142,6 @@ export class GameSession {
     toJson() {
         return {
             id: this.id,
-            ownerId: this.ownerId,
             gameState: this.gameState,
             config: this.config.toJson(),
             players: Object.fromEntries(
@@ -165,7 +158,6 @@ export class GameSession {
         log.debug("fromData", data);
         return new GameSession(
             data.id,
-            data.ownerId,
             GameSessionConfig.fromData(data.config),
             data.gameState,
             Object.fromEntries(
