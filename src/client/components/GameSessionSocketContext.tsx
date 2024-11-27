@@ -46,7 +46,7 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const newSocket = io(); // TODO: add SocketURL as parameter
+        const newSocket = io();
         setSocket(newSocket);
 
         const handleConnect = () => setIsConnected(true);
@@ -69,13 +69,13 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
     useEffect(() => {
         if (session) {
             socket.on(SocketEvents.SessionState.CONFIG_UPDATED, (data: any) => {
-                log.info("received session config update", data);
+                log.debug("received session config update", data);
                 session.setConfig(GameSessionConfig.fromData(data));
-                log.info("session", session);
+                log.trace("session", session);
             });
 
             socket.on(SocketEvents.SessionState.PLAYER_JOINED, (data: any) => {
-                log.info("received player join session", data);
+                log.debug("received player join session", data);
                 session.addPlayer(Player.fromData(data));
                 setPlayers(session.getPlayersAsArray());
             });
@@ -87,7 +87,7 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
         socket.emit(SocketEvents.Connection.CREATE_SESSION, player.toJson(), (session: any) => {
             try {
                 const gameSession = GameSession.fromData(session);
-                log.info("received created game session", gameSession);
+                log.debug("received created game session", gameSession);
                 setSession(gameSession);
             } catch (error) {
                 log.error("failed to process created session data:", error);
@@ -101,7 +101,7 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
             socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, player.toJson(), (session: any) => {
                 try {
                     const gameSession = GameSession.fromData(session);
-                    log.info("received joined game session", gameSession);
+                    log.debug("received joined game session", gameSession);
                     setSession(gameSession);
                 } catch (error) {
                     log.error("failed to process joined session data:", error);
