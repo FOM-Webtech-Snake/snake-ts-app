@@ -71,8 +71,13 @@ export class GameSession {
     }
 
     addPlayer(player: Player): void {
-        player.setBodyPositions([PositionUtil.randomUniquePosition(this)]);
         this.players[player.getId()] = player;
+    }
+
+    spawnPlayers(): void {
+        Object.values(this.players).forEach(player => {
+            player.setBodyPositions([PositionUtil.randomUniquePosition(this)]);
+        })
     }
 
     addCollectable(collectable: Collectable): void {

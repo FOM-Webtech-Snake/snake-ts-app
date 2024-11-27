@@ -163,9 +163,10 @@ const SocketEventRegistry: {
         const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
         if (!sessionId) return;
 
-        const gameSession = sessionManager.getSession(sessionId);
+        const gameSession: GameSession = sessionManager.getSession(sessionId);
         if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.isWaitingForPlayers()) {
+                gameSession.spawnPlayers();
                 io.to(sessionId).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
                     if (err) {
                         log.warn(`Not all clients responded in time for session ${sessionId}`);
