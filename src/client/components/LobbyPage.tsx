@@ -163,7 +163,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             <GameSessionConfigModal
                 show={showCreateSessionModal}
                 onClose={() => setShowCreateSessionModal(false)}
-                onSave={(config: GameSessionConfig) => updateConfig(config)}
+                onSave={(config: GameSessionConfig) => {
+                    updateConfig(config);
+                    setShowCreateSessionModal(false);
+                }}
             />
         </Container>
     );
