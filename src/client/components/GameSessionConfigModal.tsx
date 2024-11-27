@@ -18,7 +18,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
     const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
 
-    const handleCreate = () => {
+    const handleSave = () => {
         const config = new GameSessionConfig(
             maxPlayers,
             worldSize,
@@ -106,7 +106,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                 <Button variant="secondary" onClick={onClose}>
                     Cancel
                 </Button>
-                <Button variant="primary" onClick={handleCreate}>
+                <Button variant="primary" onClick={handleSave}>
                     Save
                 </Button>
             </Modal.Footer>
