@@ -38,9 +38,11 @@ export class PlayerManager {
         return this.players[playerId] || null;
     }
 
-    getAllPlayers(): PhaserSnake[] {
-        log.debug("getAllPlayers");
-        return Object.values(this.players);
+    getPlayersExcept(playerId: string): PhaserSnake[] {
+        log.debug(`getPlayersExcept(${playerId})`);
+        return Object.entries(this.players)
+            .filter(([id, _]) => id !== playerId)
+            .map(([_, player]) => player);
     }
 
     updatePlayer(playerId: string, snakeData: any): void {

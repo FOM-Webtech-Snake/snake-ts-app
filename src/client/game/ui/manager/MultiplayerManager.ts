@@ -139,7 +139,7 @@ export class MultiplayerManager {
             this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
         }
 
-        this.checkPlayerToPlayerCollisions(player, this.playerManager.getAllPlayers());
+        this.checkPlayerToPlayerCollisions(player, this.playerManager.getPlayersExcept(this.getPlayerId()));
     }
 
     private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
