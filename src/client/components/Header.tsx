@@ -1,19 +1,22 @@
 import React from 'react';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {Player} from "../../shared/model/Player";
-import {Container, Navbar} from "react-bootstrap";
+import {Button, Container, Navbar} from "react-bootstrap";
 import SnakeLogo from '../../../public/img/snake_logo.png';
 
 interface HeaderProps {
     player: Player | null;
+    theme: string;
+    toggleTheme: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({player}) => {
+const Header: React.FC<HeaderProps> = ({player, theme, toggleTheme}) => {
 
     const {socket, session} = useGameSessionSocket()
 
     return (
-        <Navbar bg="secondary" variant="dark" className="mb-4">
+        <Navbar bg={theme === 'light' ? 'light' : 'dark'} variant={theme === 'light' ? 'light' : 'dark'}
+                className="mb-4">
             <Container>
                 <Navbar.Brand>
                     {/* todo replace this logo by another */}
@@ -58,6 +61,12 @@ const Header: React.FC<HeaderProps> = ({player}) => {
                         <strong>Session ID:</strong> {session.getId()}
                     </Navbar.Text>
                 )}
+
+                <Navbar.Text className="ms-auto">
+                    <Button onClick={toggleTheme} variant={theme === 'light' ? 'secondary' : 'light'}>
+                        {theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+                    </Button>
+                </Navbar.Text>
             </Container>
         </Navbar>
     );

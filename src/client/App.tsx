@@ -37,7 +37,7 @@ const App: React.FC = () => {
     return (
         <div className={`app ${theme}`}>
             {!isConnected && <LoadingOverlay/>}
-            <Header player={player}/>
+            <Header player={player} theme={theme} toggleTheme={toggleTheme}/>
             {gameReady ? ( // when game is ready -> show the game
                 <GamePage/>
             ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
