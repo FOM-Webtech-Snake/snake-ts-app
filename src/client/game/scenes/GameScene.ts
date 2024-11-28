@@ -154,7 +154,7 @@ export class GameScene extends Phaser.Scene {
 
         ArrowManager.getInstance().reset();
         this.inputManager?.handleInput();
-        this.playerManager?.getPlayer(this.multiplayerManager.getPlayerId())?.update();
+        this.playerManager?.updateAll(); //getPlayer(this.multiplayerManager.getPlayerId())?.update();
 
         this.collectableManager?.update();
 
