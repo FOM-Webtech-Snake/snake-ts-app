@@ -1,9 +1,9 @@
 import React, {useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {useGameSessionSocket} from "../components/GameSessionSocketContext";
 import {Col, Container, Row} from "react-bootstrap";
-import PlayerList from "./PlayerList";
+import PlayerList from "../components/PlayerList";
 
 
 interface GamePageProps {

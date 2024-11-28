@@ -1,13 +1,13 @@
 import React, {useState} from 'react';
-import StartPage from './StartPage';
-import LobbyPage from './LobbyPage';
-import Footer from "./Footer";
-import Header from "./Header";
-import GamePage from "./GamePage";
-import {Player} from "../../shared/model/Player";
-import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
-import {useGameSessionSocket} from "./GameSessionSocketContext";
-import LoadingOverlay from "./LoadingOverlay";
+import StartPage from './pages/StartPage';
+import LobbyPage from './pages/LobbyPage';
+import Footer from "./components/Footer";
+import Header from "./components/Header";
+import GamePage from "./pages/GamePage";
+import {Player} from "../shared/model/Player";
+import {PlayerRoleEnum} from "../shared/constants/PlayerRoleEnum";
+import {useGameSessionSocket} from "./components/GameSessionSocketContext";
+import LoadingOverlay from "./components/LoadingOverlay";
 
 const App: React.FC = () => {
     const {socket, isConnected} = useGameSessionSocket();

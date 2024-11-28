@@ -3,10 +3,10 @@ import {Player} from "../../shared/model/Player";
 import {Button, Col, Container, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
-import {useGameSessionSocket} from "./GameSessionSocketContext";
-import PlayerList from "./PlayerList";
+import {useGameSessionSocket} from "../components/GameSessionSocketContext";
+import PlayerList from "../components/PlayerList";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
-import GameSessionConfigModal from "./GameSessionConfigModal";
+import GameSessionConfigModal from "../components/GameSessionConfigModal";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
 
 interface LobbyPageProps {
