@@ -15,8 +15,8 @@ class SessionManager {
         return this.sessions[sessionId];
     }
 
-    getAllSessions = (): Record<string, GameSession> => {
-        return this.sessions;
+    getAllSessions = (): GameSession[] => {
+        return Object.values(this.sessions);
     }
 
     createSession(config: GameSessionConfig) {

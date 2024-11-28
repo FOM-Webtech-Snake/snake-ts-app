@@ -5,7 +5,6 @@ import {GlobalPropKeyEnum} from "../constants/GlobalPropKeyEnum";
 import {Socket} from "socket.io-client";
 import {MultiplayerManager} from "../ui/manager/MultiplayerManager";
 import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/model/GameSessionConfig";
-import {GameSession} from "../../../shared/model/GameSession";
 import {ArrowManager} from "../ui/manager/ArrowManager";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 import {PlayerManager} from "../ui/manager/PlayerManager";
@@ -13,7 +12,6 @@ import {InputManager} from "../input/InputManager";
 import {GameStateEnum} from "../../../shared/constants/GameStateEnum";
 import {Overlay} from "../ui/Overlay";
 import {getLogger} from "../../../shared/config/LogConfig";
-import {Player} from "../../../shared/model/Player";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -60,31 +58,14 @@ export class GameScene extends Phaser.Scene {
         this.overlay.show("loading...");
 
         this.collectableManager = new CollectableManager(this);
+        this.inputManager = new InputManager(this);
         this.playerManager = new PlayerManager();
-        this.multiplayerManager = new MultiplayerManager(this, this.socket, this.collectableManager, this.playerManager);
-
-    }
-
-    getCollectableManager(): CollectableManager {
-        return this.collectableManager;
-    }
-
-    handleGameSession(session: GameSession) {
-        log.debug("updating game from game session", session);
-        this.loadGameConfig(session.getConfig());
-        this.initSnake(session.getPlayer(this.multiplayerManager.getPlayerId()));
-        this.setState(session.getGameState());
-    }
-
-    private initSnake(player: Player) {
-        // game objects
-        const phaserSnake = this.playerManager.addPlayer(
-            this.multiplayerManager.getPlayerId(),
-            PhaserSnake.fromPlayer(this, player)
-        );
-
-        this.cameraFollow(phaserSnake);
-        this.inputManager = new InputManager(this, phaserSnake);
+        this.multiplayerManager = new MultiplayerManager(
+            this,
+            this.socket,
+            this.collectableManager,
+            this.playerManager,
+            this.inputManager);
     }
 
     cameraFollow(snake: PhaserSnake) {

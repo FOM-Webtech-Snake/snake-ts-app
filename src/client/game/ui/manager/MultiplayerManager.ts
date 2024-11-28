@@ -10,6 +10,8 @@ import {GameStateEnum} from "../../../../shared/constants/GameStateEnum";
 import {CollisionTypeEnum} from "../../../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
 import {SpatialGrid} from "../SpatialGrid";
+import {Player} from "../../../../shared/model/Player";
+import {InputManager} from "../../input/InputManager";
 
 const log = getLogger("client.game.MultiplayerManager");
 
@@ -21,17 +23,20 @@ export class MultiplayerManager {
     private socket: Socket;
     private collectableManager: CollectableManager;
     private playerManager: PlayerManager;
+    private inputManager: InputManager;
     private lastCollisionCheck: number;
 
     constructor(
         scene: GameScene,
         socket: Socket,
         collectableManager: CollectableManager,
-        playerManager: PlayerManager) {
+        playerManager: PlayerManager,
+        inputManager: InputManager) {
         this.scene = scene;
         this.socket = socket;
         this.collectableManager = collectableManager;
         this.playerManager = playerManager;
+        this.inputManager = inputManager;
         this.lastCollisionCheck = 0;
         this.setup();
     }
@@ -45,7 +50,14 @@ export class MultiplayerManager {
             log.debug("received session");
             log.trace(`session: ${data}`);
             const gameSession: GameSession = GameSession.fromData(data);
-            self.scene.handleGameSession(gameSession);
+            self.initGameSession(gameSession);
+        });
+
+        this.socket.on(SocketEvents.GameControl.SYNC_GAME_STATE, function (data: any) {
+            log.debug("sync session state");
+            log.trace(`session: ${data}`);
+            const gameSession: GameSession = GameSession.fromData(data);
+            self.syncGameSessionState(gameSession);
         });
 
         this.socket.on(SocketEvents.GameControl.START_GAME, () => {
@@ -58,11 +70,12 @@ export class MultiplayerManager {
             self.scene.setState(state);
         });
 
-        this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
+        // TODO replaced by sync call from server (remove this part)
+        /*this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
             log.debug("snake movement");
             log.trace(`snake: ${snake}`);
             self.handleRemoteSnake(snake);
-        });
+        });*/
 
         this.socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
             log.debug("item collected", uuid);
@@ -83,10 +96,14 @@ export class MultiplayerManager {
             // TODO self.scene.addCollectable(self.scene, item);
         });
 
-        this.socket.on(SocketEvents.SessionState.DISCONNECTED, function (playerId) {
+        this.socket.on(SocketEvents.SessionState.LEFT_SESSION, function (playerId: string) {
             log.debug("player disconnected", playerId);
             self.playerManager.removePlayer(playerId);
-            // TODO self.scene.removePlayer(playerId);
+        })
+
+        this.socket.on(SocketEvents.SessionState.DISCONNECTED, function (playerId: string) {
+            log.debug("player disconnected", playerId);
+            self.playerManager.removePlayer(playerId);
         });
 
         this.emitGetConfiguration();
@@ -96,15 +113,46 @@ export class MultiplayerManager {
         return this.socket.id;
     }
 
-    public handleRemoteSnake(data: any) {
-        log.trace("received remote snake", data);
-        const player: PhaserSnake = this.playerManager.getPlayer(data.playerId);
-        if (player) {
-            log.trace(`player found with status: ${player.getStatus()}`);
-            this.playerManager.updatePlayer(data.playerId, data);
-        } else {
-            const newSnake = PhaserSnake.fromData(this.scene, data);
-            this.playerManager.addPlayer(data.playerId, newSnake);
+    private initGameSession(session: GameSession) {
+        log.debug("initializing game session");
+        this.scene.loadGameConfig(session.getConfig());
+        this.scene.setState(session.getGameState());
+        this.initSnakes(session.getPlayersAsArray());
+    }
+
+    private syncGameSessionState(session: GameSession) {
+        log.trace("updating game from game session", session);
+        // TODO change config while playing?
+        this.updateSnakes(session.getPlayersAsArray());
+        this.scene.setState(session.getGameState());
+    }
+
+    private initSnakes(players: Player[]) {
+        log.debug("initializing snakes", players);
+        if (players.length > 0) {
+            players.forEach((player: Player) => {
+                const snake = PhaserSnake.fromPlayer(this.scene, player);
+                this.playerManager.addSnake(snake);
+                if (snake.getPlayerId() === this.getPlayerId()) {
+                    this.inputManager.assignToSnake(snake);
+                    this.scene.cameraFollow(snake);
+                }
+            })
+        }
+    }
+
+    private updateSnakes(players: Player[]) {
+        log.trace("updating snakes", players);
+        if (players.length > 0) {
+            players.forEach((player: Player) => {
+                const localPlayerCopy = this.playerManager.getPlayer(player.getId());
+                if (localPlayerCopy) {
+                    log.trace(`player found with status: ${player.getStatus()}`);
+                    if (localPlayerCopy.getPlayerId() !== this.getPlayerId()){
+                        localPlayerCopy.updateFromPlayer(player);
+                    }
+                }
+            });
         }
     }
 

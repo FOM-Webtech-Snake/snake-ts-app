@@ -10,10 +10,6 @@ import {Player} from "../../../shared/model/Player";
 
 const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
-const DEFAULT_SNAKE_SCALE: number = 0.15;
-const DEFAULT_SNAKE_LENGTH: number = 4;
-const DEFAULT_SNAKE_SPEED: number = 100;
-const DEFAULT_SNAKE_DIRECTION: DirectionEnum = DirectionEnum.RIGHT;
 
 const log = getLogger("client.game.ui.PhaserSnake");
 
@@ -47,16 +43,26 @@ export class PhaserSnake {
     // location history
     private lastPositions: Position[] = []; // To store the last positions of body parts
 
-    constructor(scene: GameScene, playerId: string, status: PlayerStatusEnum, score: number, color: number, pos: Position) {
+    constructor(
+        scene: GameScene,
+        playerId: string,
+        status: PlayerStatusEnum,
+        score: number,
+        color: number,
+        speed: number,
+        scale: number,
+        direction: DirectionEnum,
+        positions: Position[]
+    ) {
         this.scene = scene;
         this.playerId = playerId;
         this.status = status;
         this.score = score;
 
         // init movement
-        this.speed = DEFAULT_SNAKE_SPEED;
-        this.scale = DEFAULT_SNAKE_SCALE;
-        this.direction = DEFAULT_SNAKE_DIRECTION;
+        this.speed = speed;
+        this.scale = scale;
+        this.direction = direction;
         this.directionLock = false;
         this.justReversed = false;
 
@@ -68,8 +74,9 @@ export class PhaserSnake {
         // create the body
         this.body = this.scene.physics.add.group();
         this.lockedSegments = this.scene.physics.add.group();
-        for (let i = 0; i < DEFAULT_SNAKE_LENGTH; i++) {
-            const bodyPart = this.addSegmentToBody(pos, (i !== 0));
+
+        for (let i = 0; i < positions.length; i++) {
+            const bodyPart = this.addSegmentToBody(positions[i]);
             if (i === 0) {
                 this.head = bodyPart;
             }
@@ -79,12 +86,19 @@ export class PhaserSnake {
         this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
         this.face.setScale(this.scale);
         this.face.setDepth(2);
+        this.face.setOrigin(0.5, 0.5)
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
 
         // create the headGroup
         this.headGroup = this.scene.physics.add.group();
         this.headGroup.add(this.head);
         this.headGroup.add(this.face);
+    }
+
+    updateFacePosition() {
+        const head = this.getHead();
+        this.face.setPosition(head.x, head.y);
+        this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
     }
 
     getBody() {
@@ -116,6 +130,10 @@ export class PhaserSnake {
         this.status = status;
     }
 
+    setSpeed(speed: number) {
+        this.speed = speed;
+    }
+
     getScore() {
         return this.score;
     }
@@ -132,6 +150,7 @@ export class PhaserSnake {
     }
 
     update(): void {
+        log.trace("updating snake", this.playerId, this.status);
         if (this.status == PlayerStatusEnum.DEAD) {
             this.headGroup.setVelocity(0, 0);
             return;
@@ -143,7 +162,7 @@ export class PhaserSnake {
         this.headGroup.setVelocity(directionVector.x * this.speed, directionVector.y * this.speed);
 
         // make face follow the direction
-        this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
+        this.updateFacePosition();
 
         this.saveCurrentHeadCoordinates();
         this.removeOldPositionsFromHistory();
@@ -199,15 +218,15 @@ export class PhaserSnake {
 
     doubleLength(): void {
         const currentLength = this.body.getLength();
-        const spawnPos: Position = new Position(this.head.x, this.head.y);
+        const spawnPos: Position = new Position(this.head.x, this.head.y, true);
         for (let i = 0; i < currentLength; i++) {
-            this.addSegmentToBody(spawnPos, true);
+            this.addSegmentToBody(spawnPos);
         }
     }
 
     increase() {
-        const spawnPos: Position = new Position(this.head.x, this.head.y);
-        this.addSegmentToBody(spawnPos, true);
+        const spawnPos: Position = new Position(this.head.x, this.head.y, true);
+        this.addSegmentToBody(spawnPos);
     }
 
     reverseDirection(): void {
@@ -271,14 +290,14 @@ export class PhaserSnake {
         return false;
     }
 
-    private addSegmentToBody(pos: Position, lockPosition: boolean = false) {
+    private addSegmentToBody(pos: Position) {
         const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getY(), "snake_body");
         bodyPart.setScale(this.scale);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
         bodyPart.body.allowDrag = false;
 
-        if (lockPosition) this.lockedSegments.add(bodyPart);
+        if (pos.getLocked()) this.lockedSegments.add(bodyPart);
 
         this.body.add(bodyPart);
         return bodyPart;
@@ -365,7 +384,6 @@ export class PhaserSnake {
             if (positionB) {
 
                 // TODO: use interpolation?
-                const interpolationFactor = MOVEMENT_INTERPOLATION_FACTOR * (this.speed / DEFAULT_SNAKE_SPEED);
                 // Apply interpolation to smooth the movement of the segment towards the new position
                 const interpolatedX = Phaser.Math.Linear(currentSegment.x, positionB.getX(), MOVEMENT_INTERPOLATION_FACTOR);
                 const interpolatedY = Phaser.Math.Linear(currentSegment.y, positionB.getY(), MOVEMENT_INTERPOLATION_FACTOR);
@@ -378,69 +396,59 @@ export class PhaserSnake {
         }
     }
 
-    static fromData(scene: GameScene, data: any) {
-        const snake = new PhaserSnake(
-            scene,
-            data.playerId,
-            data.status,
-            data.score,
-            data.primaryColor,
-            new Position(data.head.x, data.head.y));
-        snake.updateFromData(data);
-        return snake;
-    }
-
     static fromPlayer(scene: GameScene, player: Player) {
+        log.info(`from player`, player);
         return new PhaserSnake(
             scene,
             player.getId(),
             player.getStatus(),
             player.getScore(),
             ColorUtil.rgbToHex(player.getColor()),
-            player.getBodyPositions() ? player.getBodyPositions()[0] : new Position(300, 300));
+            player.getSpeed(),
+            player.getScale(),
+            player.getDirection(),
+            player.getBodyPositions());
     }
 
-    updateFromData(data: any): void {
-        this.speed = data.speed;
-        this.status = data.status;
-        this.score = data.score;
 
-        if (this.scale != data.scale) {
-            this.setScale(data.scale);
+    updateFromPlayer(player: Player) {
+        log.trace("updating from player", player);
+
+        this.setStatus(player.getStatus());
+        this.setSpeed(player.getSpeed());
+        this.setScore(player.getScore());
+
+        this.direction = player.getDirection()
+
+        if (this.scale != player.getScale()) {
+            this.setScale(player.getScale());
         }
-        if (this.direction != data.direction) {
-            this.setDirection(data.direction);
-        }
-        if (this.primaryColor != data.primaryColor) {
-            this.setPrimaryColor(data.primaryColor);
+        if (this.primaryColor != ColorUtil.rgbToHex(player.getColor())) {
+            this.setPrimaryColor(ColorUtil.rgbToHex(player.getColor()));
         }
 
-        const currentBodyLength = this.body.getLength();
-        const dataBodyLength = data.body.length;
+        const currentLength = this.body.getLength();
+        const playerBodyLength = player.getBodyPositions().length;
+        log.trace("currentLength", currentLength, "playerBodyLength", playerBodyLength);
 
-        // Update body parts
-        if (dataBodyLength > currentBodyLength) {
+        if (playerBodyLength > currentLength) {
             // Add new segments
-            for (let i = currentBodyLength; i < dataBodyLength; i++) {
-                this.addSegmentToBody(new Position(data.body[i].x, data.body[i].y));
+            for (let i = currentLength; i < playerBodyLength; i++) {
+                this.addSegmentToBody(player.getBodyPositions()[i]);
             }
-        } else if (dataBodyLength < currentBodyLength) {
+        } else if (playerBodyLength < currentLength) {
             // Remove extra segments
-            for (let i = currentBodyLength - 1; i >= dataBodyLength; i--) {
+            for (let i = currentLength - 1; i >= playerBodyLength; i--) {
                 const segment = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
                 this.body.remove(segment, true, true);
             }
         }
 
         // Update existing segments
-        for (let i = 0; i < Math.min(currentBodyLength, dataBodyLength); i++) {
+        for (let i = 0; i < Math.min(currentLength, playerBodyLength); i++) {
             const part = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
-            part.setPosition(data.body[i].x, data.body[i].y);
+            part.setPosition(player.getBodyPositions()[i].getX(), player.getBodyPositions()[i].getY());
         }
-
-        // Update face position and rotation
-        this.face.setPosition(data.face.x, data.face.y);
-        this.face.setRotation(data.face.rotation);
     }
 
     toJson() {
@@ -452,11 +460,10 @@ export class PhaserSnake {
             scale: this.scale,
             direction: this.direction,
             primaryColor: this.primaryColor,
-            head: {x: this.head.x, y: this.head.y},
-            face: {x: this.face.x, y: this.face.y, rotation: this.face.rotation},
             body: this.body.getChildren().map((segment: Phaser.Physics.Arcade.Sprite) => ({
                 x: segment.x,
-                y: segment.y
+                y: segment.y,
+                locked: this.lockedSegments.contains(segment),
             })),
         };
     }

@@ -7,7 +7,6 @@ import {getLogger} from "../../shared/config/LogConfig";
 import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {childCollectables} from "../../shared/config/Collectables";
-import {Position} from "../../shared/model/Position";
 import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
@@ -66,7 +65,7 @@ const SocketEventRegistry: {
     [SocketEvents.Connection.JOIN_SESSION]: async (
         io: Server,
         socket: Socket,
-        [sessionId, playerData, callback]: [string, any,(session: any) => void]
+        [sessionId, playerData, callback]: [string, any, (session: any) => void]
     ) => {
         const player = Player.fromData(playerData);
         player.setRole(PlayerRoleEnum.GUEST);
@@ -145,15 +144,8 @@ const SocketEventRegistry: {
         if (gameSession) {
             const player = gameSession.getPlayer(socket.id);
             if (player) {
-                const bodyPositions: Position[] = [];
-                snake.body.forEach((pos: any) => {
-                    bodyPositions.push(Position.fromData(pos));
-                });
-                log.trace("updated bodyPositions", bodyPositions);
-                player.setBodyPositions(bodyPositions);
-
-                log.trace(`Player ${socket.id} moved snake ${snake}`);
-                socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
+                log.trace('player moved', snake);
+                player.updateFromSnakeData(snake);
             }
         }
     },
@@ -191,6 +183,7 @@ const SocketEventRegistry: {
         if (!sessionId) return;
 
         const gameSession = sessionManager.getSession(sessionId);
+        // todo store that a player got the config / session to start
         socket.emit(SocketEvents.SessionState.CURRENT_SESSION, gameSession.toJson());
     },
 
@@ -210,7 +203,6 @@ const SocketEventRegistry: {
             gameSession.removeCollectable(uuid);
             callback({status: true});
             io.to(sessionId).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
         } else {
             callback({status: false});
         }
@@ -231,7 +223,6 @@ const SocketEventRegistry: {
             (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
             callback({status: true});
             gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
             io.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
         } else {
             callback({status: false});
@@ -254,7 +245,7 @@ const SocketEventRegistry: {
             if (!gameSession.hasPlayers()) {
                 sessionManager.deleteSession(sessionId);
             } else {
-                io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+                io.to(sessionId).emit(SocketEvents.SessionState.LEFT_SESSION, socket.id);
             }
         }
     },
@@ -275,7 +266,7 @@ const SocketEventRegistry: {
                 if (!gameSession.hasPlayers()) {
                     sessionManager.deleteSession(sessionId);
                 } else {
-                    io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+                    io.to(sessionId).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
                 }
             }
         }
