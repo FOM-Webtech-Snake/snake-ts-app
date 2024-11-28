@@ -23,6 +23,7 @@ export namespace SocketEvents {
         GET_READY = "getReady",
         PAUSE_GAME = "pauseGame",
         RESUME_GAME = "resumeGame",
+        SYNC_GAME_STATE = "syncGameState",
     }
 
     export enum SessionState {
@@ -30,7 +31,10 @@ export namespace SocketEvents {
         GET_CURRENT_SESSION = "getCurrentSession",
         CURRENT_SESSION = "currentSession",
         NEW_PLAYER = "newPlayer",
+        LEFT_SESSION = "leftSession",
+        PLAYER_JOINED = "playerJoined",
         SESSION_UPDATED = "sessionUpdated",
+        CONFIG_UPDATED = "configUpdated",
         DISCONNECTED = "disconnected",
     }
 

@@ -8,6 +8,7 @@ import SpawnerDaemon from "../../server/SpawnerDaemon";
 import {getLogger} from "../config/LogConfig";
 import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
 import {PositionUtil} from "../../server/util/PositionUtil";
+import {DirectionEnum} from "../constants/DirectionEnum";
 
 const log = getLogger("shared.GameSession");
 
@@ -94,8 +95,21 @@ export class GameSession {
     }
 
     addPlayer(player: Player): void {
-        player.setBodyPositions([PositionUtil.randomUniquePosition(this)]);
         this.players[player.getId()] = player;
+    }
+
+    spawnPlayers(): void {
+        Object.values(this.players).forEach(player => {
+            player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spwan
+            player.setSpeed(this.config.getSnakeStartingSpeed());
+            player.setScale(this.config.getSnakeStartingScale())
+            const bodyPositions = []
+            const spawnPosition = PositionUtil.randomUniquePosition(this);
+            for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
+                bodyPositions.push(spawnPosition);
+            }
+            player.setBodyPositions(bodyPositions);
+        })
     }
 
     addCollectable(collectable: Collectable): void {

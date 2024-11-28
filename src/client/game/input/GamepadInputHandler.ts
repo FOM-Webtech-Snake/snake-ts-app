@@ -3,14 +3,16 @@ import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {PhaserSnake} from "../ui/PhaserSnake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {GameScene} from "../scenes/GameScene";
+import {getLogger} from "../../../shared/config/LogConfig";
 
+const log = getLogger("client.game.input.GamepadInputHandler");
 
 // TODO needs to be tested!!!
 export class GamepadInputHandler extends InputHandler {
     private gamepad: Phaser.Input.Gamepad.Gamepad;
 
-    constructor(scene: GameScene, snake: PhaserSnake) {
-        super(scene, snake, InputTypeEnum.GAMEPAD);
+    constructor(scene: GameScene, active: boolean = true) {
+        super(scene, InputTypeEnum.GAMEPAD, active);
 
         if (!this.scene.input.gamepad) {
             throw new Error("Gamepad input is not supported");
@@ -22,7 +24,8 @@ export class GamepadInputHandler extends InputHandler {
     }
 
     handleInput(): void {
-        if (!this.gamepad) {
+        if (!this.gamepad || !this.isAssigned()) {
+            log.debug("Input handler TouchInputHandler is not assigned");
             return;
         }
 

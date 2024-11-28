@@ -4,10 +4,9 @@ import {sessionManager} from "../SessionManager";
 import {Player} from "../../shared/model/Player";
 import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
-import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/model/GameSessionConfig";
+import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {childCollectables} from "../../shared/config/Collectables";
-import {Position} from "../../shared/model/Position";
 import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
@@ -15,8 +14,9 @@ import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 const log = getLogger("server.sockets.SocketEventRegistry");
 
 interface EventHandlers {
-    [SocketEvents.Connection.CREATE_SESSION]: [any];
-    [SocketEvents.Connection.JOIN_SESSION]: [string, any];
+    [SocketEvents.Connection.CREATE_SESSION]: [any, (session: any) => void];
+    [SocketEvents.Connection.JOIN_SESSION]: [string, any, (session: any) => void];
+    [SocketEvents.SessionState.CONFIG_UPDATED]: [any];
     [SocketEvents.GameControl.GET_READY]: [];
     [SocketEvents.SessionState.GET_CURRENT_SESSION]: []
     [SocketEvents.GameControl.START_GAME]: [];
@@ -35,13 +35,16 @@ export type HandlerFn<Event extends keyof EventHandlers> = (
     args: EventHandlers[Event]
 ) => void;
 
+const serverTickRate = 10; // tick rate -> how many updates per second
+const syncInterval = 1000 / serverTickRate; // sync interval in ms
+
 const SocketEventRegistry: {
     [Event in keyof EventHandlers]: HandlerFn<Event>;
 } = {
     [SocketEvents.Connection.CREATE_SESSION]: async (
         io: Server,
         socket: Socket,
-        [playerData]: [any]
+        [playerData, callback]: [any, (session: any) => void]
     ) => {
         const player = Player.fromData(playerData);
         player.setRole(PlayerRoleEnum.HOST);
@@ -56,13 +59,13 @@ const SocketEventRegistry: {
         socket.join(gameSession.getId());
 
         log.info(`created new game session: ${gameSession.getId()} by ${socket.id}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        callback(gameSession.toJson());
     },
 
     [SocketEvents.Connection.JOIN_SESSION]: async (
         io: Server,
         socket: Socket,
-        [sessionId, playerData]: [string, any]
+        [sessionId, playerData, callback]: [string, any, (session: any) => void]
     ) => {
         const player = Player.fromData(playerData);
         player.setRole(PlayerRoleEnum.GUEST);
@@ -77,7 +80,25 @@ const SocketEventRegistry: {
         socket.join(gameSession.getId());
 
         log.info(`player ${socket.id} joined session ${sessionId}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        callback(gameSession.toJson());
+        io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_JOINED, player.toJson());
+    },
+
+    [SocketEvents.SessionState.CONFIG_UPDATED]: async (
+        io: Server,
+        socket: Socket,
+        [configData]: [any]
+    ) => {
+        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
+        if (!sessionId) return;
+
+        const gameSession = sessionManager.getSession(sessionId);
+        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+            gameSession.setConfig(GameSessionConfig.fromData(configData));
+        }
+
+        log.info(`player ${socket.id} updated config ${configData}`);
+        io.to(gameSession.getId()).emit(SocketEvents.SessionState.CONFIG_UPDATED, gameSession.getConfig().toJson());
     },
 
     [SocketEvents.GameControl.START_GAME]: async (
@@ -148,15 +169,8 @@ const SocketEventRegistry: {
         if (gameSession) {
             const player = gameSession.getPlayer(socket.id);
             if (player) {
-                const bodyPositions: Position[] = [];
-                snake.body.forEach((pos: any) => {
-                    bodyPositions.push(Position.fromData(pos));
-                });
-                log.trace("updated bodyPositions", bodyPositions);
-                player.setBodyPositions(bodyPositions);
-
-                log.trace(`Player ${socket.id} moved snake ${snake}`);
-                socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
+                log.trace('player moved', snake);
+                player.updateFromSnakeData(snake);
             }
         }
     },
@@ -169,9 +183,10 @@ const SocketEventRegistry: {
         const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
         if (!sessionId) return;
 
-        const gameSession = sessionManager.getSession(sessionId);
+        const gameSession: GameSession = sessionManager.getSession(sessionId);
         if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.isWaitingForPlayers()) {
+                gameSession.spawnPlayers();
                 io.to(sessionId).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
                     if (err) {
                         log.warn(`Not all clients responded in time for session ${sessionId}`);
@@ -193,6 +208,7 @@ const SocketEventRegistry: {
         if (!sessionId) return;
 
         const gameSession = sessionManager.getSession(sessionId);
+        // todo store that a player got the config / session to start
         socket.emit(SocketEvents.SessionState.CURRENT_SESSION, gameSession.toJson());
     },
 
@@ -212,7 +228,6 @@ const SocketEventRegistry: {
             gameSession.removeCollectable(uuid);
             callback({status: true});
             io.to(sessionId).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
         } else {
             callback({status: false});
         }
@@ -233,7 +248,6 @@ const SocketEventRegistry: {
             (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
             callback({status: true});
             gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
             io.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
         } else {
             callback({status: false});
@@ -256,7 +270,7 @@ const SocketEventRegistry: {
             if (!gameSession.hasPlayers()) {
                 sessionManager.deleteSession(sessionId);
             } else {
-                io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+                io.to(sessionId).emit(SocketEvents.SessionState.LEFT_SESSION, socket.id);
             }
         }
     },
@@ -277,12 +291,27 @@ const SocketEventRegistry: {
                 if (!gameSession.hasPlayers()) {
                     sessionManager.deleteSession(sessionId);
                 } else {
-                    io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+                    io.to(sessionId).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
                 }
             }
         }
     },
 };
+
+export const startSyncingGameState = (io: Server) => {
+    log.info("session sync job started!");
+    setInterval(() => {
+        log.debug("syncing session states - triggered");
+        // Loop over all active sessions and sync their game state
+        sessionManager.getAllSessions().forEach((session) => {
+            if (session.getGameState() === GameStateEnum.RUNNING) { // only send updates for running sessions
+                log.trace(`sending session state ${session.getId()}`);
+                const sessionId = session.getId();
+                io.to(sessionId).emit(SocketEvents.GameControl.SYNC_GAME_STATE, session.toJson());
+            }
+        });
+    }, syncInterval); // Sync every 100ms or adjust as needed
+}
 
 
 export default SocketEventRegistry;

@@ -4,41 +4,49 @@ import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
 import {Player} from "../../shared/model/Player";
+import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
 
 
 interface GameSessionSocketContextType {
     socket: Socket;
     session: GameSession;
+    players: Player[];
     isConnected: boolean,
     createSession: (player: Player) => void;
     joinSession: (sessionId: string, player: Player) => void;
     leaveSession: () => void;
+    updateConfig: (config: GameSessionConfig) => void;
 }
 
 const GameSessionSocketContext = createContext<GameSessionSocketContextType>({
     socket: null,
     session: null,
+    players: null,
     isConnected: false,
     createSession: () => {
     },
     joinSession: () => {
     },
     leaveSession: () => {
+    },
+    updateConfig: () => {
     }
 });
 
 interface SocketProviderProps {
     children: ReactNode;
 }
+
 const log = getLogger("client.components.GameSessionSocketProvider");
 
 export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({children}) => {
     const [socket, setSocket] = useState<Socket>(null);
     const [session, setSession] = useState<GameSession>(null);
+    const [players, setPlayers] = useState<Player[] | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const newSocket = io(); // TODO: add SocketURL as parameter
+        const newSocket = io();
         setSocket(newSocket);
 
         const handleConnect = () => setIsConnected(true);
@@ -49,11 +57,6 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
 
         newSocket.on("connect", handleConnect);
         newSocket.on("disconnect", handleDisconnect);
-        newSocket.on(SocketEvents.SessionState.SESSION_UPDATED, (data: any) => {
-            const gameSession = GameSession.fromData(data);
-            log.debug("received game session update", gameSession);
-            setSession(gameSession);
-        });
 
         // close/disconnect on unmount of this provider
         return () => {
@@ -63,27 +66,72 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
         };
     }, []);
 
+    useEffect(() => {
+        if (session) {
+            socket.on(SocketEvents.SessionState.CONFIG_UPDATED, (data: any) => {
+                log.debug("received session config update", data);
+                session.setConfig(GameSessionConfig.fromData(data));
+                log.trace("session", session);
+            });
+
+            socket.on(SocketEvents.GameControl.SYNC_GAME_STATE, function (data: any) {
+                log.debug("sync session state");
+                log.trace("session:", data.players);
+                setSession(GameSession.fromData(data));
+            });
+
+            socket.on(SocketEvents.SessionState.PLAYER_JOINED, (data: any) => {
+                log.debug("received player join session", data);
+                session.addPlayer(Player.fromData(data));
+                setPlayers(session.getPlayersAsArray());
+            });
+        }
+    }, [session]);
+
     const createSession = (player: Player) => {
         if (!socket || session) return;
-        socket.emit(SocketEvents.Connection.CREATE_SESSION, player.toJson());
+        socket.emit(SocketEvents.Connection.CREATE_SESSION, player.toJson(), (session: any) => {
+            try {
+                const gameSession = GameSession.fromData(session);
+                log.debug("received created game session", gameSession);
+                setSession(gameSession);
+            } catch (error) {
+                log.error("failed to process created session data:", error);
+            }
+        });
     };
 
     const joinSession =
         (sessionId: string, player: Player) => {
             if (!socket || session) return;
-            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, player.toJson());
+            socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, player.toJson(), (session: any) => {
+                try {
+                    const gameSession = GameSession.fromData(session);
+                    log.debug("received joined game session", gameSession);
+                    setSession(gameSession);
+                } catch (error) {
+                    log.error("failed to process joined session data:", error);
+                }
+            });
         };
+
+    const updateConfig = (conf: GameSessionConfig) => {
+        if (!socket || !session) return;
+        socket.emit(SocketEvents.SessionState.CONFIG_UPDATED, conf.toJson());
+    }
+
 
     const leaveSession = () => {
         if (!socket || !session) return;
         socket.emit(SocketEvents.Connection.LEAVE_SESSION);
         log.debug("left session");
         setSession(null);
+        setPlayers(null);
     };
 
     return (
         <GameSessionSocketContext.Provider
-            value={{socket, session, isConnected, createSession, joinSession, leaveSession}}>
+            value={{socket, session, players, isConnected, createSession, joinSession, leaveSession, updateConfig}}>
             {children}
         </GameSessionSocketContext.Provider>
     );
