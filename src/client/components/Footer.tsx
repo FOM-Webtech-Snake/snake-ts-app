@@ -1,21 +1,20 @@
 import React from 'react';
-import "../../../public/css/footer.css";
 import {Col, Container, Row} from "react-bootstrap";
 
 const Footer: React.FC = () => {
     // REPO_URL & BUILD_NUMBER are injected by DefinePlugin
     return (
-        <footer>
+        <footer className="bg-dark text-light py-3 fixed-bottom">
             <Container>
-                <Row className="align-items-center">
+                <Row>
                     {/* Left side: Copyright */}
-                    <Col xs={12} md={6}>
-                        <p className="mb-0">&copy; {new Date().getFullYear()} Snake Extreme (Build: {BUILD_NUMBER})</p>
+                    <Col md={6}>
+                        <span>&copy; {new Date().getFullYear()} Snake Extreme (Build: {BUILD_NUMBER})</span>
                     </Col>
 
                     {/* Right side: GitHub icon */}
-                    <Col xs={12} md={6} className="text-md-end">
-                        <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="text-white">
+                    <Col md={6} className="text-end">
+                        <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="text-light me-3">
                             <i className="fab fa-github"></i>
                         </a>
                     </Col>
