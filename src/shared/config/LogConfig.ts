@@ -5,13 +5,13 @@ const provider = Log4TSProvider.createProvider("Log4TSProvider", {
     /* Specify the various group expressions to match against */
     groups: [{
         expression: new RegExp("server.+"),
-        level: LogLevel.Info,
+        level: LogLevel.Debug,
     }, {
         expression: new RegExp("client.+"),
-        level: LogLevel.Info,
+        level: LogLevel.Debug,
     }, {
         expression: new RegExp("shared.+"),
-        level: LogLevel.Info,
+        level: LogLevel.Debug,
     }],
 });
 

@@ -41,8 +41,8 @@ const GamePage: React.FC<GamePageProps> = ({}) => {
                     </div>
                 </Col>
                 <Col xs={12} md={3} className="d-none d-md-flex flex-column">
-                    <PlayerList/>
                     <TimerDisplay/>
+                    <PlayerList/>
                 </Col>
             </Row>
         </Container>

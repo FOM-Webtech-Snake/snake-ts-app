@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {SocketEvents} from "../../shared/constants/SocketEvents";
 
 interface TimerDisplayProps {
 }
@@ -8,26 +9,24 @@ interface TimerDisplayProps {
 const log = getLogger("client.components.PlayerList");
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
-    const {session} = useGameSessionSocket();
-    const [remainingTime, setRemainingTime] = useState(300);
+    const {session, socket} = useGameSessionSocket();
+    const [remainingTime, setRemainingTime] = useState(session.getRemainingTime());
 
     useEffect(() => {
-        if (session) {
-            setRemainingTime(session.getRemainingTime());
-            log.debug(`updated timer`);
-        }
+        if (!socket) return;
 
-        if (remainingTime <= 0) {
-            log.debug('Die Zeit ist abgelaufen!');
-            return;
-        }
+        const onTimerUpdated = (time: number) => {
+            log.debug("Timer update received:", time);
+            setRemainingTime(time); // State aktualisieren
+        };
 
-        // const timer = setInterval(() => {
-        //     setRemainingTime((prevTime) => Math.max(prevTime - 1, 0));
-        // }, 1000);
+        socket.on(SocketEvents.GameEvents.TIMER_UPDATED, onTimerUpdated);
 
-        // return () => clearInterval(timer);
-    }, [remainingTime]);
+        return () => {
+            socket.off(SocketEvents.GameEvents.TIMER_UPDATED, onTimerUpdated);
+        };
+
+    }, [socket]);
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -36,10 +35,31 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
     };
 
     return (
-        <div>
-    Zeit: {formatTime(remainingTime)}
-    </div>
-);
+        <div
+            style={{
+                backgroundColor: '#343a40',
+                color: '#fff',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginTop: '20px',
+            }}
+        >
+            <span style={{fontSize: '1.2rem'}}>verbleibende Zeit:</span>
+            <span
+                style={{
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    letterSpacing: '1px',
+                }}
+            >
+        {formatTime(remainingTime)}
+    </span>
+        </div>
+
+    );
 };
 
 export default TimerDisplay;
