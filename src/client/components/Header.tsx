@@ -1,7 +1,8 @@
 import React from 'react';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {Player} from "../../shared/model/Player";
-import {Col, Container, Navbar, Row} from "react-bootstrap";
+import {Container, Navbar} from "react-bootstrap";
+import SnakeLogo from '../../../public/img/snake_logo.png';
 
 interface HeaderProps {
     player: Player | null;
@@ -12,8 +13,19 @@ const Header: React.FC<HeaderProps> = ({player}) => {
     const {socket, session} = useGameSessionSocket()
 
     return (
-        <Navbar className="navbar-dark bg-secondary fixed-top">
+        <Navbar bg="secondary" variant="dark" className="mb-4">
             <Container>
+                <Navbar.Brand>
+                    {/* todo replace this logo by another */}
+                    <img
+                        src={SnakeLogo}
+                        width="30"
+                        height="30"
+                        className="d-inline-block align-top"
+                        alt="Snake Extreme Logo"
+                    />
+                </Navbar.Brand>
+
                 <Navbar.Text>
 
                     {/* player info */}
