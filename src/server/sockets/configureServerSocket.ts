@@ -1,11 +1,14 @@
 import {Server, Socket} from 'socket.io';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
-import SocketEventRegistry, {HandlerFn} from "./SocketEventRegistry";
+import SocketEventRegistry, {HandlerFn, startSyncingGameState} from "./SocketEventRegistry";
 
 const log = getLogger("server.sockets.configureServerSocket");
 
 const configureServerSocket = (io: Server) => {
+
+    startSyncingGameState(io);
+
     io.on(SocketEvents.Connection.CONNECTION, (socket: Socket) => {
         log.debug(`User connected: ${socket.id}`);
 

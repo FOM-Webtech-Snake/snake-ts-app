@@ -36,6 +36,9 @@ export type HandlerFn<Event extends keyof EventHandlers> = (
     args: EventHandlers[Event]
 ) => void;
 
+const serverTickRate = 10; // tick rate -> how many updates per second
+const syncInterval = 1000 / serverTickRate; // sync interval in ms
+
 const SocketEventRegistry: {
     [Event in keyof EventHandlers]: HandlerFn<Event>;
 } = {
@@ -278,6 +281,21 @@ const SocketEventRegistry: {
         }
     },
 };
+
+export const startSyncingGameState = (io: Server) => {
+    log.info("session sync job started!");
+    setInterval(() => {
+        log.debug("syncing session states - triggered");
+        // Loop over all active sessions and sync their game state
+        sessionManager.getAllSessions().forEach((session) => {
+            if (session.getGameState() === GameStateEnum.RUNNING) { // only send updates for running sessions
+                log.trace(`sending session state ${session.getId()}`);
+                const sessionId = session.getId();
+                io.to(sessionId).emit(SocketEvents.GameControl.SYNC_GAME_STATE, session.toJson());
+            }
+        });
+    }, syncInterval); // Sync every 100ms or adjust as needed
+}
 
 
 export default SocketEventRegistry;
