@@ -4,7 +4,7 @@ import {ConfigUtil} from '../game/util/ConfigUtil';
 import {useGameSessionSocket} from "../components/GameSessionSocketContext";
 import {Col, Container, Row} from "react-bootstrap";
 import PlayerList from "../components/PlayerList";
-import TimerDisplay from "./TimerDisplay";
+import TimerDisplay from "../components/TimerDisplay";
 
 
 interface GamePageProps {
