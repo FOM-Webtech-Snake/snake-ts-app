@@ -70,13 +70,6 @@ export class MultiplayerManager {
             self.scene.setState(state);
         });
 
-        // TODO replaced by sync call from server (remove this part)
-        /*this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
-            log.debug("snake movement");
-            log.trace(`snake: ${snake}`);
-            self.handleRemoteSnake(snake);
-        });*/
-
         this.socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
             log.debug("item collected", uuid);
             self.collectableManager.removeCollectable(uuid);

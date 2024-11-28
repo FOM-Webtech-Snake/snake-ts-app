@@ -74,6 +74,12 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
                 log.trace("session", session);
             });
 
+            socket.on(SocketEvents.GameControl.SYNC_GAME_STATE, function (data: any) {
+                log.debug("sync session state");
+                log.trace("session:", data.players);
+                setSession(GameSession.fromData(data));
+            });
+
             socket.on(SocketEvents.SessionState.PLAYER_JOINED, (data: any) => {
                 log.debug("received player join session", data);
                 session.addPlayer(Player.fromData(data));
