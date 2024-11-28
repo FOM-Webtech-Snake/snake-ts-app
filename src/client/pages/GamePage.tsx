@@ -4,6 +4,7 @@ import {ConfigUtil} from '../game/util/ConfigUtil';
 import {useGameSessionSocket} from "../components/GameSessionSocketContext";
 import {Col, Container, Row} from "react-bootstrap";
 import PlayerList from "../components/PlayerList";
+import TimerDisplay from "./TimerDisplay";
 
 
 interface GamePageProps {
@@ -43,6 +44,7 @@ const GamePage: React.FC<GamePageProps> = ({theme}) => {
                         </div>
                     </Col>
                     <Col className="col-4">
+                        <TimerDisplay/>
                         <PlayerList theme={theme}/>
                     </Col>
                 </Row>

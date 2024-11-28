@@ -46,6 +46,7 @@ export namespace SocketEvents {
         SPAWN_NEW_COLLECTABLE = "spawnNewItem",
         ITEM_SPAWNED = "itemSpawned",
         ITEM_COLLECTED = "itemCollected",
+        TIMER_UPDATED = "timerUpdated",
         COLLISION = "collision"
     }
 
