@@ -1,12 +1,13 @@
 import React, {useState, useRef, useEffect} from "react";
 import {ColorUtil} from "../game/util/ColorUtil";
-import {Button, Col, Container, FloatingLabel, Form, InputGroup, Row} from "react-bootstrap";
+import {Button, Card, Col, Container, FloatingLabel, Form, InputGroup, Row} from "react-bootstrap";
 
 interface StartPageProps {
     onStart: (playerName: string, color: string) => void;
+    theme: string;
 }
 
-const StartPage: React.FC<StartPageProps> = ({onStart}) => {
+const StartPage: React.FC<StartPageProps> = ({onStart, theme}) => {
     const [playerName, setPlayerName] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -33,15 +34,12 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
     }, []);
 
     return (
-        <Container className="d-flex flex-column justify-content-center align-items-center vh-100">
-            <Row className="text-center mb-4">
-                <Col>
-                    <h1>Welcome to Snake Extreme!</h1>
-                </Col>
-            </Row>
-            <Form className="w-100" style={{maxWidth: "400px"}}>
-                <Row>
-                    <Col>
+        <Container className="d-flex justify-content-center align-items-center vh-100">
+            <Card className="p-4 shadow" bg={theme === 'light' ? 'light' : 'dark'}
+                  text={theme === 'light' ? 'dark' : 'light'}>
+                <Card.Body>
+                    <Card.Title className="text-center">Welcome to Snake Extreme!</Card.Title>
+                    <Form>
                         <Form.Group controlId="playerName" className="mb-3">
                             <Form.Label>Player Name</Form.Label>
                             <InputGroup>
@@ -60,10 +58,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                 />
                             </InputGroup>
                         </Form.Group>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col>
+
                         <Form.Group controlId="colorPicker" className="mb-4">
                             <Form.Label>Pick Your Snake Color</Form.Label>
                             <Form.Control
@@ -73,20 +68,15 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                 style={{maxWidth: "50px"}}
                             />
                         </Form.Group>
-                    </Col>
-                </Row>
-                <Row>
-                    <Col className="text-center">
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            onClick={handleStart}
-                        >
-                            Start
-                        </Button>
-                    </Col>
-                </Row>
-            </Form>
+
+                        <div className="d-grid">
+                            <Button variant="primary" size="lg" onClick={handleStart}>
+                                Start
+                            </Button>
+                        </div>
+                    </Form>
+                </Card.Body>
+            </Card>
         </Container>
     );
 };

@@ -45,7 +45,7 @@ const App: React.FC = () => {
                     player={player!}
                     onGameReady={handleGameReady}/>
             ) : (
-                <StartPage onStart={handleStart}/>
+                <StartPage onStart={handleStart} theme={theme}/>
             )}
             <Footer/>
         </div>
