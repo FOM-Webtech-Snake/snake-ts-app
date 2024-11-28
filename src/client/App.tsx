@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import StartPage from './pages/StartPage';
 import LobbyPage from './pages/LobbyPage';
 import Footer from "./components/Footer";
@@ -10,10 +10,15 @@ import {useGameSessionSocket} from "./components/GameSessionSocketContext";
 import LoadingOverlay from "./components/LoadingOverlay";
 
 const App: React.FC = () => {
+    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
     const {socket, isConnected} = useGameSessionSocket();
     const [gameReady, setGameReady] = useState(false);
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player>(null);
+
+    useEffect(() => {
+        localStorage.setItem('theme', theme);
+    }, [theme]);
 
     const handleStart = (playerName: string, color: string) => {
         const newPlayer = new Player(socket.id, playerName, color, PlayerRoleEnum.HOST);
@@ -25,8 +30,12 @@ const App: React.FC = () => {
         setGameReady(true);
     };
 
+    const toggleTheme = () => {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    };
+
     return (
-        <div className="d-flex flex-column vh-100 bg-dark text-white">
+        <div className={`app ${theme}`}>
             {!isConnected && <LoadingOverlay/>}
             <Header player={player}/>
             {gameReady ? ( // when game is ready -> show the game
