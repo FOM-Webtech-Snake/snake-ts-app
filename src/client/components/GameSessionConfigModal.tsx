@@ -18,13 +18,21 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
     const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
 
+    /* snake option parameters */
+    const [startingLength, setStartingLength] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingLength());
+    const [startingSpeed, setStartingSpeed] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingSpeed());
+    const [startingScale, setStartingScale] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingScale());
+
     const handleSave = () => {
         const config = new GameSessionConfig(
             maxPlayers,
             worldSize,
             worldCollisionEnabled,
             selfCollisionEnabled,
-            playerToPlayerCollisionEnabled
+            playerToPlayerCollisionEnabled,
+            startingLength,
+            startingSpeed,
+            startingScale,
         );
         onSave(config);
     };
