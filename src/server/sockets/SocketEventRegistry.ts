@@ -94,6 +94,31 @@ const SocketEventRegistry: {
                 io.to(sessionId).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
             }
         }
+
+        // Timer starten
+        if (!gameSession.getTimerInterval()) {
+            const intervalId = setInterval(() => {
+                if (gameSession.getGameState() === GameStateEnum.RUNNING) {
+                    const remainingTime = gameSession.getRemainingTime() - 1;
+                    gameSession.setRemainingTime(remainingTime);
+
+                    log.debug("remaining time", remainingTime);
+                    io.to(sessionId).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
+
+                    if (remainingTime <= 0) {
+                        // Timer stoppen
+                        clearInterval(intervalId);
+                        gameSession.setTimerInterval(null);
+                        gameSession.setGameState(GameStateEnum.GAME_OVER);
+                        io.to(sessionId).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                        log.info("Time expired!");
+                    }
+                }
+            }, 1000); // jede Sekunde
+
+            gameSession.setTimerInterval(intervalId);
+        }
+
     },
 
     [SocketEvents.GameControl.STATE_CHANGED]: async (

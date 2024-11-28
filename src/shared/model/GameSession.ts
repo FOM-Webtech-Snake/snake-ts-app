@@ -17,17 +17,24 @@ export class GameSession {
     private config: GameSessionConfig;
     private players: Record<string, Player>;
     private collectables: Record<string, Collectable>;
+    private remainingTime: number = 300;
+    private timerInterval: NodeJS.Timeout | null = null;
+
 
     constructor(id: string = null,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
                 players: Record<string, Player> = {},
-                collectables: Record<string, Collectable> = {}) {
+                collectables: Record<string, Collectable> = {},
+                remainingTime: number = 30,
+                timerInterval: NodeJS.Timeout = null) {
         this.id = id || GameSessionUtil.generateSessionId();
         this.gameState = gameState;
         this.config = config;
         this.players = players;
         this.collectables = collectables;
+        this.remainingTime = remainingTime;
+        this.timerInterval = timerInterval;
     }
 
     getId(): string {
@@ -64,6 +71,22 @@ export class GameSession {
 
     getCollectableById(id: string): Collectable | undefined {
         return this.collectables[id];
+    }
+
+    getRemainingTime() {
+        return this.remainingTime;
+    }
+
+    setRemainingTime(remainingTime: number) {
+        this.remainingTime = remainingTime;
+    }
+
+    getTimerInterval() {
+        return this.timerInterval;
+    }
+
+    setTimerInterval(interval: NodeJS.Timeout) {
+        this.timerInterval = interval;
     }
 
     setConfig(config: GameSessionConfig) {
@@ -137,6 +160,7 @@ export class GameSession {
             collectables: Object.fromEntries(
                 Object.entries(this.collectables).map(([id, collectable]) => [id, collectable.toJson()])
             ),
+            remainingTime: this.remainingTime,
         };
     }
 
@@ -151,7 +175,8 @@ export class GameSession {
             ),
             Object.fromEntries(
                 Object.entries(data.collectables).map(([id, collectableData]) => [id, Collectable.fromData(collectableData)])
-            )
+            ),
+            data.remainingTime
         );
     }
 }

@@ -4,6 +4,7 @@ import {ConfigUtil} from '../game/util/ConfigUtil';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {Col, Container, Row} from "react-bootstrap";
 import PlayerList from "./PlayerList";
+import TimerDisplay from "./TimerDisplay";
 
 
 interface GamePageProps {
@@ -40,6 +41,7 @@ const GamePage: React.FC<GamePageProps> = ({}) => {
                     </div>
                 </Col>
                 <Col xs={12} md={3} className="d-none d-md-flex flex-column">
+                    <TimerDisplay/>
                     <PlayerList/>
                 </Col>
             </Row>
