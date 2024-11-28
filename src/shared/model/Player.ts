@@ -21,7 +21,6 @@ export class Player {
     private direction: DirectionEnum;
     private bodyPositions: Position[];
 
-    // TODO change the default status for a player when lobby is implemented
     constructor(id: string,
                 name: string,
                 color: string,

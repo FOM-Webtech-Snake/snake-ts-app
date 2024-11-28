@@ -86,7 +86,6 @@ export class MultiplayerManager {
             log.debug("spawnNewItem");
             log.trace(`item: ${item}`);
             self.collectableManager.spawnCollectable(item);
-            // TODO self.scene.addCollectable(self.scene, item);
         });
 
         this.socket.on(SocketEvents.SessionState.LEFT_SESSION, function (playerId: string) {
