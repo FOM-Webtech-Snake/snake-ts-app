@@ -39,11 +39,12 @@ const App: React.FC = () => {
             {!isConnected && <LoadingOverlay/>}
             <Header player={player} theme={theme} toggleTheme={toggleTheme}/>
             {gameReady ? ( // when game is ready -> show the game
-                <GamePage/>
+                <GamePage theme={theme}/>
             ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
                 <LobbyPage
                     player={player!}
-                    onGameReady={handleGameReady}/>
+                    onGameReady={handleGameReady}
+                    theme={theme}/>
             ) : (
                 <StartPage onStart={handleStart} theme={theme}/>
             )}

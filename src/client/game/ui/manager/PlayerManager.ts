@@ -12,13 +12,13 @@ export class PlayerManager {
     }
 
     addSnake(snake: PhaserSnake): void {
-        log.info("adding snake", snake);
+        log.trace("adding snake", snake.toJson());
         if (this.players[snake.getPlayerId()]) {
             log.warn(`Player ${snake.getPlayerId()} already exists.`);
             return;
         }
         this.players[snake.getPlayerId()] = snake;
-        log.info(`Player ${snake.getPlayerId()} added.`);
+        log.debug(`Player ${snake.getPlayerId()} added.`);
     }
 
     removePlayer(playerId: string): void {

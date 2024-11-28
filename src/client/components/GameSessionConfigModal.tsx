@@ -9,9 +9,10 @@ interface SessionOptionsModalProps {
     show: boolean;
     onClose: () => void;
     onSave: (config: GameSessionConfig) => void;
+    theme: string;
 }
 
-const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave}) => {
+const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave, theme}) => {
     const [maxPlayers, setMaxPlayers] = useState(DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers());
     const [worldSize, setWorldSize] = useState(DEFAULT_GAME_SESSION_CONFIG.getSize());
     const [worldCollisionEnabled, setWorldCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getWorldCollisionEnabled());
@@ -47,10 +48,12 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
 
     return (
         <Modal show={show} onHide={onClose} centered backdrop="static">
-            <Modal.Header closeButton>
+            <Modal.Header
+                closeButton
+                className={theme === 'light' ? 'bg-light text-dark' : 'bg-dark text-light'}>
                 <Modal.Title>Configure your Session</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className={theme === 'light' ? 'bg-light text-dark' : 'bg-dark text-light'}>
                 <Form>
                     <Form.Group controlId="maxPlayers">
                         <Form.Label>Max Players</Form.Label>
@@ -110,11 +113,11 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                     />
                 </Form>
             </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>
+            <Modal.Footer className={theme === 'light' ? 'bg-light' : 'bg-dark'}>
+                <Button variant={theme === 'light' ? 'secondary' : 'light'} onClick={onClose}>
                     Cancel
                 </Button>
-                <Button variant="primary" onClick={handleSave}>
+                <Button variant={theme === 'light' ? 'primary' : 'light'} onClick={handleSave}>
                     Save
                 </Button>
             </Modal.Footer>

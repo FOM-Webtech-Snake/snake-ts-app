@@ -397,7 +397,7 @@ export class PhaserSnake {
     }
 
     static fromPlayer(scene: GameScene, player: Player) {
-        log.info(`from player`, player);
+        log.debug(`from player`, player);
         return new PhaserSnake(
             scene,
             player.getId(),

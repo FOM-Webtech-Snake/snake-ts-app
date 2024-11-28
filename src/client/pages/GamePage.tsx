@@ -7,9 +7,10 @@ import PlayerList from "../components/PlayerList";
 
 
 interface GamePageProps {
+    theme: string;
 }
 
-const GamePage: React.FC<GamePageProps> = ({}) => {
+const GamePage: React.FC<GamePageProps> = ({theme}) => {
     const {socket} = useGameSessionSocket();
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
@@ -32,19 +33,22 @@ const GamePage: React.FC<GamePageProps> = ({}) => {
     }, []);
 
     return (
-        <Container fluid className="vh-100 d-flex flex-column">
-            <Row className={"flex-grow-1"}>
-                <Col xs={12} md={9} className="d-flex justify-content-center align-items-center">
-                    <div id="game-container" ref={gameContainerRef} style={{width: '100%', height: '100%'}}>
-                        {/* game content will be rendered here by Phaser */}
-                    </div>
-                </Col>
-                <Col xs={12} md={3} className="d-none d-md-flex flex-column">
-                    <PlayerList/>
-                </Col>
-            </Row>
-        </Container>
+        <>
+            <Container className="vh-100 d-flex flex-column justify-content-center">
+                <Row className="flex-grow-1">
+                    <Col className="col-8">
+                        <div id="game-container" ref={gameContainerRef}
+                             style={{width: '100%', height: '90%'}}>
+                            {/* game content will be rendered here by Phaser */}
+                        </div>
+                    </Col>
+                    <Col className="col-4">
+                        <PlayerList theme={theme}/>
+                    </Col>
+                </Row>
+            </Container>
+        </>
     );
-};
+}
 
 export default GamePage;

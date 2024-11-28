@@ -1,45 +1,42 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Player} from "../../shared/model/Player";
-import {Button, Col, Container, Row} from 'react-bootstrap';
+import {Button, Card, Col, Container, Form, InputGroup, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "../components/GameSessionSocketContext";
-import PlayerList from "../components/PlayerList";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import GameSessionConfigModal from "../components/GameSessionConfigModal";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
+import PlayerList from "../components/PlayerList";
 
 interface LobbyPageProps {
     player: Player;
     onGameReady: () => void;
+    theme: string;
 }
 
 const log = getLogger("client.components.LobbyPage");
 
-const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
+const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
     const {socket, session, joinSession, createSession, leaveSession, updateConfig} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
-    const [currentStep, setCurrentStep] = useState(1);
     const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (socket && session) {
+            setSessionId(session.getId());
+            inputRef.current.readOnly = true;
+
             socket.once(SocketEvents.GameControl.GET_READY, (callback: any) => {
                 log.debug("Getting ready, triggered by host");
                 onGameReady();
                 callback(); // ack the server when ready
             });
+        } else {
+            inputRef.current.readOnly = false;
         }
     }, [socket, session]);
-
-    useEffect(() => {
-        if (session) {
-            setCurrentStep(2);
-        } else {
-            setCurrentStep(1);
-        }
-    }, [session]);
 
     const createJoinSession = async () => {
         try {
@@ -80,85 +77,100 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     }, []);
 
     return (
-        <Container className={"vh-100 d-flex flex-column bg-dark text-white justify-content-center align-items-center"}>
-            <Row className="w-100 mb-4">
-                <Col>
-                    <h1 className="text-center">Welcome to the Lobby, {player.getName()}!</h1>
-                </Col>
-            </Row>
-            <Row className="w-100">
-                <Col className="d-flex justify-content-center">
-                    {currentStep === 1 ? (
-                        <div className="input-container text-center mb-3">
-                            <div className="input-group">
-                                <span className="input-group-text">Session ID</span>
-                                <div className="form-floating">
-                                    <input
-                                        type="text"
-                                        id="sessionCode"
-                                        className="form-control"
-                                        placeholder="Session Code"
-                                        value={sessionId ? sessionId : ""}
-                                        onChange={(e) => setSessionId(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        ref={inputRef}
-                                        style={{maxWidth: '300px'}}
-                                    />
-                                    <label htmlFor="sessionCode">Session Code</label>
-                                </div>
+        <>
+            <Container className="vh-100 d-flex justify-content-center">
+                <div>
+                    <Row>
+                        <Col className="col-12">
+                            <h1 className="text-center">Hello {player.getName()}!</h1>
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col className="col-12">
+                            <Card className="p-4 shadow"
+                                  bg={theme === 'light' ? 'light' : 'dark'}
+                                  text={theme === 'light' ? 'dark' : 'light'}>
+                                <Card.Body>
+                                    <Card.Title className="text-center">Session</Card.Title>
+                                    <div>
+                                        <Form.Group controlId="sessionId" className="mb-3">
+                                            <Form.Label>Session ID</Form.Label>
+                                            <InputGroup>
+                                                <InputGroup.Text id="sessionIdAddon">
+                                                    <i className="fas fa-qrcode"></i>
+                                                </InputGroup.Text>
+                                                <Form.Control
+                                                    type="text"
+                                                    aria-label="Session ID"
+                                                    aria-describedby="sessionIdAddon"
+                                                    placeholder="Session ID"
+                                                    value={sessionId ? sessionId : ""}
+                                                    onChange={(e) => setSessionId(e.target.value)}
+                                                    onKeyDown={handleKeyDown}
+                                                    ref={inputRef}
+                                                />
+                                                {session ? (<>
+                                                    <Button
+                                                        variant="primary" size="lg"
+                                                        onClick={handleLeaveSession}>
+                                                        <i className="fa fa-sign-out"></i>
+                                                    </Button>
+                                                </>) : (
+                                                    <>
+                                                        {sessionId.trim() ? (
+                                                            <Button
+                                                                variant="primary" size="lg"
+                                                                onClick={createJoinSession}>
+                                                                <i className="fa fa-right-to-bracket"/>
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                variant="secondary" size="lg"
+                                                                onClick={createJoinSession}>
+                                                                <i className="fa fa-plus"/>
+                                                            </Button>
+                                                        )}
+                                                    </>
+                                                )}
 
-                                {sessionId.trim() && !session ? (
-                                    <Button
-                                        className="btn btn-primary btn-lg"
-                                        onClick={createJoinSession}>
-                                        <i className="fa fa-right-to-bracket"/>
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        className="btn btn-secondary btn-lg"
-                                        onClick={createJoinSession}>
-                                        <i className="fa fa-plus"/>
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="input-container text-center mb-3">
-                            <div className="input-group">
-                                <span className="input-group-text">Session ID: {session?.getId()}</span>
-                                <Button
-                                    className="btn btn-danger btn-lg ml-2"
-                                    onClick={handleLeaveSession}>
-                                    <i className="fa fa-sign-out"></i>
-                                </Button>
-                            </div>
-                            {/* check if the curren user is the owner -> show start button when true */}
-                            {(session?.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) ? (
-                                <>
-                                    <div className="input-group d-flex justify-content-center align-items-center mt-3">
-                                        <Button
-                                            className="btn btn-primary btn-lg"
-                                            onClick={startGame}>
-                                            Start Game
-                                        </Button>
-                                        <Button
-                                            className="btn btn-secondary btn-lg mr-2"
-                                            onClick={showConfigModal}>
-                                            <i className="fa fa-gear"/>
-                                        </Button>
+                                            </InputGroup>
+                                        </Form.Group>
+
+
+                                        {session && (
+                                            <div className="d-grid">
+                                                {(session?.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) ? (
+                                                    <InputGroup>
+                                                        <Button
+                                                            className="btn btn-primary btn-lg"
+                                                            onClick={startGame}>
+                                                            Start Game
+                                                        </Button>
+                                                        <Button
+                                                            className="btn btn-secondary btn-lg mr-2"
+                                                            onClick={showConfigModal}>
+                                                            <i className="fa fa-gear"/>
+                                                        </Button>
+                                                    </InputGroup>
+                                                ) : (
+                                                    <p>Waiting for the host to start the game</p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
-                                </>
-                            ) : (
-                                <div className="text-center mt-3">
-                                    <p>Waiting for the host to start the game</p>
-                                </div>
-                            )}
-
-                        </div>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+                    {session && (
+                        <Row>
+                            <Col className="col-12">
+                                <PlayerList theme={theme}/>
+                            </Col>
+                        </Row>
                     )}
-                </Col>
-            </Row>
-            {session && (<PlayerList/>)}
+                </div>
+            </Container>
 
             <GameSessionConfigModal
                 show={showCreateSessionModal}
@@ -167,8 +179,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                     updateConfig(config);
                     setShowCreateSessionModal(false);
                 }}
+                theme={theme}
             />
-        </Container>
+        </>
     );
 };
 
