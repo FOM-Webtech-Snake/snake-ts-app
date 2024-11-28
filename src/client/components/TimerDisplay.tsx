@@ -17,7 +17,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
 
         const onTimerUpdated = (time: number) => {
             log.debug("Timer update received:", time);
-            setRemainingTime(time); // State aktualisieren
+            setRemainingTime(time);
         };
 
         socket.on(SocketEvents.GameEvents.TIMER_UPDATED, onTimerUpdated);
