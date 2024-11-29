@@ -6,7 +6,6 @@ import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {PhaserSnake} from "../ui/PhaserSnake";
 import {GameScene} from "../scenes/GameScene";
 import {getLogger} from "../../../shared/config/LogConfig";
-import {AutopilotInputHandler} from "./AutopilotInputHandler";
 import {AIInputHandler} from "./AIInputHandler";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 
