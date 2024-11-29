@@ -449,6 +449,8 @@ export class PhaserSnake {
             const part = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
             part.setPosition(player.getBodyPositions()[i].getX(), player.getBodyPositions()[i].getY());
         }
+
+        this.updateFacePosition();
     }
 
     toJson() {

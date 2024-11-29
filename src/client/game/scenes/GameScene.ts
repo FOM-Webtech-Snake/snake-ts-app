@@ -89,18 +89,26 @@ export class GameScene extends Phaser.Scene {
     }
 
     setState(state: GameStateEnum) {
-        log.debug("updating game state", state);
+        if(this.state === state){
+            log.trace("state not changed! - skipping");
+            return;
+        }
+
+        log.trace("updating game state", state);
         this.state = state;
         if (this.state === GameStateEnum.RUNNING) {
+            this.multiplayerManager.startSyncingGameState();
             this.physics.world.resume();
             this.overlay.hide();
         } else if (this.state === GameStateEnum.READY) {
             this.physics.world.pause();
             this.overlay.showPressKeyToAction("space, tap the screen or A an a controller", "start");
         } else if (this.state === GameStateEnum.PAUSED) {
+            this.multiplayerManager.stopSyncingGameState();
             this.physics.world.pause();
             this.overlay.showPressKeyToAction("p, long tap the screen or start on a controller", "resume");
         } else {
+            this.multiplayerManager.stopSyncingGameState();
             this.physics.world.pause();
             this.overlay.show(`current state: ${this.state}`);
         }
@@ -135,11 +143,9 @@ export class GameScene extends Phaser.Scene {
 
         ArrowManager.getInstance().reset();
         this.inputManager?.handleInput();
-        this.playerManager?.updateAll(); //getPlayer(this.multiplayerManager.getPlayerId())?.update();
+        this.playerManager?.getPlayer(this.multiplayerManager.getPlayerId())?.update();
 
         this.collectableManager?.update();
-
-        this.multiplayerManager?.syncPlayerState();
         this.multiplayerManager?.handleCollisionUpdate();
     }
 

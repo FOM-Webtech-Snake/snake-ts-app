@@ -10,6 +10,7 @@ import {childCollectables} from "../../shared/config/Collectables";
 import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
+import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../shared/config/GlobalTickRate";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -310,7 +311,7 @@ export const startSyncingGameState = (io: Server) => {
                 io.to(sessionId).emit(SocketEvents.GameControl.SYNC_GAME_STATE, session.toJson());
             }
         });
-    }, syncInterval); // Sync every 100ms or adjust as needed
+    }, GLOBAL_SYNC_INTERVAL_IN_MILLIS); // Sync every 100ms or adjust as needed
 }
 
 
