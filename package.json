@@ -26,6 +26,7 @@
     "easystarjs": "^0.4.4",
     "express": "^4.21.1",
     "phaser": "^3.86.0",
+    "qrcode.react": "^4.1.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.5",
     "react-dom": "^18.3.1",

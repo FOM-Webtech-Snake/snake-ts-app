@@ -11,7 +11,7 @@ import LoadingOverlay from "./components/LoadingOverlay";
 
 const App: React.FC = () => {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-    const {socket, isConnected} = useGameSessionSocket();
+    const {socket, isConnected, joinSession} = useGameSessionSocket();
     const [gameReady, setGameReady] = useState(false);
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player>(null);
@@ -20,10 +20,14 @@ const App: React.FC = () => {
         localStorage.setItem('theme', theme);
     }, [theme]);
 
-    const handleStart = (playerName: string, color: string) => {
+    const handleStart = (playerName: string, color: string, sessionId: string) => {
         const newPlayer = new Player(socket.id, playerName, color, PlayerRoleEnum.HOST);
         setPlayer(newPlayer);
         setInLobby(true); // transition to the lobby
+
+        if (sessionId) {
+            joinSession(sessionId.trim(), newPlayer);
+        }
     };
 
     const handleGameReady = () => {

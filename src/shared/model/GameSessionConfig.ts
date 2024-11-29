@@ -10,6 +10,7 @@ export const DEFAULT_SNAKE_STARTING_SPEED: number = 100;
 export class GameSessionConfig {
     private maxPlayers: number;
     private size: Size;
+    private gameDuration: number;
     private worldCollisionEnabled: boolean;
     private selfCollisionEnabled: boolean;
     private playerToPlayerCollisionEnabled: boolean;
@@ -21,6 +22,7 @@ export class GameSessionConfig {
     constructor(
         maxPlayers: number,
         size: Size,
+        gameDuration: number,
         worldCollisionEnabled: boolean,
         selfCollisionEnabled: boolean,
         playerToPlayerCollisionEnabled: boolean,
@@ -30,6 +32,7 @@ export class GameSessionConfig {
     ) {
         this.maxPlayers = maxPlayers;
         this.size = size;
+        this.gameDuration = gameDuration;
         this.worldCollisionEnabled = worldCollisionEnabled;
         this.selfCollisionEnabled = selfCollisionEnabled;
         this.playerToPlayerCollisionEnabled = playerToPlayerCollisionEnabled;
@@ -59,6 +62,10 @@ export class GameSessionConfig {
         return this.size;
     }
 
+    getGameDuration(): number {
+        return this.gameDuration;
+    }
+
     getSnakeStartingLength(): number {
         return this.snakeStartingLength;
     }
@@ -75,6 +82,7 @@ export class GameSessionConfig {
         return {
             maxPlayers: this.maxPlayers,
             size: this.size.toJSON(),
+            gameDuration: this.gameDuration,
             worldCollisionEnabled: this.worldCollisionEnabled,
             selfCollisionEnabled: this.selfCollisionEnabled,
             playerToPlayerCollisionEnabled: this.playerToPlayerCollisionEnabled,
@@ -89,6 +97,7 @@ export class GameSessionConfig {
         return new GameSessionConfig(
             data.maxPlayers,
             Size.fromData(data.size),
+            data.gameDuration,
             data.worldCollisionEnabled,
             data.selfCollisionEnabled,
             data.playerToPlayerCollisionEnabled,
@@ -101,6 +110,7 @@ export class GameSessionConfig {
 export const DEFAULT_GAME_SESSION_CONFIG = new GameSessionConfig(
     4,
     new Size(1600, 1600),
+    300,
     true,
     false,
     true,

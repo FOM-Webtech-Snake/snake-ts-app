@@ -18,7 +18,7 @@ export class GameSession {
     private config: GameSessionConfig;
     private players: Record<string, Player>;
     private collectables: Record<string, Collectable>;
-    private remainingTime: number = 300;
+    private remainingTime: number;
     private timerInterval: NodeJS.Timeout | null = null;
 
 
@@ -27,14 +27,13 @@ export class GameSession {
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
                 players: Record<string, Player> = {},
                 collectables: Record<string, Collectable> = {},
-                remainingTime: number = 30,
                 timerInterval: NodeJS.Timeout = null) {
         this.id = id || GameSessionUtil.generateSessionId();
         this.gameState = gameState;
         this.config = config;
         this.players = players;
         this.collectables = collectables;
-        this.remainingTime = remainingTime;
+        this.remainingTime = config.getGameDuration();
         this.timerInterval = timerInterval;
     }
 
@@ -92,6 +91,7 @@ export class GameSession {
 
     setConfig(config: GameSessionConfig) {
         this.config = config;
+        this.remainingTime = config.getGameDuration();
     }
 
     addPlayer(player: Player): void {
