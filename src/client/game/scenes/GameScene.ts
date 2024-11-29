@@ -58,7 +58,7 @@ export class GameScene extends Phaser.Scene {
         this.overlay.show("loading...");
 
         this.collectableManager = new CollectableManager(this);
-        this.inputManager = new InputManager(this);
+        this.inputManager = new InputManager(this, this.collectableManager);
         this.playerManager = new PlayerManager();
         this.multiplayerManager = new MultiplayerManager(
             this,

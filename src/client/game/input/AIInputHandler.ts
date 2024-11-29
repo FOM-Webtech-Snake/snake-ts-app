@@ -1,11 +1,11 @@
 import EasyStar from "easystarjs";
 import {InputHandler} from "./InputHandler";
-import {PhaserSnake} from "../ui/PhaserSnake";
 import {GameScene} from "../scenes/GameScene";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {Position} from "../../../shared/model/Position";
 import {getLogger} from "../../../shared/config/LogConfig";
+import {CollectableManager} from "../ui/manager/CollectableManager";
 
 const log = getLogger("client.game.input.AIInputHandler");
 
@@ -14,9 +14,12 @@ export class AIInputHandler extends InputHandler {
     private grid: number[][];
     private lastUpdateTime: number = 0;
     private directionCooldown: number = 200;
+    private collectableManager: CollectableManager;
 
-    constructor(scene: GameScene, snake: PhaserSnake) {
-        super(scene, snake, InputTypeEnum.AI);
+    constructor(scene: GameScene, collectableManager: CollectableManager, active: boolean = false) {
+        super(scene, InputTypeEnum.AI, active);
+
+        this.collectableManager = collectableManager;
 
         // init easy* (a* algo)
         this.easystar = new EasyStar.js();
@@ -26,6 +29,11 @@ export class AIInputHandler extends InputHandler {
     }
 
     async handleInput(): Promise<void> {
+        if (!this.isAssigned() || !this.snake.getHeadPosition()) {
+            log.debug("Input handler AutopilotInputHandler is not assigned");
+            return;
+        }
+
         const currentTime = this.scene.sys.game.getTime();
 
         // Avoid recalculating too frequently
@@ -34,7 +42,7 @@ export class AIInputHandler extends InputHandler {
         }
 
         const snakeHead = this.snake.getHeadPosition();
-        const collectablePositions = this.scene.getCollectableManager().getPositionsFromAllCollectables();
+        const collectablePositions = this.collectableManager.getPositionsFromAllCollectables();
 
         if (!collectablePositions || collectablePositions.length === 0) {
             log.warn("No collectables available.");
