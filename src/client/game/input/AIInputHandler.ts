@@ -32,7 +32,7 @@ export class AIInputHandler extends InputHandler {
             return;
         }
 
-        const currentTime = this.scene.sys.game.getTime();
+        const currentTime = Date.now();
 
         // Avoid recalculating too frequently
         if (currentTime - this.lastUpdateTime < this.directionCooldown) {
@@ -43,46 +43,56 @@ export class AIInputHandler extends InputHandler {
         this.updateGrid();
         const snakeHead = this.snake.getHeadPosition();
 
+
         const collectablePositions = this.collectableManager.getPositionsFromAllCollectables();
-        if (!collectablePositions || collectablePositions.length === 0) {
-            log.debug("No collectables available.");
-            return;
-        }
+        let nextDirection: DirectionEnum | null = null;
 
-        const nearestCollectable = await this.findNearestCollectableAsync(snakeHead, collectablePositions);
-        if (!nearestCollectable) {
-            log.debug("No reachable collectables.");
-            return;
-        }
+        log.info("collectablePositions", collectablePositions);
+        if (collectablePositions && collectablePositions.length > 0) {
+            const nearestCollectable = await this.findNearestCollectableAsync(snakeHead, collectablePositions);
+            if (nearestCollectable) {
+                // Convert positions to grid indices
+                const startX = this.toGridIndex(snakeHead.getX());
+                const startY = this.toGridIndex(snakeHead.getY());
+                const endX = this.toGridIndex(nearestCollectable.getX());
+                const endY = this.toGridIndex(nearestCollectable.getY());
 
-        // Convert positions to grid indices
-        const startX = this.toGridIndex(snakeHead.getX());
-        const startY = this.toGridIndex(snakeHead.getY());
-        const endX = this.toGridIndex(nearestCollectable.getX());
-        const endY = this.toGridIndex(nearestCollectable.getY());
+                if (this.isWithinBounds(startX, startY) && this.isWithinBounds(endX, endY)) {
+                    await new Promise<void>((resolve) => {
+                        this.easystar.findPath(startX, startY, endX, endY, (path) => {
+                            if (path && path.length > 1) {
+                                // Determine the next step
+                                const nextStep = path[1]; // First step is the current position
 
-        if (this.isWithinBounds(startX, startY) && this.isWithinBounds(endX, endY)) {
-            this.easystar.findPath(startX, startY, endX, endY, (path) => {
-                if (path && path.length > 1) {
-                    // Determine the next step
-                    const nextStep = path[1]; // First step is the current position
-
-                    // Calculate direction based on next step
-                    const newDirection = this.getDirectionFromNextStep(snakeHead, nextStep);
-                    log.trace("newDirection", newDirection);
-
-
-                    // Update snake's direction
-                    if (this.isValidDirection(newDirection)) {
-                        this.snake.setDirection(newDirection);
-                        this.lastUpdateTime = currentTime;
-                    }
+                                // Calculate direction based on next step
+                                nextDirection = this.getDirectionFromNextStep(snakeHead, nextStep);
+                                log.info("newDirection from easyStar", nextDirection);
+                            }
+                            resolve();
+                        })
+                        this.easystar.calculate();
+                    });
+                } else {
+                    log.info("Start or end point is out of bounds.");
                 }
-            });
-
-            this.easystar.calculate();
+            } else {
+                log.info("No reachable collectables.");
+            }
         } else {
-            log.warn("Start or end point is out of bounds.");
+            log.info("No collectables available.");
+        }
+
+
+        if (!nextDirection) {
+            log.info("no nextDirection available - using fallback direction");
+            nextDirection = this.getFallbackDirection(snakeHead);
+            log.info("fallback direction", nextDirection);
+        }
+
+        if (this.isValidDirection(nextDirection)) {
+            log.info("setting nextDirection", nextDirection);
+            this.snake.setDirection(nextDirection);
+            this.lastUpdateTime = currentTime;
         }
     }
 
@@ -109,6 +119,39 @@ export class AIInputHandler extends InputHandler {
         }
 
         this.easystar.setGrid(this.grid); // Update EasyStar's grid
+    }
+
+    private getFallbackDirection(snakeHead: Position): DirectionEnum | null {
+        const headGridX = this.toGridIndex(snakeHead.getX());
+        const headGridY = this.toGridIndex(snakeHead.getY());
+        const gridWidth = this.grid[0].length;
+        const gridHeight = this.grid.length;
+
+        log.info("head", headGridX, headGridY);
+        log.info("grid", gridWidth, gridHeight);
+
+        switch (this.snake.getDirection()) {
+            case DirectionEnum.RIGHT:
+                if (headGridX >= gridWidth - 1) {
+                    return DirectionEnum.DOWN;
+                }
+                break;
+            case DirectionEnum.DOWN:
+                if (headGridY >= gridHeight - 1) {
+                    return DirectionEnum.LEFT;
+                }
+                break;
+            case DirectionEnum.LEFT:
+                if (headGridX <= 0) {
+                    return DirectionEnum.UP;
+                }
+                break;
+            case DirectionEnum.UP:
+                if (headGridY <= 0) {
+                    return DirectionEnum.RIGHT;
+                }
+                break;
+        }
     }
 
     private async findNearestCollectableAsync(snakeHead: Position, collectables: Position[]): Promise<Position | null> {
@@ -174,7 +217,7 @@ export class AIInputHandler extends InputHandler {
         const currentDirection = this.snake.getDirection();
 
         // Prevent reversing direction
-        return !(
+        return newDirection !== undefined && !(
             (newDirection === DirectionEnum.UP && currentDirection === DirectionEnum.DOWN) ||
             (newDirection === DirectionEnum.DOWN && currentDirection === DirectionEnum.UP) ||
             (newDirection === DirectionEnum.LEFT && currentDirection === DirectionEnum.RIGHT) ||
