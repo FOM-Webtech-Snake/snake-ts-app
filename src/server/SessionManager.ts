@@ -1,7 +1,7 @@
-import {GameSession} from "../shared/GameSession";
+import {GameSession} from "../shared/model/GameSession";
 import {GameStateEnum} from "../shared/constants/GameStateEnum";
-import {GameSessionConfig} from "../shared/GameSessionConfig";
-import {Player} from "../shared/Player";
+import {GameSessionConfig} from "../shared/model/GameSessionConfig";
+import {Player} from "../shared/model/Player";
 import {getLogger} from "../shared/config/LogConfig";
 import SpawnerDaemon from "./SpawnerDaemon";
 
@@ -15,8 +15,8 @@ class SessionManager {
         return this.sessions[sessionId];
     }
 
-    getAllSessions = (): Record<string, GameSession> => {
-        return this.sessions;
+    getAllSessions = (): GameSession[] => {
+        return Object.values(this.sessions);
     }
 
     createSession(config: GameSessionConfig) {

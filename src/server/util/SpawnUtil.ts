@@ -1,4 +1,4 @@
-import {GameSession} from "../../shared/GameSession";
+import {GameSession} from "../../shared/model/GameSession";
 import {Server} from "socket.io";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {Collectable} from "../../shared/model/Collectable";
@@ -23,7 +23,7 @@ export class SpawnUtil {
     }
 
     static spawnNewCollectableWithDelay(io: Server, session: GameSession) {
-        const delay = this.getRandomSpawnDelay(1000, 5000);// TODO, parentType.maxSpawnDelay);
+        const delay = this.getRandomSpawnDelay(1000, 5000);
         log.debug(`spawning collectables with delay for game session ${session.getId()}`);
         setTimeout(() => {
             // Generate a new item for the session

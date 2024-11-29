@@ -1,8 +1,22 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 
-html, body {
+body {
     height: 100%;
     margin: 0;
     padding: 0;
+}
+
+.app.light {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.app.dark {
+    background-color: #181818;
+    color: #ffffff;
+}
+
+.app {
+    transition: background-color 0.3s, color 0.3s;
 }

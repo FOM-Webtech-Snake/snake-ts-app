@@ -1,5 +1,6 @@
 import {PhaserSnake} from "../PhaserSnake";
 import {getLogger} from "../../../../shared/config/LogConfig";
+import {Player} from "../../../../shared/model/Player";
 
 const log = getLogger("client.game.ui.manager.PlayerManager");
 
@@ -10,15 +11,14 @@ export class PlayerManager {
         this.players = {};
     }
 
-    addPlayer(playerId: string, snake: PhaserSnake): PhaserSnake {
-        log.debug("add player", playerId);
-        if (this.players[playerId]) {
-            log.warn(`Player ${playerId} already exists.`);
+    addSnake(snake: PhaserSnake): void {
+        log.trace("adding snake", snake.toJson());
+        if (this.players[snake.getPlayerId()]) {
+            log.warn(`Player ${snake.getPlayerId()} already exists.`);
             return;
         }
-        this.players[playerId] = snake;
-        log.debug(`Player ${playerId} added.`);
-        return this.players[playerId];
+        this.players[snake.getPlayerId()] = snake;
+        log.debug(`Player ${snake.getPlayerId()} added.`);
     }
 
     removePlayer(playerId: string): void {
@@ -38,19 +38,17 @@ export class PlayerManager {
         return this.players[playerId] || null;
     }
 
-    getAllPlayers(): PhaserSnake[] {
-        log.debug("getAllPlayers");
-        return Object.values(this.players);
+    getPlayersExcept(playerId: string): PhaserSnake[] {
+        log.debug(`getPlayersExcept(${playerId})`);
+        return Object.entries(this.players)
+            .filter(([id, _]) => id !== playerId)
+            .map(([_, player]) => player);
     }
 
-    updatePlayer(playerId: string, snakeData: any): void {
-        log.debug(`updatePlayer ${playerId} with ${snakeData}`);
-        const playerSnake = this.players[playerId];
-        if (playerSnake) {
-            playerSnake.updateFromData(snakeData);
-        } else {
-            log.warn(`Player ${playerId} not found for update.`);
-        }
+    updateAll(){
+        Object.values(this.players).forEach(player => {
+            player.update();
+        })
     }
 
     getFirstPlayer(): PhaserSnake {

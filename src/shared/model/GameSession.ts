@@ -1,13 +1,14 @@
-import {GameStateEnum} from "./constants/GameStateEnum";
-import {GameSessionUtil} from "../server/util/GameSessionUtil";
+import {GameStateEnum} from "../constants/GameStateEnum";
+import {GameSessionUtil} from "../../server/util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
-import {Collectable} from "./model/Collectable";
+import {Collectable} from "./Collectable";
 import {Server} from "socket.io";
-import SpawnerDaemon from "../server/SpawnerDaemon";
-import {getLogger} from "./config/LogConfig";
-import {PlayerRoleEnum} from "./constants/PlayerRoleEnum";
-import {PositionUtil} from "../server/util/PositionUtil";
+import SpawnerDaemon from "../../server/SpawnerDaemon";
+import {getLogger} from "../config/LogConfig";
+import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
+import {PositionUtil} from "../../server/util/PositionUtil";
+import {DirectionEnum} from "../constants/DirectionEnum";
 
 const log = getLogger("shared.GameSession");
 
@@ -17,17 +18,24 @@ export class GameSession {
     private config: GameSessionConfig;
     private players: Record<string, Player>;
     private collectables: Record<string, Collectable>;
+    private remainingTime: number = 300;
+    private timerInterval: NodeJS.Timeout | null = null;
+
 
     constructor(id: string = null,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
                 players: Record<string, Player> = {},
-                collectables: Record<string, Collectable> = {}) {
+                collectables: Record<string, Collectable> = {},
+                remainingTime: number = 30,
+                timerInterval: NodeJS.Timeout = null) {
         this.id = id || GameSessionUtil.generateSessionId();
         this.gameState = gameState;
         this.config = config;
         this.players = players;
         this.collectables = collectables;
+        this.remainingTime = remainingTime;
+        this.timerInterval = timerInterval;
     }
 
     getId(): string {
@@ -66,13 +74,42 @@ export class GameSession {
         return this.collectables[id];
     }
 
+    getRemainingTime() {
+        return this.remainingTime;
+    }
+
+    setRemainingTime(remainingTime: number) {
+        this.remainingTime = remainingTime;
+    }
+
+    getTimerInterval() {
+        return this.timerInterval;
+    }
+
+    setTimerInterval(interval: NodeJS.Timeout) {
+        this.timerInterval = interval;
+    }
+
     setConfig(config: GameSessionConfig) {
         this.config = config;
     }
 
     addPlayer(player: Player): void {
-        player.setBodyPositions([PositionUtil.randomUniquePosition(this)]);
         this.players[player.getId()] = player;
+    }
+
+    spawnPlayers(): void {
+        Object.values(this.players).forEach(player => {
+            player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spwan
+            player.setSpeed(this.config.getSnakeStartingSpeed());
+            player.setScale(this.config.getSnakeStartingScale())
+            const bodyPositions = []
+            const spawnPosition = PositionUtil.randomUniquePosition(this);
+            for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
+                bodyPositions.push(spawnPosition);
+            }
+            player.setBodyPositions(bodyPositions);
+        })
     }
 
     addCollectable(collectable: Collectable): void {
@@ -137,6 +174,7 @@ export class GameSession {
             collectables: Object.fromEntries(
                 Object.entries(this.collectables).map(([id, collectable]) => [id, collectable.toJson()])
             ),
+            remainingTime: this.remainingTime,
         };
     }
 
@@ -151,7 +189,8 @@ export class GameSession {
             ),
             Object.fromEntries(
                 Object.entries(data.collectables).map(([id, collectableData]) => [id, Collectable.fromData(collectableData)])
-            )
+            ),
+            data.remainingTime
         );
     }
 }

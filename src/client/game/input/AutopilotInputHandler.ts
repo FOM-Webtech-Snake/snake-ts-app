@@ -1,18 +1,21 @@
 import {InputHandler} from "./InputHandler";
 import {GameScene} from "../scenes/GameScene";
-import {PhaserSnake} from "../ui/PhaserSnake";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
+import {getLogger} from "../../../shared/config/LogConfig";
+
+const log = getLogger("client.game.input.InputManager");
 
 export class AutopilotInputHandler extends InputHandler {
 
-    constructor(scene: GameScene, snake: PhaserSnake) {
-        super(scene, snake, InputTypeEnum.AUTOPILOT);
+    constructor(scene: GameScene, active: boolean = false) {
+        super(scene, InputTypeEnum.AUTOPILOT, active);
     }
 
     handleInput(): void {
-        if (!this.snake || !this.snake.getHeadPosition()) {
-            return; // cancel when snake or the head does not exist
+        if (!this.isAssigned() || !this.snake.getHeadPosition()) {
+            log.debug("Input handler AutopilotInputHandler is not assigned");
+            return;
         }
 
         const headPosition = this.snake.getHeadPosition();
