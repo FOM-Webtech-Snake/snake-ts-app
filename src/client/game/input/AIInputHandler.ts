@@ -23,13 +23,11 @@ export class AIInputHandler extends InputHandler {
 
         // init easy* (a* algo)
         this.easystar = new EasyStar.js();
-        this.grid = this.createGrid();
-        this.easystar.setGrid(this.grid);
         this.easystar.setAcceptableTiles([0]); // 0 indicates empty space
     }
 
     async handleInput(): Promise<void> {
-        if (!this.isAssigned() || !this.snake.getHeadPosition()) {
+        if (!this.isAssigned() || !this.snake || !this.snake.getHeadPosition()) {
             log.debug("Input handler AutopilotInputHandler is not assigned");
             return;
         }
@@ -41,22 +39,21 @@ export class AIInputHandler extends InputHandler {
             return;
         }
 
+        // Update the grid with snake's body and obstacles
+        this.updateGrid();
         const snakeHead = this.snake.getHeadPosition();
-        const collectablePositions = this.collectableManager.getPositionsFromAllCollectables();
 
+        const collectablePositions = this.collectableManager.getPositionsFromAllCollectables();
         if (!collectablePositions || collectablePositions.length === 0) {
-            log.warn("No collectables available.");
+            log.debug("No collectables available.");
             return;
         }
 
         const nearestCollectable = await this.findNearestCollectableAsync(snakeHead, collectablePositions);
         if (!nearestCollectable) {
-            log.warn("No reachable collectables.");
+            log.debug("No reachable collectables.");
             return;
         }
-
-        // Update the grid with snake's body and obstacles
-        this.updateGrid();
 
         // Convert positions to grid indices
         const startX = this.toGridIndex(snakeHead.getX());
