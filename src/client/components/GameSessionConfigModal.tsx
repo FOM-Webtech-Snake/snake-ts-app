@@ -15,6 +15,7 @@ interface SessionOptionsModalProps {
 const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave, theme}) => {
     const [maxPlayers, setMaxPlayers] = useState(DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers());
     const [worldSize, setWorldSize] = useState(DEFAULT_GAME_SESSION_CONFIG.getSize());
+    const [gameDuration, setGameDuration] = useState(DEFAULT_GAME_SESSION_CONFIG.getGameDuration());
     const [worldCollisionEnabled, setWorldCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getWorldCollisionEnabled());
     const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
     const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
@@ -28,6 +29,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
         const config = new GameSessionConfig(
             maxPlayers,
             worldSize,
+            gameDuration,
             worldCollisionEnabled,
             selfCollisionEnabled,
             playerToPlayerCollisionEnabled,
@@ -89,6 +91,16 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                                 />
                             </Col>
                         </Row>
+                    </Form.Group>
+                    <Form.Group controlId="gameDuration">
+                        <Form.Label>Spieldauer (in Sekunden)</Form.Label>
+                        <Form.Control
+                            type="number"
+                            min={20}
+                            max={10000}
+                            value={gameDuration}
+                            onChange={(e) => setGameDuration(parseInt(e.target.value, 10))}
+                        />
                     </Form.Group>
                     <Form.Check
                         type="switch"

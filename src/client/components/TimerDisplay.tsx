@@ -6,11 +6,11 @@ import {SocketEvents} from "../../shared/constants/SocketEvents";
 interface TimerDisplayProps {
 }
 
-const log = getLogger("client.components.PlayerList");
+const log = getLogger("client.components.TimerDisplay");
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
     const {session, socket} = useGameSessionSocket();
-    const [remainingTime, setRemainingTime] = useState(session.getRemainingTime());
+    const [remainingTime, setRemainingTime] = useState(session.getConfig().getGameDuration());
 
     useEffect(() => {
         if (!socket) return;
