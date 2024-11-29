@@ -196,12 +196,14 @@ export class PhaserSnake {
     changeScaleBy(value: number): void {
         const newScale = this.scale + value;
         if (newScale <= 0) {
-            throw new Error("new scale must be greater 0");
+            log.trace("cannot scale smaller than 0", newScale);
+            return
+        } else {
+            this.updateScaling(newScale);
         }
-        this.setScale(newScale);
     }
 
-    setScale(newScale: number): void {
+    updateScaling(newScale: number): void {
         this.scale = newScale;
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
 
@@ -427,7 +429,7 @@ export class PhaserSnake {
         this.direction = player.getDirection()
 
         if (this.scale != player.getScale()) {
-            this.setScale(player.getScale());
+            this.updateScaling(player.getScale());
         }
         if (this.primaryColor != ColorUtil.rgbToHex(player.getColor())) {
             this.setPrimaryColor(ColorUtil.rgbToHex(player.getColor()));
