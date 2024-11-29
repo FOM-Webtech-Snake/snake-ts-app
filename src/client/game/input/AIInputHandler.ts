@@ -47,7 +47,7 @@ export class AIInputHandler extends InputHandler {
         const collectablePositions = this.collectableManager.getPositionsFromAllCollectables();
         let nextDirection: DirectionEnum | null = null;
 
-        log.info("collectablePositions", collectablePositions);
+        log.trace("collectablePositions", collectablePositions);
         if (collectablePositions && collectablePositions.length > 0) {
             const nearestCollectable = await this.findNearestCollectableAsync(snakeHead, collectablePositions);
             if (nearestCollectable) {
@@ -66,31 +66,31 @@ export class AIInputHandler extends InputHandler {
 
                                 // Calculate direction based on next step
                                 nextDirection = this.getDirectionFromNextStep(snakeHead, nextStep);
-                                log.info("newDirection from easyStar", nextDirection);
+                                log.trace("newDirection from easyStar", nextDirection);
                             }
                             resolve();
                         })
                         this.easystar.calculate();
                     });
                 } else {
-                    log.info("Start or end point is out of bounds.");
+                    log.debug("Start or end point is out of bounds.");
                 }
             } else {
-                log.info("No reachable collectables.");
+                log.debug("No reachable collectables.");
             }
         } else {
-            log.info("No collectables available.");
+            log.debug("No collectables available.");
         }
 
 
         if (!nextDirection) {
-            log.info("no nextDirection available - using fallback direction");
+            log.debug("no nextDirection available - using fallback direction");
             nextDirection = this.getFallbackDirection(snakeHead);
-            log.info("fallback direction", nextDirection);
+            log.trace("fallback direction", nextDirection);
         }
 
         if (this.isValidDirection(nextDirection)) {
-            log.info("setting nextDirection", nextDirection);
+            log.trace("setting nextDirection", nextDirection);
             this.snake.setDirection(nextDirection);
             this.lastUpdateTime = currentTime;
         }
@@ -127,8 +127,8 @@ export class AIInputHandler extends InputHandler {
         const gridWidth = this.grid[0].length;
         const gridHeight = this.grid.length;
 
-        log.info("head", headGridX, headGridY);
-        log.info("grid", gridWidth, gridHeight);
+        log.trace("head", headGridX, headGridY);
+        log.trace("grid", gridWidth, gridHeight);
 
         switch (this.snake.getDirection()) {
             case DirectionEnum.RIGHT:
