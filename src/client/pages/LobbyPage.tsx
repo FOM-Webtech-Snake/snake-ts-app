@@ -8,6 +8,7 @@ import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import GameSessionConfigModal from "../components/GameSessionConfigModal";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import PlayerList from "../components/PlayerList";
+import ShareInfoModal from "../components/ShareModal";
 
 interface LobbyPageProps {
     player: Player;
@@ -20,8 +21,12 @@ const log = getLogger("client.components.LobbyPage");
 const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
     const {socket, session, joinSession, createSession, leaveSession, updateConfig} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
+    const [showShareModal, setShowShareModal] = useState(false);
     const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    const handleShowShareModal = () => setShowShareModal(true);
+    const handleCloseShareModal = () => setShowShareModal(false);
 
     useEffect(() => {
         if (socket && session) {
@@ -90,8 +95,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                             <Card className="p-4 shadow"
                                   bg={theme === 'light' ? 'light' : 'dark'}
                                   text={theme === 'light' ? 'dark' : 'light'}>
+                                <Card.Header className="text-center">
+                                    <h5>Session</h5>
+                                </Card.Header>
                                 <Card.Body>
-                                    <Card.Title className="text-center">Session</Card.Title>
                                     <div>
                                         <Form.Group controlId="sessionId" className="mb-3">
                                             <Form.Label>Session ID</Form.Label>
@@ -111,7 +118,12 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                                                 />
                                                 {session ? (<>
                                                     <Button
-                                                        variant="primary" size="lg"
+                                                        variant="secondary" size="lg"
+                                                        onClick={handleShowShareModal}>
+                                                        <i className="fa fa-share"></i>
+                                                    </Button>
+                                                    <Button
+                                                        variant="danger" size="lg"
                                                         onClick={handleLeaveSession}>
                                                         <i className="fa fa-sign-out"></i>
                                                     </Button>
@@ -163,6 +175,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                         </Col>
                     </Row>
                     {session && (
+
                         <Row>
                             <Col className="col-12">
                                 <PlayerList theme={theme}/>
@@ -171,6 +184,13 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                     )}
                 </div>
             </Container>
+
+            <ShareInfoModal
+                show={showShareModal}
+                onClose={handleCloseShareModal}
+                sessionId={sessionId}
+                theme={theme}
+            />
 
             <GameSessionConfigModal
                 show={showCreateSessionModal}
