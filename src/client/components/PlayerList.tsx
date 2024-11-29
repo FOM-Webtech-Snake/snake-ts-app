@@ -43,6 +43,7 @@ const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
                       text={theme === 'light' ? 'dark' : 'light'}>
                     <Card.Title className="text-center">Players in Lobby</Card.Title>
                     <Card.Body>
+                        <p className="text-white text-center">{session.getPlayerCount()} / {session.getConfig().getMaxPlayers()}</p>
                         {!sortedPlayers ? (
                             <p className="text-white text-center">Waiting for players to join...</p>
                         ) : (
