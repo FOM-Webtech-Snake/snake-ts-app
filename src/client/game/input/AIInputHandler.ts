@@ -112,18 +112,34 @@ export class AIInputHandler extends InputHandler {
     }
 
     private async findNearestCollectableAsync(snakeHead: Position, collectables: Position[]): Promise<Position | null> {
+        let shortestPathLength: number | null = null;
+        let nearestCollectable: Position | null = null;
+
+        const startX = this.toGridIndex(snakeHead.getX());
+        const startY = this.toGridIndex(snakeHead.getY());
+
+        if (!this.isWithinBounds(startX, startY)) {
+            return; // snake not inside the gameScene ... should never happen
+        }
+
         for (const collectable of collectables) {
-            const startX = this.toGridIndex(snakeHead.getX());
-            const startY = this.toGridIndex(snakeHead.getY());
             const endX = this.toGridIndex(collectable.getX());
             const endY = this.toGridIndex(collectable.getY());
 
-            if (this.isWithinBounds(startX, startY) && this.isWithinBounds(endX, endY)) {
+            if (this.isWithinBounds(endX, endY)) {
                 const path = await this.findPathAsync(startX, startY, endX, endY);
-                if (path) return collectable;
+                if (path) {
+                    if (shortestPathLength === null || path.length < shortestPathLength) {
+                        shortestPathLength = path.length;
+                        nearestCollectable = collectable;
+                    }
+
+                }
+
             }
         }
-        return null; // No valid collectable found
+
+        return nearestCollectable;
     }
 
     private findPathAsync(startX: number, startY: number, endX: number, endY: number): Promise<any> {
