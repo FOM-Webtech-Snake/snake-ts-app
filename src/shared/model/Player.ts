@@ -3,7 +3,7 @@ import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
 import {getLogger} from "../config/LogConfig";
 import {Position} from "./Position";
 import {DirectionEnum} from "../constants/DirectionEnum";
-import {DEFAULT_SNAKE_STARTING_SCALE, DEFAULT_SNAKE_STARTING_SPEED} from "./GameSessionConfig";
+import {SNAKE_STARTING_SCALE, SNAKE_STARTING_SPEED} from "./GameSessionConfig";
 
 const log = getLogger("shared.Player");
 
@@ -27,8 +27,8 @@ export class Player {
                 role: PlayerRoleEnum,
                 status: PlayerStatusEnum = PlayerStatusEnum.READY,
                 score: number = 0,
-                speed: number = DEFAULT_SNAKE_STARTING_SPEED,
-                scale: number = DEFAULT_SNAKE_STARTING_SCALE,
+                speed: number = SNAKE_STARTING_SPEED.default,
+                scale: number = SNAKE_STARTING_SCALE.default,
                 direction: DirectionEnum = DEFAULT_SNAKE_DIRECTION,
                 bodyPositions: Position[] = []) {
         this.id = id;

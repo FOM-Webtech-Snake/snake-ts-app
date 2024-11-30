@@ -93,9 +93,14 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
         if (!socket || session) return;
         socket.emit(SocketEvents.Connection.CREATE_SESSION, player.toJson(), (session: any) => {
             try {
-                const gameSession = GameSession.fromData(session);
-                log.debug("received created game session", gameSession);
-                setSession(gameSession);
+                /* TODO show error to user */
+                if (session.error) {
+                    log.error(session.error);
+                } else {
+                    const gameSession = GameSession.fromData(session);
+                    log.debug("received created game session", gameSession);
+                    setSession(gameSession);
+                }
             } catch (error) {
                 log.error("failed to process created session data:", error);
             }
@@ -107,9 +112,14 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
             if (!socket || session) return;
             socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, player.toJson(), (session: any) => {
                 try {
-                    const gameSession = GameSession.fromData(session);
-                    log.debug("received joined game session", gameSession);
-                    setSession(gameSession);
+                    /* TODO show error to user */
+                    if (session.error) {
+                        log.error(session.error);
+                    } else {
+                        const gameSession = GameSession.fromData(session);
+                        log.debug("received joined game session", gameSession);
+                        setSession(gameSession);
+                    }
                 } catch (error) {
                     log.error("failed to process joined session data:", error);
                 }
