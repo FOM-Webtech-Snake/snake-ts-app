@@ -130,16 +130,8 @@ export class PhaserSnake {
         this.status = status;
     }
 
-    setSpeed(speed: number) {
-        this.speed = speed;
-    }
-
     getScore() {
         return this.score;
-    }
-
-    setScore(score: number) {
-        this.score = score;
     }
 
     checkCollisions(): { selfCollision: boolean, worldCollision: boolean } {
@@ -192,11 +184,11 @@ export class PhaserSnake {
         if (newScale <= 0) {
             throw new Error("new scale must be greater 0");
         }
-        this.setScale(newScale);
+        this.scale = newScale;
+        this.updateScaling();
     }
 
-    setScale(newScale: number): void {
-        this.scale = newScale;
+    updateScaling(): void {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
 
         for (let i = 0; i < bodyParts.length; i++) {
@@ -414,16 +406,19 @@ export class PhaserSnake {
     updateFromPlayer(player: Player) {
         log.trace("updating from player", player);
 
-        this.setStatus(player.getStatus());
-        this.setSpeed(player.getSpeed());
-        this.setScore(player.getScore());
-
+        this.status = player.getStatus();
+        this.speed = player.getSpeed();
+        this.score = player.getScore();
         this.direction = player.getDirection()
 
         if (this.scale != player.getScale()) {
-            this.setScale(player.getScale());
+            log.trace("updating scale from player", player);
+            this.scale = player.getScale();
+            this.updateScaling();
         }
+
         if (this.primaryColor != ColorUtil.rgbToHex(player.getColor())) {
+            log.trace("updating color from player", player);
             this.setPrimaryColor(ColorUtil.rgbToHex(player.getColor()));
         }
 
