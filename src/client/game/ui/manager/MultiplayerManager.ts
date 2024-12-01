@@ -16,8 +16,6 @@ import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../../../shared/config/GlobalTi
 
 const log = getLogger("client.game.MultiplayerManager");
 
-const COLLISION_CHECK_THRESHOLD = 50; // in milliseconds
-
 export class MultiplayerManager {
 
     private scene: GameScene;
@@ -185,7 +183,7 @@ export class MultiplayerManager {
     public handleCollisionUpdate() {
         // only check for collision every xxx milliseconds
         const now = Date.now();
-        if (now - this.lastCollisionCheck < COLLISION_CHECK_THRESHOLD) return;
+        if (now - this.lastCollisionCheck < GLOBAL_SYNC_INTERVAL_IN_MILLIS) return;
         this.lastCollisionCheck = now;
 
         log.debug("collision update");
