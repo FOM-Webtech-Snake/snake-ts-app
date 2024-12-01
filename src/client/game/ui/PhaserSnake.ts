@@ -120,7 +120,7 @@ export class PhaserSnake {
 
     getBodyPositions(): Position[] {
         return this.getBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
-            return new Position(segment.x, segment.y);
+            return new Position(segment.x, segment.y, this.lockedSegments.contains(segment));
         });
     }
 
