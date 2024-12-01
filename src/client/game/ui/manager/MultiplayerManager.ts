@@ -12,6 +12,7 @@ import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
 import {SpatialGrid} from "../SpatialGrid";
 import {Player} from "../../../../shared/model/Player";
 import {InputManager} from "../../input/InputManager";
+import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../../../shared/config/GlobalTickRate";
 
 const log = getLogger("client.game.MultiplayerManager");
 
@@ -25,6 +26,8 @@ export class MultiplayerManager {
     private playerManager: PlayerManager;
     private inputManager: InputManager;
     private lastCollisionCheck: number;
+
+    private syncInterval: NodeJS.Timeout | null = null;
 
     constructor(
         scene: GameScene,
@@ -140,7 +143,7 @@ export class MultiplayerManager {
                 const localPlayerCopy = this.playerManager.getPlayer(player.getId());
                 if (localPlayerCopy) {
                     log.trace(`player found with status: ${player.getStatus()}`);
-                    if (localPlayerCopy.getPlayerId() !== this.getPlayerId()){
+                    if (localPlayerCopy.getPlayerId() !== this.getPlayerId()) {
                         localPlayerCopy.updateFromPlayer(player);
                     }
                 }
@@ -148,11 +151,34 @@ export class MultiplayerManager {
         }
     }
 
-    public syncPlayerState() {
+    private syncPlayerState() {
         log.debug("syncPlayerState");
         const player = this.playerManager.getPlayer(this.getPlayerId());
         if (player) {
             this.emitSnake(player);
+        }
+    }
+
+    public startSyncingGameState() {
+        log.info("client sync job started!");
+        if (this.syncInterval) {
+            log.warn("Sync interval already running, skipping start.");
+            return;
+        }
+
+        this.syncInterval = setInterval(() => {
+            log.debug("syncPlayerState");
+            this.syncPlayerState();
+        }, GLOBAL_SYNC_INTERVAL_IN_MILLIS);
+    }
+
+    public stopSyncingGameState() {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+            this.syncInterval = null;
+            log.info("client sync job stopped!");
+        } else {
+            log.warn("No sync interval to stop.");
         }
     }
 

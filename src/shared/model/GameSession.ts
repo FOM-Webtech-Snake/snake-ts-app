@@ -124,6 +124,7 @@ export class GameSession {
 
     removePlayer(playerId: string): void {
         delete this.players[playerId];
+        log.trace("removedPlayer player from session", playerId);
         const playersArray = this.getPlayersAsArray();
         if (playersArray.length > 0) {
             const existingHost = playersArray.find(player => player.getRole() === PlayerRoleEnum.HOST);

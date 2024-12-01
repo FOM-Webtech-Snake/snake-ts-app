@@ -8,6 +8,7 @@ import SpawnerDaemon from "./SpawnerDaemon";
 const log = getLogger("server.SessionManager");
 
 class SessionManager {
+    private playerSessions = new Map();
     private sessions: Record<string, GameSession> = {};
     private spawner = SpawnerDaemon.getInstance();
 
@@ -28,12 +29,28 @@ class SessionManager {
 
     joinSession(sessionId: string, player: Player): GameSession {
         let session = this.getSession(sessionId);
-        if (null == session) {
-            throw new Error(`Session ${sessionId} not found.`);
+        if (session == null) {
+            log.warn(`session ${sessionId} not found`);
+            throw new Error(`session ${sessionId} not found.`);
         }
+
+        log.trace("current game session config", session.getConfig());
+        if (session.getPlayerCount() >= session.getConfig().getMaxPlayers()) {
+            log.warn(`max player count reached`, sessionId);
+            throw new Error("max player count reached");
+        }
+
         session.addPlayer(player);
-        log.debug(`player ${player.getId()} added to session ${sessionId}`);
+        this.playerSessions.set(player.getId(), session.getId());
         return session;
+    }
+
+    getSessionIdByPlayerId(playerId: string): GameSession | null {
+        const sessionId: string = this.playerSessions.get(playerId);
+        if (sessionId != null) {
+            return this.getSession(sessionId);
+        }
+        return null;
     }
 
     deleteSession(sessionId: string): void {
