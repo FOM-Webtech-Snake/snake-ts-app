@@ -1,6 +1,6 @@
 import {PhaserSnake} from "../PhaserSnake";
 import {getLogger} from "../../../../shared/config/LogConfig";
-import {Player} from "../../../../shared/model/Player";
+import {Position} from "../../../../shared/model/Position";
 
 const log = getLogger("client.game.ui.manager.PlayerManager");
 
@@ -31,6 +31,11 @@ export class PlayerManager {
         } else {
             log.warn(`Player ${playerId} does not exist.`);
         }
+    }
+
+    getAllPlayerPositions(): Position[] {
+        return Object.values(this.players)
+            .flatMap((player: PhaserSnake) => player.getBodyPositions());
     }
 
     getPlayer(playerId: string): PhaserSnake | null {

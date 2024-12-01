@@ -6,6 +6,7 @@ import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {Position} from "../../../shared/model/Position";
 import {getLogger} from "../../../shared/config/LogConfig";
 import {CollectableManager} from "../ui/manager/CollectableManager";
+import {PlayerManager} from "../ui/manager/PlayerManager";
 
 const log = getLogger("client.game.input.AIInputHandler");
 
@@ -15,11 +16,13 @@ export class AStarInputHandler extends InputHandler {
     private lastUpdateTime: number = 0;
     private directionCooldown: number = 200;
     private collectableManager: CollectableManager;
+    private playerManager: PlayerManager;
 
-    constructor(scene: GameScene, collectableManager: CollectableManager, active: boolean = false) {
+    constructor(scene: GameScene, collectableManager: CollectableManager, playerManager: PlayerManager, active: boolean = false) {
         super(scene, InputTypeEnum.AUTOPILOT, active);
 
         this.collectableManager = collectableManager;
+        this.playerManager = playerManager;
 
         // init easy* (a* algo)
         this.easystar = new EasyStar.js();
@@ -107,8 +110,8 @@ export class AStarInputHandler extends InputHandler {
     private updateGrid(): void {
         this.grid = this.createGrid(); // Reset grid
 
-        // Mark the snake's body as obstacles
-        const snakeBody = this.snake.getBodyPositions();
+        // Mark all players snake body positions as obstacles
+        const snakeBody = this.playerManager.getAllPlayerPositions()
         for (const segment of snakeBody) {
             const gridX = this.toGridIndex(segment.getX());
             const gridY = this.toGridIndex(segment.getY());
