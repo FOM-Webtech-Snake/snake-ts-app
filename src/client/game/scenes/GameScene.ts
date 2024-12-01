@@ -89,7 +89,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     setState(state: GameStateEnum) {
-        if(this.state === state){
+        if (this.state === state) {
             log.trace("state not changed! - skipping");
             return;
         }
@@ -144,6 +144,9 @@ export class GameScene extends Phaser.Scene {
         ArrowManager.getInstance().reset();
         this.inputManager?.handleInput();
         this.playerManager?.getPlayer(this.multiplayerManager.getPlayerId())?.update();
+        this.playerManager?.getPlayersExcept(this.multiplayerManager.getPlayerId())?.forEach((player: PhaserSnake) => {
+            player.interpolatePosition();
+        })
 
         this.collectableManager?.update();
         this.multiplayerManager?.handleCollisionUpdate();
