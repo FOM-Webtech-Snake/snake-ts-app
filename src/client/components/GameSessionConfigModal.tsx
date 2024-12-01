@@ -2,7 +2,11 @@ import React, {useState} from 'react';
 import {Button, Col, Form, Modal, Row} from 'react-bootstrap';
 
 import {Size} from "../../shared/model/Size";
-import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../shared/model/GameSessionConfig";
+import {
+    DEFAULT_GAME_SESSION_CONFIG,
+    GameSessionConfig,
+    SNAKE_STARTING_LENGTH, SNAKE_STARTING_SCALE, SNAKE_STARTING_SPEED
+} from "../../shared/model/GameSessionConfig";
 
 
 interface SessionOptionsModalProps {
@@ -123,6 +127,38 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                         checked={selfCollisionEnabled}
                         onChange={(e) => setSelfCollisionEnabled(e.target.checked)}
                     />
+
+                    <Form.Group controlId="startingLength">
+                        <Form.Label>Snake Starting Length: {startingLength}</Form.Label>
+                        <Form.Range
+                            min={SNAKE_STARTING_LENGTH.min}
+                            max={SNAKE_STARTING_LENGTH.max}
+                            step={1}
+                            value={startingLength}
+                            onChange={(e) => setStartingLength(parseInt(e.target.value, 10))}
+                        />
+                    </Form.Group>
+                    <Form.Group controlId="startingSpeed">
+                        <Form.Label>Snake Starting Speed: {startingSpeed}</Form.Label>
+                        <Form.Range
+                            min={SNAKE_STARTING_SPEED.min}
+                            max={SNAKE_STARTING_SPEED.max}
+                            step={25}
+                            value={startingSpeed}
+                            onChange={(e) => setStartingSpeed(parseFloat(e.target.value))}
+                        />
+                    </Form.Group>
+                    <Form.Group controlId="startingScale">
+                        <Form.Label>Snake Starting Scale: {startingScale}</Form.Label>
+                        <Form.Range
+                            min={SNAKE_STARTING_SCALE.min}
+                            max={SNAKE_STARTING_SCALE.max}
+                            step={0.05}
+                            value={startingScale}
+                            onChange={(e) => setStartingScale(parseFloat(e.target.value))}
+                        />
+                    </Form.Group>
+
                 </Form>
             </Modal.Body>
             <Modal.Footer className={theme === 'light' ? 'bg-light' : 'bg-dark'}>

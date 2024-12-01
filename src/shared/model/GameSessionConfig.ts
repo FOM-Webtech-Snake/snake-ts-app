@@ -3,9 +3,15 @@ import {getLogger} from "../config/LogConfig";
 
 const log = getLogger("shared.GameSessionConfig");
 
-export const DEFAULT_SNAKE_STARTING_LENGTH: number = 20;
-export const DEFAULT_SNAKE_STARTING_SCALE: number = 0.15;
-export const DEFAULT_SNAKE_STARTING_SPEED: number = 100;
+interface MinMaxDefault {
+    min: number;
+    max: number;
+    default: number;
+}
+
+export const SNAKE_STARTING_LENGTH: MinMaxDefault = {min: 1, max: 30, default: 5};
+export const SNAKE_STARTING_SCALE: MinMaxDefault = {min: 0.05 , max: 1, default: 0.15};
+export const SNAKE_STARTING_SPEED: MinMaxDefault = {min: 50 , max: 300, default: 100};
 
 export class GameSessionConfig {
     private maxPlayers: number;
@@ -114,6 +120,6 @@ export const DEFAULT_GAME_SESSION_CONFIG = new GameSessionConfig(
     true,
     false,
     true,
-    DEFAULT_SNAKE_STARTING_LENGTH,
-    DEFAULT_SNAKE_STARTING_SPEED,
-    DEFAULT_SNAKE_STARTING_SCALE);
+    SNAKE_STARTING_LENGTH.default,
+    SNAKE_STARTING_SPEED.default,
+    SNAKE_STARTING_SCALE.default);

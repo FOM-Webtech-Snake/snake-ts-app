@@ -73,15 +73,22 @@ const SocketEventRegistry: {
         const gameSession = sessionManager.getSession(sessionId);
         if (!gameSession) {
             log.warn(`Session ${sessionId} not found`);
+            callback({error: "Session not found"});
             return;
         }
 
-        gameSession.addPlayer(player);
-        socket.join(gameSession.getId());
+        log.info("current game session config", gameSession.getConfig());
+        if (gameSession.getPlayerCount() < gameSession.getConfig().getMaxPlayers()) {
+            gameSession.addPlayer(player);
+            socket.join(gameSession.getId());
 
-        log.info(`player ${socket.id} joined session ${sessionId}`);
-        callback(gameSession.toJson());
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_JOINED, player.toJson());
+            log.info(`player ${socket.id} joined session ${sessionId}`);
+            callback(gameSession.toJson());
+            io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_JOINED, player.toJson());
+        } else {
+            callback({error: "max player count reached"});
+            return;
+        }
     },
 
     [SocketEvents.SessionState.CONFIG_UPDATED]: async (
