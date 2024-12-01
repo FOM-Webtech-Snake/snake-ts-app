@@ -6,6 +6,7 @@ import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import PlayerList from "./PlayerList";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
+import logo from '/public/assets/logo.svg';
 
 interface LobbyPageProps {
     player: Player;
@@ -13,6 +14,8 @@ interface LobbyPageProps {
 }
 
 const log = getLogger("client.components.LobbyPage");
+
+
 
 const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const {socket, session, joinSession, createSession, leaveSession} = useGameSessionSocket();
@@ -74,76 +77,97 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     }, []);
 
     return (
-        <Container className={"vh-100 d-flex flex-column bg-dark text-white justify-content-center align-items-center"}>
-            <Row className="w-100 mb-4">
-                <Col>
-                    <h1 className="text-center">Welcome to the Lobby, {player.getName()}!</h1>
-                </Col>
-            </Row>
-            <Row className="w-100">
-                <Col className="d-flex justify-content-center">
-                    {currentStep === 1 ? (
-                        <div className="input-container text-center mb-3">
-                            <div className="input-group">
-                                <span className="input-group-text">Session ID</span>
-                                <div className="form-floating">
-                                    <input
-                                        type="text"
-                                        id="sessionCode"
-                                        className="form-control"
-                                        placeholder="Session Code"
-                                        value={sessionId ? sessionId : ""}
-                                        onChange={(e) => setSessionId(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        ref={inputRef}
-                                        style={{maxWidth: '300px'}}
-                                    />
-                                    <label htmlFor="sessionCode">Session Code</label>
-                                </div>
 
-                                {sessionId.trim() && !session ? (
-                                    <Button
-                                        className="btn btn-primary btn-lg"
-                                        onClick={createJoinSession}>
-                                        <i className="fa fa-right-to-bracket"/>
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        className="btn btn-secondary btn-lg"
-                                        onClick={createJoinSession}>
-                                        <i className="fa fa-plus"/>
-                                    </Button>
-                                )}
+        <Container
+            className="d-flex flex-column justify-content-center align-items-center vh-100"
+            style={{
+                backgroundImage: `url(${logo})`,
+                backgroundSize: "cover", // Hintergrund proportional abdecken
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                width: "100vw",
+                height: "100vh",
+            }}
+        >
+            {/* Überschrift über dem Logo */}
+            <div className="text-center" style={{ marginTop: "250px" }}>
+                <h1 className="text-white">Welcome to the Lobby, {player.getName()}!</h1>
+            </div>
+
+            <div className="text-center" style={{ maxWidth: "600px" }}>
+                {currentStep === 1 ? (
+                    <div className="mb-3">
+                        <div className="d-flex justify-content-center mb-3" style={{ maxWidth: "600px", width: "500px" }}>
+                            <div className="input-group w-75">
+                                <span className="input-group-text" style={{ width: "150px" }}>Session ID</span>
+                                <input
+                                    type="text"
+                                    id="sessionCode"
+                                    className="form-control"
+                                    placeholder="Session Code"
+                                    value={sessionId || ""}
+                                    onChange={(e) => setSessionId(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    ref={inputRef}
+                                />
                             </div>
                         </div>
-                    ) : (
-                        <div className="input-container text-center mb-3">
-                            <div className="input-group">
-                                <span className="input-group-text">Session ID: {session?.getId()}</span>
+
+                        {/* Button Container */}
+                        <div className="d-flex justify-content-center">
+                            {sessionId.trim() && !session ? (
                                 <Button
-                                    className="btn btn-danger btn-lg ml-2"
-                                    onClick={handleLeaveSession}>
-                                    <i className="fa fa-sign-out"></i>
-                                </Button>
-                            </div>
-                            {/* check if the curren user is the owner -> show start button when true */}
-                            {(session?.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) ? (
-                                <Button
-                                    className="btn btn-success btn-lg mt-3"
-                                    onClick={startGame}>
-                                    Start Game
+                                    className="btn btn-primary btn-lg mx-2"
+                                    onClick={createJoinSession}
+                                >
+                                    <i className="fa fa-right-to-bracket" />
                                 </Button>
                             ) : (
-                                <div className="text-center mt-3">
-                                    <p>Waiting for the host to start the game</p>
-                                </div>
+                                <Button
+                                    className="btn btn-secondary btn-lg mx-2"
+                                    onClick={createJoinSession}
+                                >
+                                    <i className="fa fa-plus" />
+                                </Button>
                             )}
+                        </div>
+                    </div>
+                ) : (
+                    <div>
+                        <div className="input-group mb-3">
+                    <span className="input-group-text">
+                        Session ID: {session?.getId()}
+                    </span>
+                            <Row>
+                                <Col className="text-center">
+                                    <button
+                                        className="btn btn-success"
+                                        onClick={leaveSession}
+                                    >
+                                        Zurück
+                                    </button>
+                                </Col>
+                            </Row>
 
                         </div>
-                    )}
-                </Col>
-            </Row>
-            {session && (<PlayerList/>)}
+                        {session?.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST ? (
+                            <Row>
+                                <Col className="text-center">
+                                    <button className="button" data-text="Awesome"
+                                            onClick={leaveSession}>
+                                        <span className="actual-text">&nbsp;Start&nbsp;</span>
+                                        <span aria-hidden="true" className="hover-text">&nbsp;Start&nbsp;</span>
+                                    </button>
+                                </Col>
+                            </Row>
+                        ) : (
+                            <p>Waiting for the host to start the game</p>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {session && <PlayerList />}
         </Container>
     );
 };
