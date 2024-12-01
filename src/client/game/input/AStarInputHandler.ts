@@ -9,7 +9,7 @@ import {CollectableManager} from "../ui/manager/CollectableManager";
 
 const log = getLogger("client.game.input.AIInputHandler");
 
-export class AIInputHandler extends InputHandler {
+export class AStarInputHandler extends InputHandler {
     private easystar: EasyStar.js;
     private grid: number[][];
     private lastUpdateTime: number = 0;
@@ -17,7 +17,7 @@ export class AIInputHandler extends InputHandler {
     private collectableManager: CollectableManager;
 
     constructor(scene: GameScene, collectableManager: CollectableManager, active: boolean = false) {
-        super(scene, InputTypeEnum.AI, active);
+        super(scene, InputTypeEnum.AUTOPILOT, active);
 
         this.collectableManager = collectableManager;
 

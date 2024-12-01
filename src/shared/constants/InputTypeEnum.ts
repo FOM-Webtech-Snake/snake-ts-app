@@ -3,5 +3,4 @@ export enum InputTypeEnum {
     TOUCH = "touch",
     GAMEPAD = "gamepad",
     AUTOPILOT = "autopilot",
-    AI = "ai",
 }

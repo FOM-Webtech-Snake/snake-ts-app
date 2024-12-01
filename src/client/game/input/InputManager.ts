@@ -6,7 +6,7 @@ import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
 import {PhaserSnake} from "../ui/PhaserSnake";
 import {GameScene} from "../scenes/GameScene";
 import {getLogger} from "../../../shared/config/LogConfig";
-import {AIInputHandler} from "./AIInputHandler";
+import {AStarInputHandler} from "./AStarInputHandler";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 
 const log = getLogger("client.game.input.InputManager");
@@ -23,7 +23,7 @@ export class InputManager {
         this.handlers.set(InputTypeEnum.KEYBOARD, new KeyboardInputHandler(scene));
         this.handlers.set(InputTypeEnum.TOUCH, new TouchInputHandler(scene));
         this.handlers.set(InputTypeEnum.GAMEPAD, new GamepadInputHandler(scene));
-        this.handlers.set(InputTypeEnum.AUTOPILOT, new AIInputHandler(scene, collectableManager));
+        this.handlers.set(InputTypeEnum.AUTOPILOT, new AStarInputHandler(scene, collectableManager));
 
         this.autopilotKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.HOME);
         this.autopilotKey.on("down", () => this.toggleAutopilot());
