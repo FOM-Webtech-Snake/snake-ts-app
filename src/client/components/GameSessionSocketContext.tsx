@@ -5,6 +5,7 @@ import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
 import {Player} from "../../shared/model/Player";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
+import customParser from "socket.io-msgpack-parser";
 
 
 interface GameSessionSocketContextType {
@@ -46,7 +47,7 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
-        const newSocket = io();
+        const newSocket = io({parser: customParser});
         setSocket(newSocket);
 
         const handleConnect = () => setIsConnected(true);

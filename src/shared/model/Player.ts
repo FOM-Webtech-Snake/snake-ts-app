@@ -55,6 +55,10 @@ export class Player {
         return this.speed;
     }
 
+    setId(id: string) {
+        this.id = id;
+    }
+
     setSpeed(speed: number) {
         this.speed = speed;
     }

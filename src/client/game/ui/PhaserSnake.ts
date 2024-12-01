@@ -7,6 +7,7 @@ import {PlayerStatusEnum} from "../../../shared/constants/PlayerStatusEnum";
 import {getLogger} from "../../../shared/config/LogConfig";
 import {GameScene} from "../scenes/GameScene";
 import {Player} from "../../../shared/model/Player";
+import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../../shared/config/GlobalTickRate";
 
 const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
@@ -43,6 +44,9 @@ export class PhaserSnake {
     // location history
     private lastPositions: Position[] = []; // To store the last positions of body parts
 
+    private targetPositions: Position[] = []; // this is only used for remoteSnakes
+    private lastUpdateTime: number = Date.now();
+
     constructor(
         scene: GameScene,
         playerId: string,
@@ -75,12 +79,7 @@ export class PhaserSnake {
         this.body = this.scene.physics.add.group();
         this.lockedSegments = this.scene.physics.add.group();
 
-        for (let i = 0; i < positions.length; i++) {
-            const bodyPart = this.addSegmentToBody(positions[i]);
-            if (i === 0) {
-                this.head = bodyPart;
-            }
-        }
+        this.appendSegmentsByPositions(0, positions);
 
         // create the face
         this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
@@ -95,9 +94,10 @@ export class PhaserSnake {
         this.headGroup.add(this.face);
     }
 
-    updateFacePosition() {
-        const head = this.getHead();
-        this.face.setPosition(head.x, head.y);
+    private updateFacePosition() {
+        log.trace("body", this.body);
+        log.trace("updateFacePosition", this.head);
+        this.face.setPosition(this.head.x, this.head.y);
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
     }
 
@@ -136,16 +136,8 @@ export class PhaserSnake {
         this.status = status;
     }
 
-    setSpeed(speed: number) {
-        this.speed = speed;
-    }
-
     getScore() {
         return this.score;
-    }
-
-    setScore(score: number) {
-        this.score = score;
     }
 
     checkCollisions(): { selfCollision: boolean, worldCollision: boolean } {
@@ -196,15 +188,13 @@ export class PhaserSnake {
     changeScaleBy(value: number): void {
         const newScale = this.scale + value;
         if (newScale <= 0) {
-            log.trace("cannot scale smaller than 0", newScale);
-            return
-        } else {
-            this.updateScaling(newScale);
+            throw new Error("new scale must be greater 0");
         }
+        this.scale = newScale;
+        this.updateScaling();
     }
 
-    updateScaling(newScale: number): void {
-        this.scale = newScale;
+    updateScaling(): void {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
 
         for (let i = 0; i < bodyParts.length; i++) {
@@ -418,45 +408,78 @@ export class PhaserSnake {
             player.getBodyPositions());
     }
 
-
     updateFromPlayer(player: Player) {
         log.trace("updating from player", player);
 
-        this.setStatus(player.getStatus());
-        this.setSpeed(player.getSpeed());
-        this.setScore(player.getScore());
-
+        this.status = player.getStatus();
+        this.speed = player.getSpeed();
+        this.score = player.getScore();
         this.direction = player.getDirection()
 
+        // update the target positions
+        this.targetPositions = player.getBodyPositions();
+        this.lastUpdateTime = Date.now();
+
         if (this.scale != player.getScale()) {
-            this.updateScaling(player.getScale());
+            log.trace("updating scale from player", player);
+            this.scale = player.getScale();
+            this.updateScaling();
         }
+
         if (this.primaryColor != ColorUtil.rgbToHex(player.getColor())) {
+            log.trace("updating color from player", player);
             this.setPrimaryColor(ColorUtil.rgbToHex(player.getColor()));
         }
+    }
 
-        const currentLength = this.body.getLength();
-        const playerBodyLength = player.getBodyPositions().length;
-        log.trace("currentLength", currentLength, "playerBodyLength", playerBodyLength);
-
-        if (playerBodyLength > currentLength) {
-            // Add new segments
-            for (let i = currentLength; i < playerBodyLength; i++) {
-                this.addSegmentToBody(player.getBodyPositions()[i]);
+    private appendSegmentsByPositions(startPosIdx: number, positions: Position[]) {
+        for (let i = startPosIdx; i < positions.length; i++) {
+            const bodyPart = this.addSegmentToBody(positions[i]);
+            if (i === 0) {
+                this.head = bodyPart;
             }
-        } else if (playerBodyLength < currentLength) {
+        }
+    }
+
+    private updateLength(bodyParts: Phaser.GameObjects.Sprite[], targetPositions: Position[]) {
+        const targetLength = targetPositions.length;
+        const bodyLength = bodyParts.length;
+
+        log.trace("currentLength", bodyLength, "playerBodyLength", targetLength);
+
+        if (targetLength > bodyLength) {
+            this.appendSegmentsByPositions(bodyLength, targetPositions);
+        } else if (targetLength < bodyLength) {
             // Remove extra segments
-            for (let i = currentLength - 1; i >= playerBodyLength; i--) {
+            for (let i = bodyLength - 1; i >= targetLength; i--) {
                 const segment = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
                 this.body.remove(segment, true, true);
             }
         }
+    }
+
+    interpolatePosition() {
+        if (!this.targetPositions || !this.body) {
+            return
+        }
+
+        const elapsedTime = Date.now() - this.lastUpdateTime;
+        const t = Math.min(elapsedTime / GLOBAL_SYNC_INTERVAL_IN_MILLIS, 1);
 
         // Update existing segments
-        for (let i = 0; i < Math.min(currentLength, playerBodyLength); i++) {
-            const part = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
-            part.setPosition(player.getBodyPositions()[i].getX(), player.getBodyPositions()[i].getY());
+        const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
+        if (bodyParts.length !== this.targetPositions.length) {
+            log.trace("bodyParts and targetPos are not the same length", bodyParts, this.targetPositions);
+            this.updateLength(bodyParts, this.targetPositions)
         }
+
+        for (let i = 0; i < bodyParts.length; i++) {
+            const interpolatedX = Phaser.Math.Linear(bodyParts[i].x, this.targetPositions[i].getX(), t);
+            const interpolatedY = Phaser.Math.Linear(bodyParts[i].y, this.targetPositions[i].getY(), t);
+            bodyParts[i].setPosition(interpolatedX, interpolatedY);
+        }
+
+        this.updateFacePosition();
     }
 
     toJson() {

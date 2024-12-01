@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'main'
+      - 'fabian-optimizations'
     tags:
       - 'v*'  # Match version tags like v1.0, v1.1.1, etc.
 

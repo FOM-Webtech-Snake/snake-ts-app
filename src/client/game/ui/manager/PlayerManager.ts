@@ -45,12 +45,6 @@ export class PlayerManager {
             .map(([_, player]) => player);
     }
 
-    updateAll(){
-        Object.values(this.players).forEach(player => {
-            player.update();
-        })
-    }
-
     getFirstPlayer(): PhaserSnake {
         log.debug("getting first player");
 
