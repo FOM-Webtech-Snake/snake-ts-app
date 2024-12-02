@@ -1,5 +1,4 @@
 import {GameStateEnum} from "../constants/GameStateEnum";
-import {GameSessionUtil} from "../../server/util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
 import {Collectable} from "./Collectable";
@@ -9,6 +8,7 @@ import {getLogger} from "../config/LogConfig";
 import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
 import {PositionUtil} from "../../server/util/PositionUtil";
 import {DirectionEnum} from "../constants/DirectionEnum";
+import {Position} from "./Position";
 
 const log = getLogger("shared.GameSession");
 
@@ -22,13 +22,13 @@ export class GameSession {
     private timerInterval: NodeJS.Timeout | null = null;
 
 
-    constructor(id: string = null,
+    constructor(id: string,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
                 players: Record<string, Player> = {},
                 collectables: Record<string, Collectable> = {},
-                timerInterval: NodeJS.Timeout = null) {
-        this.id = id || GameSessionUtil.generateSessionId();
+                timerInterval: NodeJS.Timeout | null = null) {
+        this.id = id;
         this.gameState = gameState;
         this.config = config;
         this.players = players;
@@ -41,7 +41,10 @@ export class GameSession {
         return this.id;
     }
 
-    getPlayer(playerId: string): Player {
+    getPlayer(playerId: string | null): Player | null {
+        if (playerId == null) {
+            return null;
+        }
         return this.players[playerId];
     }
 
@@ -85,7 +88,7 @@ export class GameSession {
         return this.timerInterval;
     }
 
-    setTimerInterval(interval: NodeJS.Timeout) {
+    setTimerInterval(interval: NodeJS.Timeout | null) {
         this.timerInterval = interval;
     }
 
@@ -100,10 +103,10 @@ export class GameSession {
 
     spawnPlayers(): void {
         Object.values(this.players).forEach(player => {
-            player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spwan
+            player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spawn
             player.setSpeed(this.config.getSnakeStartingSpeed());
             player.setScale(this.config.getSnakeStartingScale())
-            const bodyPositions = []
+            const bodyPositions: Position[] = []
             const spawnPosition = PositionUtil.randomUniquePosition(this);
             for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
                 bodyPositions.push(spawnPosition);
@@ -114,12 +117,6 @@ export class GameSession {
 
     addCollectable(collectable: Collectable): void {
         this.collectables[collectable.getId()] = collectable;
-    }
-
-    addCollectables(collectables: Record<string, Collectable>): void {
-        Object.keys(collectables).forEach((collectableId) => {
-            this.collectables[collectableId] = collectables[collectableId];
-        })
     }
 
     removePlayer(playerId: string): void {

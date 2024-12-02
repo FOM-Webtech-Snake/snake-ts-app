@@ -258,7 +258,7 @@ export class MultiplayerManager {
 
     public emitCollect(uuid: string, callback: (success: boolean) => void): void {
         log.debug(`emitting collect ${uuid}`);
-        this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response) => {
+        this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response: any) => {
             if (response.status) {
                 callback(true);
             } else {
@@ -269,7 +269,7 @@ export class MultiplayerManager {
 
     public emitCollision(type: CollisionTypeEnum, callback: (success: boolean) => void): void {
         log.debug(`emitting collision with ${type}`);
-        this.socket.emit(SocketEvents.GameEvents.COLLISION, type, (response) => {
+        this.socket.emit(SocketEvents.GameEvents.COLLISION, type, (response: any) => {
             if (response.status) {
                 callback(true);
             } else {

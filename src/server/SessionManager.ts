@@ -4,6 +4,7 @@ import {GameSessionConfig} from "../shared/model/GameSessionConfig";
 import {Player} from "../shared/model/Player";
 import {getLogger} from "../shared/config/LogConfig";
 import SpawnerDaemon from "./SpawnerDaemon";
+import {GameSessionUtil} from "./util/GameSessionUtil";
 
 const log = getLogger("server.SessionManager");
 
@@ -12,7 +13,7 @@ class SessionManager {
     private sessions: Record<string, GameSession> = {};
     private spawner = SpawnerDaemon.getInstance();
 
-    getSession = (sessionId: string): GameSession | undefined => {
+    getSession = (sessionId: string): GameSession | null => {
         return this.sessions[sessionId];
     }
 
@@ -21,7 +22,7 @@ class SessionManager {
     }
 
     createSession(config: GameSessionConfig) {
-        const newGame = new GameSession(null, config);
+        const newGame = new GameSession(GameSessionUtil.generateSessionId(), config);
         this.sessions[newGame.getId()] = newGame;
         log.debug(`new session created`);
         return newGame;
