@@ -1,5 +1,4 @@
 import {GameStateEnum} from "../constants/GameStateEnum";
-import {GameSessionUtil} from "../../server/util/GameSessionUtil";
 import {GameSessionConfig} from "./GameSessionConfig";
 import {Player} from "./Player";
 import {Collectable} from "./Collectable";
@@ -8,6 +7,8 @@ import SpawnerDaemon from "../../server/SpawnerDaemon";
 import {getLogger} from "../config/LogConfig";
 import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
 import {PositionUtil} from "../../server/util/PositionUtil";
+import {DirectionEnum} from "../constants/DirectionEnum";
+import {Position} from "./Position";
 
 const log = getLogger("shared.GameSession");
 
@@ -17,24 +18,33 @@ export class GameSession {
     private config: GameSessionConfig;
     private players: Record<string, Player>;
     private collectables: Record<string, Collectable>;
+    private remainingTime: number;
+    private timerInterval: NodeJS.Timeout | null = null;
 
-    constructor(id: string = null,
+
+    constructor(id: string,
                 config: GameSessionConfig,
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
                 players: Record<string, Player> = {},
-                collectables: Record<string, Collectable> = {}) {
-        this.id = id || GameSessionUtil.generateSessionId();
+                collectables: Record<string, Collectable> = {},
+                timerInterval: NodeJS.Timeout | null = null) {
+        this.id = id;
         this.gameState = gameState;
         this.config = config;
         this.players = players;
         this.collectables = collectables;
+        this.remainingTime = config.getGameDuration();
+        this.timerInterval = timerInterval;
     }
 
     getId(): string {
         return this.id;
     }
 
-    getPlayer(playerId: string): Player {
+    getPlayer(playerId: string | null): Player | null {
+        if (playerId == null) {
+            return null;
+        }
         return this.players[playerId];
     }
 
@@ -66,27 +76,52 @@ export class GameSession {
         return this.collectables[id];
     }
 
+    getRemainingTime() {
+        return this.remainingTime;
+    }
+
+    setRemainingTime(remainingTime: number) {
+        this.remainingTime = remainingTime;
+    }
+
+    getTimerInterval() {
+        return this.timerInterval;
+    }
+
+    setTimerInterval(interval: NodeJS.Timeout | null) {
+        this.timerInterval = interval;
+    }
+
     setConfig(config: GameSessionConfig) {
         this.config = config;
+        this.remainingTime = config.getGameDuration();
     }
 
     addPlayer(player: Player): void {
-        player.setBodyPositions([PositionUtil.randomUniquePosition(this)]);
         this.players[player.getId()] = player;
+    }
+
+    spawnPlayers(): void {
+        Object.values(this.players).forEach(player => {
+            player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spawn
+            player.setSpeed(this.config.getSnakeStartingSpeed());
+            player.setScale(this.config.getSnakeStartingScale())
+            const bodyPositions: Position[] = []
+            const spawnPosition = PositionUtil.randomUniquePosition(this);
+            for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
+                bodyPositions.push(spawnPosition);
+            }
+            player.setBodyPositions(bodyPositions);
+        })
     }
 
     addCollectable(collectable: Collectable): void {
         this.collectables[collectable.getId()] = collectable;
     }
 
-    addCollectables(collectables: Record<string, Collectable>): void {
-        Object.keys(collectables).forEach((collectableId) => {
-            this.collectables[collectableId] = collectables[collectableId];
-        })
-    }
-
     removePlayer(playerId: string): void {
         delete this.players[playerId];
+        log.trace("removedPlayer player from session", playerId);
         const playersArray = this.getPlayersAsArray();
         if (playersArray.length > 0) {
             const existingHost = playersArray.find(player => player.getRole() === PlayerRoleEnum.HOST);
@@ -137,6 +172,7 @@ export class GameSession {
             collectables: Object.fromEntries(
                 Object.entries(this.collectables).map(([id, collectable]) => [id, collectable.toJson()])
             ),
+            remainingTime: this.remainingTime,
         };
     }
 
@@ -151,7 +187,8 @@ export class GameSession {
             ),
             Object.fromEntries(
                 Object.entries(data.collectables).map(([id, collectableData]) => [id, Collectable.fromData(collectableData)])
-            )
+            ),
+            data.remainingTime
         );
     }
 }

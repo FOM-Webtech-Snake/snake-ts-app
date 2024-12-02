@@ -1,5 +1,5 @@
 import '../../public/css/main.css'; // this will apply the css globally
-import App from "./components/App";
+import App from "./App";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import {GameSessionSocketProvider} from "./components/GameSessionSocketContext";

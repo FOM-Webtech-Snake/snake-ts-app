@@ -1,19 +1,21 @@
 import {InputHandler} from "./InputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
-import {PhaserSnake} from "../ui/PhaserSnake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {GameScene} from "../scenes/GameScene";
+import {getLogger} from "../../../shared/config/LogConfig";
 
 const SENSITIVITY = 20;
 const LONG_PRESS_THRESHOLD = 500; // ms
+
+const log = getLogger("client.game.input.TouchInputHandler");
 
 export class TouchInputHandler extends InputHandler {
     private startX: number;
     private startY: number;
     private longPressTimer: NodeJS.Timeout | null;
 
-    constructor(scene: GameScene, snake: PhaserSnake) {
-        super(scene, snake, InputTypeEnum.TOUCH);
+    constructor(scene: GameScene, active: boolean = true) {
+        super(scene, InputTypeEnum.TOUCH, active);
         this.startX = 0;
         this.startY = 0;
         this.longPressTimer = null;
@@ -38,6 +40,11 @@ export class TouchInputHandler extends InputHandler {
             if (Math.abs(deltaX) < SENSITIVITY && Math.abs(deltaY) < SENSITIVITY) {
                 this.startGame(); // execute startGame on a short tap
             } else if (Math.abs(deltaX) > SENSITIVITY || Math.abs(deltaY) > SENSITIVITY) {
+                if (!this.isAssigned()) {
+                    log.debug("Input handler TouchInputHandler is not assigned");
+                    return;
+                }
+
                 if (Math.abs(deltaX) > Math.abs(deltaY)) {
                     if (deltaX > 0) {
                         this.snake.setDirection(DirectionEnum.RIGHT);

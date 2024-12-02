@@ -10,10 +10,11 @@ import {GameStateEnum} from "../../../../shared/constants/GameStateEnum";
 import {CollisionTypeEnum} from "../../../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
 import {SpatialGrid} from "../SpatialGrid";
+import {Player} from "../../../../shared/model/Player";
+import {InputManager} from "../../input/InputManager";
+import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../../../shared/config/GlobalTickRate";
 
 const log = getLogger("client.game.MultiplayerManager");
-
-const COLLISION_CHECK_THRESHOLD = 50; // in milliseconds
 
 export class MultiplayerManager {
 
@@ -21,17 +22,22 @@ export class MultiplayerManager {
     private socket: Socket;
     private collectableManager: CollectableManager;
     private playerManager: PlayerManager;
+    private inputManager: InputManager;
     private lastCollisionCheck: number;
+
+    private syncInterval: NodeJS.Timeout | null = null;
 
     constructor(
         scene: GameScene,
         socket: Socket,
         collectableManager: CollectableManager,
-        playerManager: PlayerManager) {
+        playerManager: PlayerManager,
+        inputManager: InputManager) {
         this.scene = scene;
         this.socket = socket;
         this.collectableManager = collectableManager;
         this.playerManager = playerManager;
+        this.inputManager = inputManager;
         this.lastCollisionCheck = 0;
         this.setup();
     }
@@ -45,7 +51,14 @@ export class MultiplayerManager {
             log.debug("received session");
             log.trace(`session: ${data}`);
             const gameSession: GameSession = GameSession.fromData(data);
-            self.scene.handleGameSession(gameSession);
+            self.initGameSession(gameSession);
+        });
+
+        this.socket.on(SocketEvents.GameControl.SYNC_GAME_STATE, function (data: any) {
+            log.debug("sync session state");
+            log.trace(`session: ${data}`);
+            const gameSession: GameSession = GameSession.fromData(data);
+            self.syncGameSessionState(gameSession);
         });
 
         this.socket.on(SocketEvents.GameControl.START_GAME, () => {
@@ -56,12 +69,6 @@ export class MultiplayerManager {
         this.socket.on(SocketEvents.GameControl.STATE_CHANGED, (state: GameStateEnum) => {
             log.debug(`game state change ${state}`);
             self.scene.setState(state);
-        });
-
-        this.socket.on(SocketEvents.PlayerActions.PLAYER_MOVEMENT, function (snake: string) {
-            log.debug("snake movement");
-            log.trace(`snake: ${snake}`);
-            self.handleRemoteSnake(snake);
         });
 
         this.socket.on(SocketEvents.GameEvents.ITEM_COLLECTED, (uuid: string) => {
@@ -80,13 +87,16 @@ export class MultiplayerManager {
             log.debug("spawnNewItem");
             log.trace(`item: ${item}`);
             self.collectableManager.spawnCollectable(item);
-            // TODO self.scene.addCollectable(self.scene, item);
         });
 
-        this.socket.on(SocketEvents.SessionState.DISCONNECTED, function (playerId) {
+        this.socket.on(SocketEvents.SessionState.LEFT_SESSION, function (playerId: string) {
             log.debug("player disconnected", playerId);
             self.playerManager.removePlayer(playerId);
-            // TODO self.scene.removePlayer(playerId);
+        })
+
+        this.socket.on(SocketEvents.SessionState.DISCONNECTED, function (playerId: string) {
+            log.debug("player disconnected", playerId);
+            self.playerManager.removePlayer(playerId);
         });
 
         this.emitGetConfiguration();
@@ -96,19 +106,50 @@ export class MultiplayerManager {
         return this.socket.id;
     }
 
-    public handleRemoteSnake(data: any) {
-        log.trace("received remote snake", data);
-        const player: PhaserSnake = this.playerManager.getPlayer(data.playerId);
-        if (player) {
-            log.trace(`player found with status: ${player.getStatus()}`);
-            this.playerManager.updatePlayer(data.playerId, data);
-        } else {
-            const newSnake = PhaserSnake.fromData(this.scene, data);
-            this.playerManager.addPlayer(data.playerId, newSnake);
+    private initGameSession(session: GameSession) {
+        log.debug("initializing game session");
+        this.scene.loadGameConfig(session.getConfig());
+        this.scene.setState(session.getGameState());
+        this.initSnakes(session.getPlayersAsArray());
+    }
+
+    private syncGameSessionState(session: GameSession) {
+        log.trace("updating game from game session", session);
+        // TODO change config while playing?
+        this.updateSnakes(session.getPlayersAsArray());
+        this.scene.setState(session.getGameState());
+    }
+
+    private initSnakes(players: Player[]) {
+        log.debug("initializing snakes", players);
+        if (players.length > 0) {
+            players.forEach((player: Player) => {
+                const snake = PhaserSnake.fromPlayer(this.scene, player);
+                this.playerManager.addSnake(snake);
+                if (snake.getPlayerId() === this.getPlayerId()) {
+                    this.inputManager.assignToSnake(snake);
+                    this.scene.cameraFollow(snake);
+                }
+            })
         }
     }
 
-    public syncPlayerState() {
+    private updateSnakes(players: Player[]) {
+        log.trace("updating snakes", players);
+        if (players.length > 0) {
+            players.forEach((player: Player) => {
+                const localPlayerCopy = this.playerManager.getPlayer(player.getId());
+                if (localPlayerCopy) {
+                    log.trace(`player found with status: ${player.getStatus()}`);
+                    if (localPlayerCopy.getPlayerId() !== this.getPlayerId()) {
+                        localPlayerCopy.updateFromPlayer(player);
+                    }
+                }
+            });
+        }
+    }
+
+    private syncPlayerState() {
         log.debug("syncPlayerState");
         const player = this.playerManager.getPlayer(this.getPlayerId());
         if (player) {
@@ -116,10 +157,33 @@ export class MultiplayerManager {
         }
     }
 
+    public startSyncingGameState() {
+        log.info("client sync job started!");
+        if (this.syncInterval) {
+            log.warn("Sync interval already running, skipping start.");
+            return;
+        }
+
+        this.syncInterval = setInterval(() => {
+            log.debug("syncPlayerState");
+            this.syncPlayerState();
+        }, GLOBAL_SYNC_INTERVAL_IN_MILLIS);
+    }
+
+    public stopSyncingGameState() {
+        if (this.syncInterval) {
+            clearInterval(this.syncInterval);
+            this.syncInterval = null;
+            log.info("client sync job stopped!");
+        } else {
+            log.warn("No sync interval to stop.");
+        }
+    }
+
     public handleCollisionUpdate() {
         // only check for collision every xxx milliseconds
         const now = Date.now();
-        if (now - this.lastCollisionCheck < COLLISION_CHECK_THRESHOLD) return;
+        if (now - this.lastCollisionCheck < GLOBAL_SYNC_INTERVAL_IN_MILLIS) return;
         this.lastCollisionCheck = now;
 
         log.debug("collision update");
@@ -139,7 +203,7 @@ export class MultiplayerManager {
             this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
         }
 
-        this.checkPlayerToPlayerCollisions(player, this.playerManager.getAllPlayers());
+        this.checkPlayerToPlayerCollisions(player, this.playerManager.getPlayersExcept(this.getPlayerId()));
     }
 
     private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
@@ -194,7 +258,7 @@ export class MultiplayerManager {
 
     public emitCollect(uuid: string, callback: (success: boolean) => void): void {
         log.debug(`emitting collect ${uuid}`);
-        this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response) => {
+        this.socket.emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid, (response: any) => {
             if (response.status) {
                 callback(true);
             } else {
@@ -205,7 +269,7 @@ export class MultiplayerManager {
 
     public emitCollision(type: CollisionTypeEnum, callback: (success: boolean) => void): void {
         log.debug(`emitting collision with ${type}`);
-        this.socket.emit(SocketEvents.GameEvents.COLLISION, type, (response) => {
+        this.socket.emit(SocketEvents.GameEvents.COLLISION, type, (response: any) => {
             if (response.status) {
                 callback(true);
             } else {

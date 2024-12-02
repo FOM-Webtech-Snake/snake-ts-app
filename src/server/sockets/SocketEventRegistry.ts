@@ -4,19 +4,20 @@ import {sessionManager} from "../SessionManager";
 import {Player} from "../../shared/model/Player";
 import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
-import {DEFAULT_GAME_SESSION_CONFIG} from "../../shared/model/GameSessionConfig";
+import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {childCollectables} from "../../shared/config/Collectables";
-import {Position} from "../../shared/model/Position";
 import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
+import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../shared/config/GlobalTickRate";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
 interface EventHandlers {
-    [SocketEvents.Connection.CREATE_SESSION]: [any];
-    [SocketEvents.Connection.JOIN_SESSION]: [string, any];
+    [SocketEvents.Connection.CREATE_SESSION]: [any, (session: any) => void];
+    [SocketEvents.Connection.JOIN_SESSION]: [string, any, (session: any) => void];
+    [SocketEvents.SessionState.CONFIG_UPDATED]: [any];
     [SocketEvents.GameControl.GET_READY]: [];
     [SocketEvents.SessionState.GET_CURRENT_SESSION]: []
     [SocketEvents.GameControl.START_GAME]: [];
@@ -41,43 +42,65 @@ const SocketEventRegistry: {
     [SocketEvents.Connection.CREATE_SESSION]: async (
         io: Server,
         socket: Socket,
-        [playerData]: [any]
+        [playerData, callback]: [any, (session: any) => void]
     ) => {
+        playerData.id = socket.id;
+
         const player = Player.fromData(playerData);
         player.setRole(PlayerRoleEnum.HOST);
 
-        const gameSession: GameSession = sessionManager.createSession(
+        let gameSession: GameSession = sessionManager.createSession(
             DEFAULT_GAME_SESSION_CONFIG
         );
 
-        log.info("parsed player from data", player);
+        log.trace("parsed player from data", player);
 
-        gameSession.addPlayer(player);
         socket.join(gameSession.getId());
+        gameSession = sessionManager.joinSession(gameSession.getId(), player);
 
         log.info(`created new game session: ${gameSession.getId()} by ${socket.id}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        callback(gameSession.toJson());
     },
 
     [SocketEvents.Connection.JOIN_SESSION]: async (
         io: Server,
         socket: Socket,
-        [sessionId, playerData]: [string, any]
+        [sessionId, playerData, callback]: [string, any, (session: any) => void]
     ) => {
+        playerData.id = socket.id;
+
         const player = Player.fromData(playerData);
         player.setRole(PlayerRoleEnum.GUEST);
 
-        const gameSession = sessionManager.getSession(sessionId);
+        try {
+            const gameSession = sessionManager.joinSession(sessionId, player);
+            socket.join(gameSession.getId());
+            log.info(`player ${socket.id} joined session ${sessionId}`);
+            callback(gameSession.toJson());
+            io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_JOINED, player.toJson());
+        } catch (error: any) {
+            callback({error: error.message})
+            return;
+        }
+    },
+
+    [SocketEvents.SessionState.CONFIG_UPDATED]: async (
+        io: Server,
+        socket: Socket,
+        [configData]: [any]
+    ) => {
+
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
         if (!gameSession) {
-            log.warn(`Session ${sessionId} not found`);
             return;
         }
 
-        gameSession.addPlayer(player);
-        socket.join(gameSession.getId());
+        if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
+            gameSession.setConfig(GameSessionConfig.fromData(configData));
+        }
 
-        log.info(`player ${socket.id} joined session ${sessionId}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+        log.info(`player ${socket.id} updated config ${configData}`);
+        io.to(gameSession.getId()).emit(SocketEvents.SessionState.CONFIG_UPDATED, gameSession.getConfig().toJson());
     },
 
     [SocketEvents.GameControl.START_GAME]: async (
@@ -85,15 +108,41 @@ const SocketEventRegistry: {
         socket: Socket,
         []: []
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
 
-        const gameSession = sessionManager.getSession(sessionId);
-        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+        if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.start(io)) {
-                io.to(sessionId).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
             }
         }
+
+        // start timer
+        if (!gameSession.getTimerInterval()) {
+            const intervalId = setInterval(() => {
+                if (gameSession.getGameState() === GameStateEnum.RUNNING) {
+                    const remainingTime = gameSession.getRemainingTime() - 1;
+                    gameSession.setRemainingTime(remainingTime);
+
+                    log.debug("remaining time", remainingTime);
+                    io.to(gameSession.getId()).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
+
+                    if (remainingTime <= 0) {
+                        // stop timer
+                        clearInterval(intervalId);
+                        gameSession.setTimerInterval(null);
+                        gameSession.setGameState(GameStateEnum.GAME_OVER);
+                        io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                        log.info("Time expired!");
+                    }
+                }
+            }, 1000); // every one sec
+
+            gameSession.setTimerInterval(intervalId);
+        }
+
     },
 
     [SocketEvents.GameControl.STATE_CHANGED]: async (
@@ -101,13 +150,14 @@ const SocketEventRegistry: {
         socket: Socket,
         [state]: [GameStateEnum]
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
 
-        const gameSession = sessionManager.getSession(sessionId);
         if (gameSession.getGameState() !== state) {
             gameSession.setGameState(state);
-            io.to(sessionId).emit(SocketEvents.GameControl.STATE_CHANGED, state);
+            io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, state);
         }
     },
 
@@ -116,23 +166,15 @@ const SocketEventRegistry: {
         socket: Socket,
         [snake]: [any]
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
 
-        const gameSession = sessionManager.getSession(sessionId);
-        if (gameSession) {
-            const player = gameSession.getPlayer(socket.id);
-            if (player) {
-                const bodyPositions: Position[] = [];
-                snake.body.forEach((pos: any) => {
-                    bodyPositions.push(Position.fromData(pos));
-                });
-                log.trace("updated bodyPositions", bodyPositions);
-                player.setBodyPositions(bodyPositions);
-
-                log.trace(`Player ${socket.id} moved snake ${snake}`);
-                socket.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake);
-            }
+        const player = gameSession.getPlayer(socket.id);
+        if (player) {
+            log.trace('player moved', snake);
+            player.updateFromSnakeData(snake);
         }
     },
 
@@ -141,15 +183,16 @@ const SocketEventRegistry: {
         socket: Socket,
         []: []
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
-
-        const gameSession = sessionManager.getSession(sessionId);
-        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
+        if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.isWaitingForPlayers()) {
-                io.to(sessionId).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
+                gameSession.spawnPlayers();
+                io.to(gameSession.getId()).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
                     if (err) {
-                        log.warn(`Not all clients responded in time for session ${sessionId}`);
+                        log.warn(`Not all clients responded in time for session ${gameSession.getId()}`);
                     } else {
                         log.info(`game session start confirmed from all clients`);
                         gameSession.setGameState(GameStateEnum.READY);
@@ -164,10 +207,11 @@ const SocketEventRegistry: {
         socket: Socket,
         []: []
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
-
-        const gameSession = sessionManager.getSession(sessionId);
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
+        // todo store that a player got the config / session to start
         socket.emit(SocketEvents.SessionState.CURRENT_SESSION, gameSession.toJson());
     },
 
@@ -176,18 +220,17 @@ const SocketEventRegistry: {
         socket: Socket,
         [uuid, callback]: [string, (response: { status: boolean }) => void]
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
 
-        const gameSession = sessionManager.getSession(sessionId);
         const collectable = gameSession?.getCollectableById(uuid);
-
         if (collectable) {
-            gameSession.getPlayer(socket.id).addScore(childCollectables[collectable.getType()].value);
+            gameSession.getPlayer(socket.id)?.addScore(childCollectables[collectable.getType()].value);
             gameSession.removeCollectable(uuid);
             callback({status: true});
-            io.to(sessionId).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+            io.to(gameSession.getId()).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
         } else {
             callback({status: false});
         }
@@ -199,17 +242,17 @@ const SocketEventRegistry: {
         socket: Socket,
         [type, callback]: [CollisionTypeEnum, (response: { status: boolean }) => void]
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
 
-        const gameSession = sessionManager.getSession(sessionId);
         if ((type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) ||
             (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) ||
             (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
             callback({status: true});
-            gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
-            io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
-            io.to(sessionId).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
+            gameSession.getPlayer(socket.id)?.setStatus(PlayerStatusEnum.DEAD);
+            io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
         } else {
             callback({status: false});
         }
@@ -220,18 +263,19 @@ const SocketEventRegistry: {
         socket: Socket,
         []: []
     ) => {
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
-        if (!sessionId) return;
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
 
-        const gameSession = sessionManager.getSession(sessionId);
         if (gameSession) {
             gameSession.removePlayer(socket.id);
-            socket.leave(sessionId);
+            socket.leave(gameSession.getId());
 
             if (!gameSession.hasPlayers()) {
-                sessionManager.deleteSession(sessionId);
+                sessionManager.deleteSession(gameSession.getId());
             } else {
-                io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
+                io.to(gameSession.getId()).emit(SocketEvents.SessionState.LEFT_SESSION, socket.id);
             }
         }
     },
@@ -241,23 +285,34 @@ const SocketEventRegistry: {
         socket: Socket,
         []: []
     ) => {
-        log.info(`User disconnected: ${socket.id}`);
-        const sessionId = Array.from(socket.rooms).find((room) => room !== socket.id);
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
 
-        if (sessionId) {
-            const gameSession = sessionManager.getSession(sessionId);
-            if (gameSession) {
-                gameSession.removePlayer(socket.id);
-
-                if (!gameSession.hasPlayers()) {
-                    sessionManager.deleteSession(sessionId);
-                } else {
-                    io.to(sessionId).emit(SocketEvents.SessionState.SESSION_UPDATED, gameSession.toJson());
-                }
-            }
+        gameSession.removePlayer(socket.id);
+        if (!gameSession.hasPlayers()) {
+            sessionManager.deleteSession(gameSession.getId());
+        } else {
+            io.to(gameSession.getId()).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
         }
     },
 };
+
+export const startSyncingGameState = (io: Server) => {
+    log.info("session sync job started!");
+    setInterval(() => {
+        log.debug("syncing session states - triggered");
+        // Loop over all active sessions and sync their game state
+        sessionManager.getAllSessions().forEach((session) => {
+            if (session.getGameState() === GameStateEnum.RUNNING) { // only send updates for running sessions
+                log.trace(`sending session state ${session.getId()}`);
+                const sessionId = session.getId();
+                io.to(sessionId).emit(SocketEvents.GameControl.SYNC_GAME_STATE, session.toJson());
+            }
+        });
+    }, GLOBAL_SYNC_INTERVAL_IN_MILLIS); // Sync every 100ms or adjust as needed
+}
 
 
 export default SocketEventRegistry;

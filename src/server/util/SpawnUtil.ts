@@ -6,6 +6,7 @@ import {PositionUtil} from "./PositionUtil";
 import {ChildCollectableTypeEnum} from "../../shared/constants/CollectableTypeEnum";
 import {getLogger} from "../../shared/config/LogConfig";
 import {childCollectables} from "../../shared/config/Collectables";
+import {v4 as uuidV4} from "uuid";
 
 const log = getLogger("server.util.SpawnUtil");
 
@@ -23,7 +24,7 @@ export class SpawnUtil {
     }
 
     static spawnNewCollectableWithDelay(io: Server, session: GameSession) {
-        const delay = this.getRandomSpawnDelay(1000, 5000);// TODO, parentType.maxSpawnDelay);
+        const delay = this.getRandomSpawnDelay(1000, 5000);
         log.debug(`spawning collectables with delay for game session ${session.getId()}`);
         setTimeout(() => {
             // Generate a new item for the session
@@ -39,7 +40,7 @@ export class SpawnUtil {
     static createCollectable(session: GameSession) {
         const position = PositionUtil.randomUniquePosition(session);
         const randomType = this.getRandomCollectableType();
-        return new Collectable(null, randomType, position);
+        return new Collectable(uuidV4(), randomType, position);
     }
 
     static getRandomCollectableType(): ChildCollectableTypeEnum {

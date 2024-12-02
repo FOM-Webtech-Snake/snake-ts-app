@@ -1,4 +1,3 @@
-import {v4 as uuidV4} from "uuid";
 import {ChildCollectableTypeEnum} from "../constants/CollectableTypeEnum";
 import {Position} from "./Position";
 
@@ -9,8 +8,8 @@ export class Collectable {
     protected type: ChildCollectableTypeEnum;
     protected position: Position;
 
-    constructor(id: string = null, type: ChildCollectableTypeEnum, position: Position) {
-        this.id = id || uuidV4();
+    constructor(id: string, type: ChildCollectableTypeEnum, position: Position) {
+        this.id = id;
         this.type = type;
         this.position = position;
     }

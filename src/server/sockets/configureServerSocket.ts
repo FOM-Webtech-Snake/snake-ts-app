@@ -1,11 +1,14 @@
 import {Server, Socket} from 'socket.io';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
-import SocketEventRegistry, {HandlerFn} from "./SocketEventRegistry";
+import SocketEventRegistry, {HandlerFn, startSyncingGameState} from "./SocketEventRegistry";
 
 const log = getLogger("server.sockets.configureServerSocket");
 
 const configureServerSocket = (io: Server) => {
+
+    startSyncingGameState(io);
+
     io.on(SocketEvents.Connection.CONNECTION, (socket: Socket) => {
         log.debug(`User connected: ${socket.id}`);
 
@@ -17,7 +20,7 @@ const configureServerSocket = (io: Server) => {
                 // Ensure handler arguments are correctly typed
                 try {
                     (handler as HandlerFn<any>)(io, socket, args as any);
-                } catch (error) {
+                } catch (error: any) {
                     log.error(`Error handling event "${event}": ${error.message}`);
                     socket.emit("error", {event, message: error.message});
                 }
