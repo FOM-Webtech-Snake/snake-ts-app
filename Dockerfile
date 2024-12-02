@@ -1,4 +1,4 @@
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 LABEL authors=["fbnystn","ludwig258","MJoners"]
 
 # Set the working directory in the container
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 # Use a lightweight image for the final output to minimize image size
-FROM node:20-alpine
+FROM node:22-alpine
 
 # Set the working directory
 WORKDIR /app
