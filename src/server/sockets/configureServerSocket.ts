@@ -20,7 +20,7 @@ const configureServerSocket = (io: Server) => {
                 // Ensure handler arguments are correctly typed
                 try {
                     (handler as HandlerFn<any>)(io, socket, args as any);
-                } catch (error) {
+                } catch (error: any) {
                     log.error(`Error handling event "${event}": ${error.message}`);
                     socket.emit("error", {event, message: error.message});
                 }

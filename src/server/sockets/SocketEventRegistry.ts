@@ -119,7 +119,7 @@ const SocketEventRegistry: {
             }
         }
 
-        // Timer starten
+        // start timer
         if (!gameSession.getTimerInterval()) {
             const intervalId = setInterval(() => {
                 if (gameSession.getGameState() === GameStateEnum.RUNNING) {
@@ -130,7 +130,7 @@ const SocketEventRegistry: {
                     io.to(gameSession.getId()).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
 
                     if (remainingTime <= 0) {
-                        // Timer stoppen
+                        // stop timer
                         clearInterval(intervalId);
                         gameSession.setTimerInterval(null);
                         gameSession.setGameState(GameStateEnum.GAME_OVER);
@@ -138,7 +138,7 @@ const SocketEventRegistry: {
                         log.info("Time expired!");
                     }
                 }
-            }, 1000); // jede Sekunde
+            }, 1000); // every one sec
 
             gameSession.setTimerInterval(intervalId);
         }
@@ -187,7 +187,7 @@ const SocketEventRegistry: {
         if (!gameSession) {
             return;
         }
-        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+        if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.isWaitingForPlayers()) {
                 gameSession.spawnPlayers();
                 io.to(gameSession.getId()).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
@@ -227,7 +227,7 @@ const SocketEventRegistry: {
 
         const collectable = gameSession?.getCollectableById(uuid);
         if (collectable) {
-            gameSession.getPlayer(socket.id).addScore(childCollectables[collectable.getType()].value);
+            gameSession.getPlayer(socket.id)?.addScore(childCollectables[collectable.getType()].value);
             gameSession.removeCollectable(uuid);
             callback({status: true});
             io.to(gameSession.getId()).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
@@ -251,7 +251,7 @@ const SocketEventRegistry: {
             (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) ||
             (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
             callback({status: true});
-            gameSession.getPlayer(socket.id).setStatus(PlayerStatusEnum.DEAD);
+            gameSession.getPlayer(socket.id)?.setStatus(PlayerStatusEnum.DEAD);
             io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
         } else {
             callback({status: false});
