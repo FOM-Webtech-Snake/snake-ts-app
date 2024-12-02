@@ -9,8 +9,10 @@ export class ConfigUtil {
             title: "Snake Extreme",
             type: Phaser.AUTO,
             scale: {
+                mode: Phaser.Scale.RESIZE, // dynamic resizing
                 width: width,
                 height: height,
+                autoCenter: Phaser.Scale.CENTER_BOTH, // center game
             },
             physics: {
                 default: 'arcade',

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
 import {useGameSessionSocket} from "../components/GameSessionSocketContext";
@@ -9,12 +9,22 @@ import TimerDisplay from "../components/TimerDisplay";
 
 interface GamePageProps {
     theme: string;
+    availableHeight: number;
 }
 
-const GamePage: React.FC<GamePageProps> = ({theme}) => {
+const GamePage: React.FC<GamePageProps> = ({theme, availableHeight }) => {
     const {socket} = useGameSessionSocket();
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
+    const gameInstanceRef = useRef<any>(null);
+
+    const resizeGame = () => {
+        if (gameContainerRef.current && gameInstanceRef.current) {
+            const gameContainer = gameContainerRef.current;
+            const {width, height} = gameContainer.getBoundingClientRect();
+            gameInstanceRef.current.scale.resize(width, height);
+        }
+    };
 
     useEffect(() => {
         if (gameContainerRef.current && !gameCreatedRef.current) {
@@ -22,7 +32,7 @@ const GamePage: React.FC<GamePageProps> = ({theme}) => {
             const {width, height} = gameContainer.getBoundingClientRect(); // Get dynamic width and height
             let gameConfig = ConfigUtil.createPhaserGameConfig(
                 width,
-                height,
+                availableHeight,
                 "game-container"
             );
             const game = GameUtil.createGame(
@@ -31,7 +41,17 @@ const GamePage: React.FC<GamePageProps> = ({theme}) => {
             );
             gameCreatedRef.current = true;
         }
-    }, []);
+
+        // Event-Listener resize
+        window.addEventListener('resize', resizeGame);
+
+        return () => {
+            window.removeEventListener('resize', resizeGame);
+            if (gameInstanceRef.current) {
+                gameInstanceRef.current.destroy(true);
+            }
+        };
+    }, [availableHeight]);
 
     return (
         <>
@@ -39,7 +59,11 @@ const GamePage: React.FC<GamePageProps> = ({theme}) => {
                 <Row className="flex-grow-1">
                     <Col className="col-8">
                         <div id="game-container" ref={gameContainerRef}
-                             style={{width: '100%', height: '90%'}}>
+                             style={{
+                                 width: '100%',
+                                 height: `${availableHeight}px`,
+                                 marginTop: '20px',
+                             }}>
                             {/* game content will be rendered here by Phaser */}
                         </div>
                     </Col>

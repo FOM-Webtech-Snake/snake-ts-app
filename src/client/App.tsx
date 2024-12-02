@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import StartPage from './pages/StartPage';
 import LobbyPage from './pages/LobbyPage';
 import Footer from "./components/Footer";
@@ -15,6 +15,9 @@ const App: React.FC = () => {
     const [gameReady, setGameReady] = useState(false);
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player | null>(null);
+    const headerRef = useRef<HTMLDivElement | null>(null);
+    const footerRef = useRef<HTMLDivElement | null>(null);
+    const [availableHeight, setAvailableHeight] = useState(0);
 
     useEffect(() => {
         localStorage.setItem('theme', theme);
@@ -41,12 +44,30 @@ const App: React.FC = () => {
         setTheme(theme === 'light' ? 'dark' : 'light');
     };
 
+    const updateAvailableHeight = () => {
+        const headerHeight = headerRef.current?.offsetHeight || 0;
+        const footerHeight = footerRef.current?.offsetHeight || 0;
+        const viewportHeight = window.innerHeight;
+
+        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 20); // 20 = marginTop in GamePage
+    };
+
+    useEffect(() => {
+        updateAvailableHeight();
+
+        // Event-Listener für Fenster-Resize
+        window.addEventListener('resize', updateAvailableHeight);
+        return () => {
+            window.removeEventListener('resize', updateAvailableHeight);
+        };
+    }, []);
+
     return (
         <div className={`app ${theme}`}>
             {!isConnected && <LoadingOverlay/>}
-            <Header player={player} theme={theme} toggleTheme={toggleTheme}/>
+            <Header ref={headerRef} player={player} theme={theme} toggleTheme={toggleTheme}/>
             {gameReady ? ( // when game is ready -> show the game
-                <GamePage theme={theme}/>
+                <GamePage theme={theme} availableHeight={availableHeight}/>
             ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
                 <LobbyPage
                     player={player!}
@@ -55,7 +76,7 @@ const App: React.FC = () => {
             ) : (
                 <StartPage onStart={handleStart} theme={theme}/>
             )}
-            <Footer/>
+            <Footer ref={footerRef}/>
         </div>
     );
 };
