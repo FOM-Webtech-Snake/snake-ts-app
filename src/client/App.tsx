@@ -8,6 +8,7 @@ import {Player} from "../shared/model/Player";
 import {PlayerRoleEnum} from "../shared/constants/PlayerRoleEnum";
 import {useGameSessionSocket} from "./components/GameSessionSocketContext";
 import LoadingOverlay from "./components/LoadingOverlay";
+import logo from '../../public/assets/logo.svg';
 
 const App: React.FC = () => {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -45,16 +46,23 @@ const App: React.FC = () => {
         <div className={`app ${theme}`}>
             {!isConnected && <LoadingOverlay/>}
             <Header player={player} theme={theme} toggleTheme={toggleTheme}/>
-            {gameReady ? ( // when game is ready -> show the game
-                <GamePage theme={theme}/>
-            ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
-                <LobbyPage
-                    player={player!}
-                    onGameReady={handleGameReady}
-                    theme={theme}/>
-            ) : (
-                <StartPage onStart={handleStart} theme={theme}/>
-            )}
+            <div className="content" style={{
+                backgroundImage: `url(${logo})`,
+                backgroundSize: "cover", // Hintergrund proportional abdecken
+                backgroundPosition: "center", // Hintergrund zentrieren
+                backgroundRepeat: "repeat", // Keine Wiederholung
+            }}>
+                {gameReady ? ( // when game is ready -> show the game
+                    <GamePage theme={theme}/>
+                ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
+                    <LobbyPage
+                        player={player!}
+                        onGameReady={handleGameReady}
+                        theme={theme}/>
+                ) : (
+                    <StartPage onStart={handleStart} theme={theme}/>
+                )}
+            </div>
             <Footer/>
         </div>
     );
