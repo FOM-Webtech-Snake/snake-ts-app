@@ -14,13 +14,16 @@ const App: React.FC = () => {
     const {socket, isConnected, joinSession} = useGameSessionSocket();
     const [gameReady, setGameReady] = useState(false);
     const [inLobby, setInLobby] = useState(false);
-    const [player, setPlayer] = useState<Player>(null);
+    const [player, setPlayer] = useState<Player | null>(null);
 
     useEffect(() => {
         localStorage.setItem('theme', theme);
     }, [theme]);
 
     const handleStart = (playerName: string, color: string, sessionId: string) => {
+        if (socket.id == null) {
+            return;
+        }
         const newPlayer = new Player(socket.id, playerName, color, PlayerRoleEnum.HOST);
         setPlayer(newPlayer);
         setInLobby(true); // transition to the lobby

@@ -95,7 +95,7 @@ const SocketEventRegistry: {
             return;
         }
 
-        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+        if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             gameSession.setConfig(GameSessionConfig.fromData(configData));
         }
 
@@ -113,7 +113,7 @@ const SocketEventRegistry: {
             return;
         }
 
-        if (gameSession.getPlayer(socket.id).getRole() === PlayerRoleEnum.HOST) {
+        if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.start(io)) {
                 io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
             }

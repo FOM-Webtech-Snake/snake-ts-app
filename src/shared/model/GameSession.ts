@@ -8,6 +8,7 @@ import {getLogger} from "../config/LogConfig";
 import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
 import {PositionUtil} from "../../server/util/PositionUtil";
 import {DirectionEnum} from "../constants/DirectionEnum";
+import {Position} from "./Position";
 
 const log = getLogger("shared.GameSession");
 
@@ -105,7 +106,7 @@ export class GameSession {
             player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spawn
             player.setSpeed(this.config.getSnakeStartingSpeed());
             player.setScale(this.config.getSnakeStartingScale())
-            const bodyPositions = []
+            const bodyPositions: Position[] = []
             const spawnPosition = PositionUtil.randomUniquePosition(this);
             for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
                 bodyPositions.push(spawnPosition);
