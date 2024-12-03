@@ -66,3 +66,4 @@ jobs:
               --build-arg APP_VERSION=${{ env.VERSION }} \
               -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
               --push .
+          fi
