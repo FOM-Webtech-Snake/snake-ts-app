@@ -28,6 +28,8 @@ jobs:
       - name: Determine version
         id: version
         run: |
+          CLEANUP="false"
+          LATEST="false"
           BASE_VERSION=$(jq -r .version package.json)
           if [[ "${GITHUB_REF}" =~ ^refs/tags/v(.+)$ ]]; then
             VERSION="${BASH_REMATCH[1]}"
@@ -35,10 +37,10 @@ jobs:
           elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             VERSION="${BASE_VERSION}-${GITHUB_RUN_NUMBER}"
             LATEST="true"
+            CLEANUP="true"
           else
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
             VERSION="${BASE_VERSION}-${BRANCH_NAME}-SNAPSHOT"
-            LATEST="false"
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "LATEST=${LATEST}" >> $GITHUB_ENV
@@ -69,3 +71,19 @@ jobs:
               -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
               --push .
           fi
+
+  cleanup:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Only run on main branch
+
+    steps:
+      # Step 1: Clean up older package versions
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: ${{ github.repository_owner }}
+          package-name: "snake-ts-app"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-versions-to-keep: 5  # Keep the latest 5 versions
+          version-pattern: '*'  # Delete all other versions matching this pattern
