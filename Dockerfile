@@ -8,6 +8,11 @@ ENV APP_VERSION=${APP_VERSION}
 
 # Copy package.json and package-lock.json to install dependencies
 COPY package*.json ./
+COPY tsconfig*.json ./
+COPY webpack.*.cjs ./
+COPY .env ./
+COPY src ./src
+COPY public ./public
 
 # Install dependencies
 RUN npm install && \
