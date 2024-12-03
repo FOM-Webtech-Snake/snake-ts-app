@@ -9,7 +9,7 @@ const Footer: React.FC = () => {
                 <Row>
                     {/* Left side: Copyright */}
                     <Col md={6}>
-                        <span>&copy; {new Date().getFullYear()} Snake Extreme (Build: {BUILD_NUMBER})</span>
+                        <span>&copy; {new Date().getFullYear()} Snake Extreme (Build: {APP_VERSION})</span>
                     </Col>
 
                     {/* Right side: GitHub icon */}
