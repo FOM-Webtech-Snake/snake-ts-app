@@ -84,8 +84,5 @@ jobs:
           owner: ${{ github.repository_owner }}
           package-name: "snake-ts-app"
           token: ${{ secrets.GITHUB_TOKEN }}
-          min-versions-to-keep: 5
-          num-old-versions-to-delete: 10
-          ignore-versions: "^${{ env.VERSION }}$"  # Keep the current version
-          delete-only-untagged-versions: false
-          delete-only-pre-release-versions: false
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: 'true'
