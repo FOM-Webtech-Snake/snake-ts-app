@@ -75,7 +75,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'  # Only run on main branch
-
     steps:
       # Step 1: Clean up older package versions
       - name: Delete old package versions
@@ -83,6 +82,7 @@ jobs:
         with:
           owner: ${{ github.repository_owner }}
           package-name: "snake-ts-app"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          package-type: "container"
           min-versions-to-keep: 10
-          delete-only-untagged-versions: 'true'
+          delete-only-untagged-versions: "true"
+          token: ${{ secrets.GITHUB_TOKEN }}
