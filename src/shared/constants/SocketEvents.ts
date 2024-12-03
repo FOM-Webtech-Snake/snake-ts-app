@@ -54,6 +54,7 @@ export namespace SocketEvents {
         PLAYER_MOVEMENT = "playerMovement",
         PLAYER_MOVED = "playerMoved",
         PLAYER_DIED = "playerDied",
+        PLAYER_RESPAWNED = "playerRespawned",
     }
 
     export enum GameStatus {

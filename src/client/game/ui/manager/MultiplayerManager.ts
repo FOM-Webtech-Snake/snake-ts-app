@@ -83,6 +83,20 @@ export class MultiplayerManager {
             }
         });
 
+        this.socket.on(SocketEvents.PlayerActions.PLAYER_RESPAWNED, (playerData: any) => {
+            log.debug("Player respawned", playerData);
+            const respawnedPlayer = Player.fromData(playerData);
+            const snake = PhaserSnake.fromPlayer(this.scene, respawnedPlayer);
+
+            if (respawnedPlayer.getId() === this.getPlayerId()) {
+                this.inputManager.assignToSnake(snake);
+                this.scene.cameraFollow(snake);
+            }
+
+            this.playerManager.addSnake(snake);
+        });
+
+
         this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item: any) {
             log.debug("spawnNewItem");
             log.trace(`item: ${item}`);

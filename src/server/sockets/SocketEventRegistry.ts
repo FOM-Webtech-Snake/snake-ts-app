@@ -11,6 +11,8 @@ import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../shared/config/GlobalTickRate";
+import {PositionUtil} from "../util/PositionUtil";
+import {Position} from "../../shared/model/Position";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -247,12 +249,34 @@ const SocketEventRegistry: {
             return;
         }
 
+        const player = gameSession.getPlayer(socket.id);
+        if (!player) return;
+
         if ((type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) ||
             (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) ||
             (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
             callback({status: true});
-            gameSession.getPlayer(socket.id)?.setStatus(PlayerStatusEnum.DEAD);
+            player.setStatus(PlayerStatusEnum.DEAD);
             io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
+
+            // Respawn the player after a set amount of time
+            if (gameSession.getConfig().getRespawnAfterDeathEnabled()) {
+                setTimeout(() => {
+                    if (gameSession.getGameState() === GameStateEnum.RUNNING) {
+                        player.setStatus(PlayerStatusEnum.ALIVE);
+                        player.setSpeed(gameSession.getConfig().getSnakeStartingSpeed());
+                        player.setScale(gameSession.getConfig().getSnakeStartingScale());
+                        const bodyPositions: Position[] = [];
+                        const spawnPosition = PositionUtil.randomUniquePosition(gameSession);
+                        for (let i = 0; i < gameSession.getConfig().getSnakeStartingLength(); i++) {
+                            bodyPositions.push(spawnPosition);
+                        }
+                        player.setBodyPositions(bodyPositions);
+                        io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_RESPAWNED, player.toJson());
+                    }
+                }, 10000); // Respawn time
+            }
+
         } else {
             callback({status: false});
         }

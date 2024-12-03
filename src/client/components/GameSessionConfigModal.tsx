@@ -23,6 +23,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     const [worldCollisionEnabled, setWorldCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getWorldCollisionEnabled());
     const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
     const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
+    const [respawnAfterDeathEnabled, setRespawnAfterDeathEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getRespawnAfterDeathEnabled());
 
     /* snake option parameters */
     const [startingLength, setStartingLength] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingLength());
@@ -37,6 +38,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
             worldCollisionEnabled,
             selfCollisionEnabled,
             playerToPlayerCollisionEnabled,
+            respawnAfterDeathEnabled,
             startingLength,
             startingSpeed,
             startingScale,
@@ -126,6 +128,13 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                         label="Enable Self Collision"
                         checked={selfCollisionEnabled}
                         onChange={(e) => setSelfCollisionEnabled(e.target.checked)}
+                    />
+                    <Form.Check
+                        type="switch"
+                        id="respawn"
+                        label="Enable respawn after death"
+                        checked={respawnAfterDeathEnabled}
+                        onChange={(e) => setRespawnAfterDeathEnabled(e.target.checked)}
                     />
 
                     <Form.Group controlId="startingLength">
