@@ -70,4 +70,18 @@ export class Overlay {
             this.textObject.destroy(true);
         }
     }
+
+    showCountdown(seconds, onComplete) {
+        let remaining = seconds;
+        const interval = setInterval(() => {
+            this.show(`Start in ${remaining}...`);
+            remaining -= 1;
+            if (remaining < 0) {
+                clearInterval(interval);
+                this.hide();
+                if (onComplete) onComplete();
+            }
+        }, 1000);
+    }
+
 }
