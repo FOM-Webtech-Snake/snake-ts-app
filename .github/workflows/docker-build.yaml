@@ -30,11 +30,14 @@ jobs:
         run: |
           if [[ "${GITHUB_REF}" =~ ^refs/tags/v(.+)$ ]]; then
             VERSION="${BASH_REMATCH[1]}"
+            LATEST="true"
           elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             VERSION="main-${GITHUB_RUN_NUMBER}"
+            LATEST="false"
           else
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
             VERSION="${BRANCH_NAME}-SNAPSHOT"
+            LATEST="false"
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
         env:
@@ -52,9 +55,15 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker buildx create --use
-          docker buildx build --platform linux/amd64,linux/arm64 \
-            --build-arg APP_VERSION=${{ env.VERSION }} \
-            -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
-            -t ghcr.io/fom-webtech-snake/snake-ts-app:latest \
-            --push .
+          if [ "${{ env.LATEST }}" = "true" ]; then
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              --build-arg APP_VERSION=${{ env.VERSION }} \
+              -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
+              -t ghcr.io/fom-webtech-snake/snake-ts-app:latest \
+              --push .
+          else
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              --build-arg APP_VERSION=${{ env.VERSION }} \
+              -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
+              --push .
 
