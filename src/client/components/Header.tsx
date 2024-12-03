@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {forwardRef} from 'react';
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {Player} from "../../shared/model/Player";
 import {Button, Container, Navbar} from "react-bootstrap";
@@ -10,12 +10,12 @@ interface HeaderProps {
     toggleTheme: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({player, theme, toggleTheme}) => {
+const Header = forwardRef<HTMLDivElement, HeaderProps>(({ player, theme, toggleTheme }, ref) => {
 
     const {socket, session} = useGameSessionSocket()
 
     return (
-        <Navbar bg={theme === 'light' ? 'light' : 'dark'} variant={theme === 'light' ? 'light' : 'dark'}
+        <Navbar ref={ref} bg={theme === 'light' ? 'light' : 'dark'} variant={theme === 'light' ? 'light' : 'dark'}
                 className="mb-4">
             <Container>
                 <Navbar.Brand>
@@ -70,6 +70,6 @@ const Header: React.FC<HeaderProps> = ({player, theme, toggleTheme}) => {
             </Container>
         </Navbar>
     );
-};
+});
 
 export default Header;

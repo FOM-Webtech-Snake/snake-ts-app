@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import {Col, Container, Row} from "react-bootstrap";
 
-const Footer: React.FC = () => {
+const Footer= forwardRef<HTMLDivElement, {}>((_, ref) => {
     // REPO_URL & BUILD_NUMBER are injected by DefinePlugin
     return (
-        <footer className="bg-dark text-light py-3 fixed-bottom">
+        <footer ref={ref} className="bg-dark text-light py-3 fixed-bottom">
             <Container>
                 <Row>
                     {/* Left side: Copyright */}
@@ -22,6 +22,6 @@ const Footer: React.FC = () => {
             </Container>
         </footer>
     );
-};
+});
 
 export default Footer;

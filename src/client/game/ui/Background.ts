@@ -23,6 +23,17 @@ export class Background {
                 this.graphics.fillRect(x, y, tileSize, tileSize);
             }
         }
+
+        this.drawBorder(scene.physics.world.bounds);
+    }
+
+    private drawBorder(bounds: Phaser.Geom.Rectangle) {
+        const borderColor = 0x3236a8;
+        const borderWidth = 15;
+
+        this.graphics.lineStyle(borderWidth, borderColor, 1);
+
+        this.graphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
 
     destroy(){
