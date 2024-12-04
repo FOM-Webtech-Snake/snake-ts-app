@@ -34,6 +34,6 @@ export class ArrowManager {
 
     addArrowPosition(position: Phaser.Math.Vector2): void {
         this.arrowPositions.push(position);
-        log.debug(`arrow position ${position} added.`);
+        log.debug(`arrow position added.`, position);
     }
 }

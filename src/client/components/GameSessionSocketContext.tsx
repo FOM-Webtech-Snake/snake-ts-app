@@ -1,4 +1,4 @@
-import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
+import React, {createContext, ReactNode, useContext, useEffect, useMemo, useState} from "react";
 import {io, Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameSession} from "../../shared/model/GameSession";
@@ -140,9 +140,20 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
         setPlayers(null);
     };
 
+    const providerObj = useMemo(() => ({
+        socket,
+        session,
+        players,
+        isConnected,
+        createSession,
+        joinSession,
+        leaveSession,
+        updateConfig
+    }), []);
+
     return (
         <GameSessionSocketContext.Provider
-            value={{socket, session, players, isConnected, createSession, joinSession, leaveSession, updateConfig}}>
+            value={providerObj}>
             {children}
         </GameSessionSocketContext.Provider>
     );

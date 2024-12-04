@@ -285,7 +285,7 @@ export class MultiplayerManager {
 
     public emitSnake(snake: PhaserSnake) {
         log.debug(`emitting snake`);
-        log.trace(`snake: ${snake}`);
+        log.trace(`snake:`, snake);
         this.socket.emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake.toJson())
     }
 

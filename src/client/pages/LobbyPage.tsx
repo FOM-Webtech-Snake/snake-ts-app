@@ -111,7 +111,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                                                     aria-label="Session ID"
                                                     aria-describedby="sessionIdAddon"
                                                     placeholder="Session ID"
-                                                    value={sessionId ? sessionId : ""}
+                                                    value={sessionId}
                                                     onChange={(e) => setSessionId(e.target.value)}
                                                     onKeyDown={handleKeyDown}
                                                     ref={inputRef}
