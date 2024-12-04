@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
 import {useGameSessionSocket} from "../components/GameSessionSocketContext";
@@ -12,7 +12,7 @@ interface GamePageProps {
     availableHeight: number;
 }
 
-const GamePage: React.FC<GamePageProps> = ({theme, availableHeight }) => {
+const GamePage: React.FC<GamePageProps> = ({theme, availableHeight}) => {
     const {socket} = useGameSessionSocket();
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
@@ -54,26 +54,24 @@ const GamePage: React.FC<GamePageProps> = ({theme, availableHeight }) => {
     }, [availableHeight]);
 
     return (
-        <>
-            <Container className="vh-100 d-flex flex-column justify-content-center">
-                <Row className="flex-grow-1">
-                    <Col className="col-8">
-                        <div id="game-container" ref={gameContainerRef}
-                             style={{
-                                 width: '100%',
-                                 height: `${availableHeight}px`,
-                                 marginTop: '20px',
-                             }}>
-                            {/* game content will be rendered here by Phaser */}
-                        </div>
-                    </Col>
-                    <Col className="col-4">
-                        <TimerDisplay/>
-                        <PlayerList theme={theme}/>
-                    </Col>
-                </Row>
-            </Container>
-        </>
+        <Container className="vh-100 d-flex flex-column justify-content-center">
+            <Row className="flex-grow-1">
+                <Col className="col-8">
+                    <div id="game-container" ref={gameContainerRef}
+                         style={{
+                             width: '100%',
+                             height: `${availableHeight}px`,
+                             marginTop: '20px',
+                         }}>
+                        {/* game content will be rendered here by Phaser */}
+                    </div>
+                </Col>
+                <Col className="col-4">
+                    <TimerDisplay/>
+                    <PlayerList theme={theme}/>
+                </Col>
+            </Row>
+        </Container>
     );
 }
 

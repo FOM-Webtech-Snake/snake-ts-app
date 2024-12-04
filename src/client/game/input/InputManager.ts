@@ -14,7 +14,6 @@ const log = getLogger("client.game.input.InputManager");
 
 export class InputManager {
     private handlers: Map<InputTypeEnum, InputHandler>;
-
     private autopilotKey: Phaser.Input.Keyboard.Key;
 
     constructor(scene: GameScene, collectableManager: CollectableManager, playerManager: PlayerManager) {

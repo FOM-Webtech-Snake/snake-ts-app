@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
@@ -8,7 +8,7 @@ interface TimerDisplayProps {
 
 const log = getLogger("client.components.TimerDisplay");
 
-const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
+const TimerDisplay: React.FC<TimerDisplayProps> = () => {
     const {session, socket} = useGameSessionSocket();
     const [remainingTime, setRemainingTime] = useState(session.getConfig().getGameDuration());
 
