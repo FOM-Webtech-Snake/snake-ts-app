@@ -158,7 +158,7 @@ export class MultiplayerManager {
     }
 
     public startSyncingGameState() {
-        log.info("client sync job started!");
+        log.debug("client sync job started!");
         if (this.syncInterval) {
             log.warn("Sync interval already running, skipping start.");
             return;
