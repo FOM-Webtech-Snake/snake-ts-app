@@ -140,20 +140,9 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
         setPlayers(null);
     };
 
-    const providerObj = useMemo(() => ({
-        socket,
-        session,
-        players,
-        isConnected,
-        createSession,
-        joinSession,
-        leaveSession,
-        updateConfig
-    }), []);
-
     return (
         <GameSessionSocketContext.Provider
-            value={providerObj}>
+            value={{socket, session, players, isConnected, createSession, joinSession, leaveSession, updateConfig}}>
             {children}
         </GameSessionSocketContext.Provider>
     );
