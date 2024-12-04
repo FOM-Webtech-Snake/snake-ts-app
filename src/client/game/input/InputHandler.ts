@@ -31,7 +31,7 @@ export abstract class InputHandler {
 
     toggleActive(): void {
         this.active = !this.active;
-        log.info(`InputHandler ${this.type} active = ${this.active}`);
+        log.debug(`InputHandler ${this.type} active = ${this.active}`);
     }
 
     isAssigned() {

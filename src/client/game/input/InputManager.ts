@@ -31,7 +31,7 @@ export class InputManager {
     }
 
     assignToSnake(snake: PhaserSnake) {
-        log.info("assigning to snake", snake);
+        log.debug("assigning to snake", snake);
         this.handlers.forEach(handler => handler.assignToSnake(snake));
     }
 
