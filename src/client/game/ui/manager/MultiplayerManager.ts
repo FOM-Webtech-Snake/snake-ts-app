@@ -113,6 +113,15 @@ export class MultiplayerManager {
             self.playerManager.removePlayer(playerId);
         });
 
+        this.socket.on(SocketEvents.GameControl.COUNTDOWN_UPDATED, (countdown: number) => {
+            const overlay = this.scene.getOverlay();
+            if (countdown > 0) {
+                overlay.show(`Starting in ${countdown}...`);
+            } else {
+                overlay.hide();
+            }
+        });
+
         this.emitGetConfiguration();
     }
 

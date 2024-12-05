@@ -24,6 +24,7 @@ export namespace SocketEvents {
         PAUSE_GAME = "pauseGame",
         RESUME_GAME = "resumeGame",
         SYNC_GAME_STATE = "syncGameState",
+        COUNTDOWN_UPDATED = "countdownUpdated",
     }
 
     export enum SessionState {

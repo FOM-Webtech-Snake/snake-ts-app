@@ -13,6 +13,7 @@ import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../shared/config/GlobalTickRate";
 import {PositionUtil} from "../util/PositionUtil";
 import {Position} from "../../shared/model/Position";
+import {GameTimerUtil} from "../util/GameTimerUtil";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -115,37 +116,19 @@ const SocketEventRegistry: {
             return;
         }
 
+        // start countdown
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
-            if (gameSession.start(io)) {
-                io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
-            }
-        }
-
-        // start timer
-        if (!gameSession.getTimerInterval()) {
-            const intervalId = setInterval(() => {
-                if (gameSession.getGameState() === GameStateEnum.RUNNING) {
-                    const remainingTime = gameSession.getRemainingTime() - 1;
-                    gameSession.setRemainingTime(remainingTime);
-
-                    log.debug("remaining time", remainingTime);
-                    io.to(gameSession.getId()).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
-
-                    if (remainingTime <= 0) {
-                        // stop timer
-                        clearInterval(intervalId);
-                        gameSession.setTimerInterval(null);
-                        gameSession.setGameState(GameStateEnum.GAME_OVER);
-                        io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
-                        log.debug("Time expired!");
-                    }
+            GameTimerUtil.startCountdown(io, gameSession, () => {
+                if (gameSession.start(io)) {
+                    io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
                 }
-            }, 1000); // every one sec
 
-            gameSession.setTimerInterval(intervalId);
+                // start game timer
+                GameTimerUtil.startGameTimer(io, gameSession);
+            });
         }
-
     },
+
 
     [SocketEvents.GameControl.STATE_CHANGED]: async (
         io: Server,
