@@ -116,6 +116,10 @@ const SocketEventRegistry: {
             return;
         }
 
+        if (gameSession.getIsCountdownRunning()) {
+            return;
+        }
+
         // start countdown
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             GameTimerUtil.startCountdown(io, gameSession, () => {
