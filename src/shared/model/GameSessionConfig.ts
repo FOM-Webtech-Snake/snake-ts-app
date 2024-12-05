@@ -20,6 +20,7 @@ export class GameSessionConfig {
     private worldCollisionEnabled: boolean;
     private selfCollisionEnabled: boolean;
     private playerToPlayerCollisionEnabled: boolean;
+    private respawnAfterDeathEnabled: boolean;
 
     private snakeStartingLength: number;
     private snakeStartingSpeed: number;
@@ -32,6 +33,7 @@ export class GameSessionConfig {
         worldCollisionEnabled: boolean,
         selfCollisionEnabled: boolean,
         playerToPlayerCollisionEnabled: boolean,
+        respawnAfterDeathEnabled: boolean,
         snakeStartingLength: number,
         snakeStartingSpeed: number,
         snakeStartingScale: number,
@@ -42,6 +44,7 @@ export class GameSessionConfig {
         this.worldCollisionEnabled = worldCollisionEnabled;
         this.selfCollisionEnabled = selfCollisionEnabled;
         this.playerToPlayerCollisionEnabled = playerToPlayerCollisionEnabled;
+        this.respawnAfterDeathEnabled = respawnAfterDeathEnabled;
 
         this.snakeStartingLength = snakeStartingLength;
         this.snakeStartingSpeed = snakeStartingSpeed;
@@ -58,6 +61,10 @@ export class GameSessionConfig {
 
     getPlayerToPlayerCollisionEnabled(): boolean {
         return this.playerToPlayerCollisionEnabled;
+    }
+
+    getRespawnAfterDeathEnabled(): boolean {
+        return this.respawnAfterDeathEnabled;
     }
 
     getMaxPlayers(): number {
@@ -92,6 +99,7 @@ export class GameSessionConfig {
             worldCollisionEnabled: this.worldCollisionEnabled,
             selfCollisionEnabled: this.selfCollisionEnabled,
             playerToPlayerCollisionEnabled: this.playerToPlayerCollisionEnabled,
+            respawnAfterDeathEnabled: this.respawnAfterDeathEnabled,
             snakeStartingLength: this.snakeStartingLength,
             snakeStartingSpeed: this.snakeStartingSpeed,
             snakeStartingScale: this.snakeStartingScale,
@@ -107,6 +115,7 @@ export class GameSessionConfig {
             data.worldCollisionEnabled,
             data.selfCollisionEnabled,
             data.playerToPlayerCollisionEnabled,
+            data.respawnAfterDeathEnabled,
             data.snakeStartingLength,
             data.snakeStartingSpeed,
             data.snakeStartingScale);
@@ -119,6 +128,7 @@ export const DEFAULT_GAME_SESSION_CONFIG = new GameSessionConfig(
     300,
     true,
     false,
+    true,
     true,
     SNAKE_STARTING_LENGTH.default,
     SNAKE_STARTING_SPEED.default,

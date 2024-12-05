@@ -3,20 +3,19 @@ import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {Player} from "../../shared/model/Player";
 import {Button, Container, Navbar} from "react-bootstrap";
 import SnakeLogo from '../../../public/img/snake_logo.png';
+import {useTheme} from "./ThemeProvider";
 
 interface HeaderProps {
     player: Player | null;
-    theme: string;
-    toggleTheme: () => void;
 }
 
-const Header = forwardRef<HTMLDivElement, HeaderProps>(({ player, theme, toggleTheme }, ref) => {
+const Header = forwardRef<HTMLDivElement, HeaderProps>(({ player }, ref) => {
 
     const {socket, session} = useGameSessionSocket()
+    const {theme, toggleTheme} = useTheme();
 
     return (
-        <Navbar ref={ref} bg={theme === 'light' ? 'light' : 'dark'} variant={theme === 'light' ? 'light' : 'dark'}
-                className="mb-4">
+        <Navbar ref={ref} className="mb-4">
             <Container>
                 <Navbar.Brand>
                     {/* todo replace this logo by another */}
@@ -63,7 +62,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(({ player, theme, toggleT
                 )}
 
                 <Navbar.Text className="ms-auto">
-                    <Button onClick={toggleTheme} variant={theme === 'light' ? 'secondary' : 'light'}>
+                    <Button onClick={toggleTheme} variant="secondary">
                         {theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                     </Button>
                 </Navbar.Text>

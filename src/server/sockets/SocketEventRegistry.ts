@@ -11,6 +11,8 @@ import {CollisionTypeEnum} from "../../shared/constants/CollisionTypeEnum";
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../shared/config/GlobalTickRate";
+import {PositionUtil} from "../util/PositionUtil";
+import {Position} from "../../shared/model/Position";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -99,7 +101,7 @@ const SocketEventRegistry: {
             gameSession.setConfig(GameSessionConfig.fromData(configData));
         }
 
-        log.info(`player ${socket.id} updated config ${configData}`);
+        log.debug(`player ${socket.id} updated config ${configData}`);
         io.to(gameSession.getId()).emit(SocketEvents.SessionState.CONFIG_UPDATED, gameSession.getConfig().toJson());
     },
 
@@ -121,29 +123,28 @@ const SocketEventRegistry: {
 
         // start timer
         if (!gameSession.getTimerInterval()) {
-            setTimeout(() => {
-                const intervalId = setInterval(() => {
-                    if (gameSession.getGameState() === GameStateEnum.RUNNING) {
-                        const remainingTime = gameSession.getRemainingTime() - 1;
-                        gameSession.setRemainingTime(remainingTime);
+            const intervalId = setInterval(() => {
+                if (gameSession.getGameState() === GameStateEnum.RUNNING) {
+                    const remainingTime = gameSession.getRemainingTime() - 1;
+                    gameSession.setRemainingTime(remainingTime);
 
-                        log.debug("remaining time", remainingTime);
-                        io.to(gameSession.getId()).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
+                    log.debug("remaining time", remainingTime);
+                    io.to(gameSession.getId()).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
 
-                        if (remainingTime <= 0) {
-                            // stop timer
-                            clearInterval(intervalId);
-                            gameSession.setTimerInterval(null);
-                            gameSession.setGameState(GameStateEnum.GAME_OVER);
-                            io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
-                            log.info("Time expired!");
-                        }
+                    if (remainingTime <= 0) {
+                        // stop timer
+                        clearInterval(intervalId);
+                        gameSession.setTimerInterval(null);
+                        gameSession.setGameState(GameStateEnum.GAME_OVER);
+                        io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                        log.debug("Time expired!");
                     }
-                }, 1000); // every one sec
+                }
+            }, 1000); // every one sec
 
-                gameSession.setTimerInterval(intervalId);
-            }, 3000);
+            gameSession.setTimerInterval(intervalId);
         }
+
     },
 
     [SocketEvents.GameControl.STATE_CHANGED]: async (
@@ -195,7 +196,7 @@ const SocketEventRegistry: {
                     if (err) {
                         log.warn(`Not all clients responded in time for session ${gameSession.getId()}`);
                     } else {
-                        log.info(`game session start confirmed from all clients`);
+                        log.debug(`game session start confirmed from all clients`);
                         gameSession.setGameState(GameStateEnum.READY);
                     }
                 });
@@ -248,12 +249,41 @@ const SocketEventRegistry: {
             return;
         }
 
+        const player = gameSession.getPlayer(socket.id);
+        if (!player) return;
+
         if ((type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) ||
             (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) ||
             (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
             callback({status: true});
-            gameSession.getPlayer(socket.id)?.setStatus(PlayerStatusEnum.DEAD);
+            player.setStatus(PlayerStatusEnum.DEAD);
             io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
+
+            // Respawn the player after a set amount of time
+            if (gameSession.getConfig().getRespawnAfterDeathEnabled()) {
+                setTimeout(() => {
+                    if (gameSession.getGameState() === GameStateEnum.RUNNING) {
+                        player.setStatus(PlayerStatusEnum.ALIVE);
+                        player.setSpeed(gameSession.getConfig().getSnakeStartingSpeed());
+                        player.setScale(gameSession.getConfig().getSnakeStartingScale());
+                        const bodyPositions: Position[] = [];
+                        const spawnPosition = PositionUtil.randomUniquePosition(gameSession);
+                        for (let i = 0; i < gameSession.getConfig().getSnakeStartingLength(); i++) {
+                            bodyPositions.push(spawnPosition);
+                        }
+                        player.setBodyPositions(bodyPositions);
+                        io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_RESPAWNED, player.toJson());
+                    }
+                }, 10000); // Respawn time // TODO make configurable
+            } else {
+                // end game when zero players are alive
+                if (gameSession.countPlayersWithStatus(PlayerStatusEnum.ALIVE) === 0) {
+                    gameSession.setGameState(GameStateEnum.GAME_OVER);
+                    io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                    log.info("all players dead!");
+                }
+            }
+
         } else {
             callback({status: false});
         }

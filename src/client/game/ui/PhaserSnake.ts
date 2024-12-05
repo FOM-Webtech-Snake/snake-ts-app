@@ -197,9 +197,8 @@ export class PhaserSnake {
     updateScaling(): void {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
 
-        for (let i = 0; i < bodyParts.length; i++) {
-            const bodyPart = bodyParts[i];
-            bodyPart.setScale(this.scale);
+        for (let segment of bodyParts) {
+            segment.setScale(this.scale);
         }
     }
 

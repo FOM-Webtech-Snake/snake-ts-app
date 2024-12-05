@@ -83,6 +83,20 @@ export class MultiplayerManager {
             }
         });
 
+        this.socket.on(SocketEvents.PlayerActions.PLAYER_RESPAWNED, (playerData: any) => {
+            log.debug("Player respawned", playerData);
+            const respawnedPlayer = Player.fromData(playerData);
+            const snake = PhaserSnake.fromPlayer(this.scene, respawnedPlayer);
+
+            if (respawnedPlayer.getId() === this.getPlayerId()) {
+                this.inputManager.assignToSnake(snake);
+                this.scene.cameraFollow(snake);
+            }
+
+            this.playerManager.addSnake(snake);
+        });
+
+
         this.socket.on(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, function (item: any) {
             log.debug("spawnNewItem");
             log.trace(`item: ${item}`);
@@ -158,7 +172,7 @@ export class MultiplayerManager {
     }
 
     public startSyncingGameState() {
-        log.info("client sync job started!");
+        log.debug("client sync job started!");
         if (this.syncInterval) {
             log.warn("Sync interval already running, skipping start.");
             return;
@@ -285,7 +299,7 @@ export class MultiplayerManager {
 
     public emitSnake(snake: PhaserSnake) {
         log.debug(`emitting snake`);
-        log.trace(`snake: ${snake}`);
+        log.trace(`snake:`, snake);
         this.socket.emit(SocketEvents.PlayerActions.PLAYER_MOVEMENT, snake.toJson())
     }
 

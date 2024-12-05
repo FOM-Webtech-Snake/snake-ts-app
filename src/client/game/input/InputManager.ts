@@ -14,7 +14,6 @@ const log = getLogger("client.game.input.InputManager");
 
 export class InputManager {
     private handlers: Map<InputTypeEnum, InputHandler>;
-
     private autopilotKey: Phaser.Input.Keyboard.Key;
 
     constructor(scene: GameScene, collectableManager: CollectableManager, playerManager: PlayerManager) {
@@ -31,7 +30,7 @@ export class InputManager {
     }
 
     assignToSnake(snake: PhaserSnake) {
-        log.info("assigning to snake", snake);
+        log.debug("assigning to snake", snake);
         this.handlers.forEach(handler => handler.assignToSnake(snake));
     }
 

@@ -3,6 +3,7 @@ import App from "./App";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import {GameSessionSocketProvider} from "./components/GameSessionSocketContext";
+import {ThemeProvider} from "./components/ThemeProvider";
 
 window.addEventListener('DOMContentLoaded', () => {
     const rootElement = document.getElementById('root');
@@ -11,7 +12,9 @@ window.addEventListener('DOMContentLoaded', () => {
         root.render(
             <React.StrictMode>
                 <GameSessionSocketProvider>
-                    <App/>
+                    <ThemeProvider>
+                        <App/>
+                    </ThemeProvider>
                 </GameSessionSocketProvider>
             </React.StrictMode>
         );

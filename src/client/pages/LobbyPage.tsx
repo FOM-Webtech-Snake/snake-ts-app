@@ -13,12 +13,11 @@ import ShareInfoModal from "../components/ShareModal";
 interface LobbyPageProps {
     player: Player;
     onGameReady: () => void;
-    theme: string;
 }
 
 const log = getLogger("client.components.LobbyPage");
 
-const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
+const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const {socket, session, joinSession, createSession, leaveSession, updateConfig} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
     const [showShareModal, setShowShareModal] = useState(false);
@@ -92,9 +91,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                     </Row>
                     <Row>
                         <Col className="col-12">
-                            <Card className="p-4 shadow"
-                                  bg={theme === 'light' ? 'light' : 'dark'}
-                                  text={theme === 'light' ? 'dark' : 'light'}>
+                            <Card className="p-4 shadow">
                                 <Card.Header className="text-center">
                                     <h5>Session</h5>
                                 </Card.Header>
@@ -111,7 +108,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                                                     aria-label="Session ID"
                                                     aria-describedby="sessionIdAddon"
                                                     placeholder="Session ID"
-                                                    value={sessionId ? sessionId : ""}
+                                                    value={sessionId}
                                                     onChange={(e) => setSessionId(e.target.value)}
                                                     onKeyDown={handleKeyDown}
                                                     ref={inputRef}
@@ -178,7 +175,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
 
                         <Row>
                             <Col className="col-12">
-                                <PlayerList theme={theme}/>
+                                <PlayerList/>
                             </Col>
                         </Row>
                     )}
@@ -189,7 +186,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                 show={showShareModal}
                 onClose={handleCloseShareModal}
                 sessionId={sessionId}
-                theme={theme}
             />
 
             <GameSessionConfigModal
@@ -199,7 +195,6 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady, theme}) => {
                     updateConfig(config);
                     setShowCreateSessionModal(false);
                 }}
-                theme={theme}
             />
         </>
     );

@@ -1,6 +1,5 @@
 import {InputHandler} from "./InputHandler";
 import {InputTypeEnum} from "../../../shared/constants/InputTypeEnum";
-import {PhaserSnake} from "../ui/PhaserSnake";
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
 import {GameScene} from "../scenes/GameScene";
 import {getLogger} from "../../../shared/config/LogConfig";

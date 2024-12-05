@@ -9,6 +9,7 @@ import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
 import {PositionUtil} from "../../server/util/PositionUtil";
 import {DirectionEnum} from "../constants/DirectionEnum";
 import {Position} from "./Position";
+import {PlayerStatusEnum} from "../constants/PlayerStatusEnum";
 
 const log = getLogger("shared.GameSession");
 
@@ -103,6 +104,7 @@ export class GameSession {
 
     spawnPlayers(): void {
         Object.values(this.players).forEach(player => {
+            player.setStatus(PlayerStatusEnum.ALIVE);
             player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spawn
             player.setSpeed(this.config.getSnakeStartingSpeed());
             player.setScale(this.config.getSnakeStartingScale())
@@ -140,6 +142,10 @@ export class GameSession {
 
     hasPlayers(): boolean {
         return Object.keys(this.players).length > 0;
+    }
+
+    countPlayersWithStatus(status: PlayerStatusEnum): number {
+        return Object.values(this.players).filter(player => player.getStatus() === status).length
     }
 
     isWaitingForPlayers(): boolean {

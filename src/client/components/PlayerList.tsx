@@ -7,12 +7,11 @@ import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
 
 interface PlayerListProps {
-    theme: string;
 }
 
 const log = getLogger("client.components.PlayerList");
 
-const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
+const PlayerList: React.FC<PlayerListProps> = () => {
     const {session, players} = useGameSessionSocket();
     const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(null);
 
@@ -30,34 +29,24 @@ const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
     }, [session, players]);
 
     return (
-        <>
-            <Container style={{
-                height: '100vh',
-                position: 'sticky',
-                top: 0,
-                overflowY: 'auto',
-                padding: '1rem',
-            }}>
-                <Card className="p-4 shadow"
-                      bg={theme === 'light' ? 'light' : 'dark'}
-                      text={theme === 'light' ? 'dark' : 'light'}>
-                    <Card.Title className="text-center">Players in Lobby</Card.Title>
-                    <Card.Body>
-                        <p className="text-white text-center">{session.getPlayerCount()} / {session.getConfig().getMaxPlayers()}</p>
-                        {!sortedPlayers ? (
-                            <p className="text-white text-center">Waiting for players to join...</p>
-                        ) : (
-                            <>
-                                {/* Sidebar content here */}
-                                <ListGroup>
-                                    {Object.entries(sortedPlayers).map(([key, player]) => (
-                                        <ListGroup.Item
-                                            key={key}
-                                            className="d-flex justify-content-between align-items-center"
-                                            style={{
-                                                backgroundColor: '#343a40',
-                                                color: '#fff',
-                                            }}>
+        <Container style={{
+            overflowY: 'auto',
+            padding: '1rem',
+        }}>
+            <Card className="p-4 shadow">
+                <Card.Title className="text-center">Players in Lobby</Card.Title>
+                <Card.Body>
+                    <p className="text-center">{session.getPlayerCount()} / {session.getConfig().getMaxPlayers()}</p>
+                    {!sortedPlayers ? (
+                        <p className="text-center">Waiting for players to join...</p>
+                    ) : (
+                        <>
+                            {/* Sidebar content here */}
+                            <ListGroup>
+                                {Object.entries(sortedPlayers).map(([key, player]) => (
+                                    <ListGroup.Item
+                                        key={key}
+                                        className="d-flex justify-content-between align-items-center">
 
                                             <span className="d-flex align-items-center">
                                                 {player.getColor() && (
@@ -87,22 +76,21 @@ const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
                                                 {player.getName()}
                                             </span>
 
-                                            <span className="d-flex align-items-center">
+                                        <span className="d-flex align-items-center">
                                                 <span className="me-3">Score: {player.getScore()}</span>
-                                                {player.getRole() === PlayerRoleEnum.HOST && (
-                                                    <Badge bg="success">Host</Badge>
-                                                )}
+                                            {player.getRole() === PlayerRoleEnum.HOST && (
+                                                <Badge bg="success">Host</Badge>
+                                            )}
                                             </span>
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            </>
-                        )}
+                                    </ListGroup.Item>
+                                ))}
+                            </ListGroup>
+                        </>
+                    )}
 
-                    </Card.Body>
-                </Card>
-            </Container>
-        </>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };
 
