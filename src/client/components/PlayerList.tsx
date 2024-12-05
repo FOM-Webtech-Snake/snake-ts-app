@@ -7,12 +7,11 @@ import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
 
 interface PlayerListProps {
-    theme: string;
 }
 
 const log = getLogger("client.components.PlayerList");
 
-const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
+const PlayerList: React.FC<PlayerListProps> = () => {
     const {session, players} = useGameSessionSocket();
     const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(null);
 
@@ -31,20 +30,15 @@ const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
 
     return (
         <Container style={{
-            height: '100vh',
-            position: 'sticky',
-            top: 0,
             overflowY: 'auto',
             padding: '1rem',
         }}>
-            <Card className="p-4 shadow"
-                  bg={theme === 'light' ? 'light' : 'dark'}
-                  text={theme === 'light' ? 'dark' : 'light'}>
+            <Card className="p-4 shadow">
                 <Card.Title className="text-center">Players in Lobby</Card.Title>
                 <Card.Body>
-                    <p className="text-white text-center">{session.getPlayerCount()} / {session.getConfig().getMaxPlayers()}</p>
+                    <p className="text-center">{session.getPlayerCount()} / {session.getConfig().getMaxPlayers()}</p>
                     {!sortedPlayers ? (
-                        <p className="text-white text-center">Waiting for players to join...</p>
+                        <p className="text-center">Waiting for players to join...</p>
                     ) : (
                         <>
                             {/* Sidebar content here */}
@@ -52,11 +46,7 @@ const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
                                 {Object.entries(sortedPlayers).map(([key, player]) => (
                                     <ListGroup.Item
                                         key={key}
-                                        className="d-flex justify-content-between align-items-center"
-                                        style={{
-                                            backgroundColor: '#343a40',
-                                            color: '#fff',
-                                        }}>
+                                        className="d-flex justify-content-between align-items-center">
 
                                             <span className="d-flex align-items-center">
                                                 {player.getColor() && (

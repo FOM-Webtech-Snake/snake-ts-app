@@ -4,10 +4,9 @@ import {Button, Card, Col, Container, Form, InputGroup, Row} from "react-bootstr
 
 interface StartPageProps {
     onStart: (playerName: string, color: string, sessionId: string) => void;
-    theme: string;
 }
 
-const StartPage: React.FC<StartPageProps> = ({onStart, theme}) => {
+const StartPage: React.FC<StartPageProps> = ({onStart}) => {
     const [playerName, setPlayerName] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
     const [color, setColor] = useState<string>(ColorUtil.getRandomColorRGB());
@@ -59,9 +58,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart, theme}) => {
                 </Row>
                 <Row>
                     <Col className="col-12">
-                        <Card className="p-4 shadow"
-                              bg={theme === 'light' ? 'light' : 'dark'}
-                              text={theme === 'light' ? 'dark' : 'light'}>
+                        <Card className="p-4 shadow">
                             <Card.Header className="text-center">
                                 <h5>Player</h5>
                             </Card.Header>

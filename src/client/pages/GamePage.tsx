@@ -8,11 +8,10 @@ import TimerDisplay from "../components/TimerDisplay";
 
 
 interface GamePageProps {
-    theme: string;
     availableHeight: number;
 }
 
-const GamePage: React.FC<GamePageProps> = ({theme, availableHeight}) => {
+const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
     const {socket} = useGameSessionSocket();
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
@@ -68,7 +67,7 @@ const GamePage: React.FC<GamePageProps> = ({theme, availableHeight}) => {
                 </Col>
                 <Col className="col-4">
                     <TimerDisplay/>
-                    <PlayerList theme={theme}/>
+                    <PlayerList/>
                 </Col>
             </Row>
         </Container>
