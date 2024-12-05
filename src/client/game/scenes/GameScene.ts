@@ -68,6 +68,10 @@ export class GameScene extends Phaser.Scene {
             this.inputManager);
     }
 
+    public getOverlay(): Overlay {
+        return this.overlay;
+    }
+
     cameraFollow(snake: PhaserSnake) {
         this.cameras.main.startFollow(snake.getHead(), false, 0.1, 0.1);
     }
@@ -96,6 +100,7 @@ export class GameScene extends Phaser.Scene {
 
         log.trace("updating game state", state);
         this.state = state;
+
         if (this.state === GameStateEnum.RUNNING) {
             this.multiplayerManager.startSyncingGameState();
             this.physics.world.resume();
