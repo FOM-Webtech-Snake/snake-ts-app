@@ -68,6 +68,10 @@ export class GameScene extends Phaser.Scene {
             this.inputManager);
     }
 
+    public getOverlay(): Overlay {
+        return this.overlay;
+    }
+
     cameraFollow(snake: PhaserSnake) {
         this.cameras.main.startFollow(snake.getHead(), false, 0.1, 0.1);
     }
@@ -95,21 +99,12 @@ export class GameScene extends Phaser.Scene {
         }
 
         log.trace("updating game state", state);
-        const previousState = this.state;
         this.state = state;
 
         if (this.state === GameStateEnum.RUNNING) {
-            if (previousState === GameStateEnum.READY) {
-                this.overlay.showCountdown(3, () => {
-                    this.multiplayerManager.startSyncingGameState();
-                    this.physics.world.resume();
-                    this.overlay.hide();
-                });
-            } else {
-                this.multiplayerManager.startSyncingGameState();
-                this.physics.world.resume();
-                this.overlay.hide();
-            }
+            this.multiplayerManager.startSyncingGameState();
+            this.physics.world.resume();
+            this.overlay.hide();
         } else if (this.state === GameStateEnum.READY) {
             this.physics.world.pause();
             this.overlay.showPressKeyToAction("space, tap the screen or A an a controller", "start");
