@@ -101,7 +101,7 @@ const SocketEventRegistry: {
             gameSession.setConfig(GameSessionConfig.fromData(configData));
         }
 
-        log.info(`player ${socket.id} updated config ${configData}`);
+        log.debug(`player ${socket.id} updated config ${configData}`);
         io.to(gameSession.getId()).emit(SocketEvents.SessionState.CONFIG_UPDATED, gameSession.getConfig().toJson());
     },
 
@@ -137,7 +137,7 @@ const SocketEventRegistry: {
                         gameSession.setTimerInterval(null);
                         gameSession.setGameState(GameStateEnum.GAME_OVER);
                         io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
-                        log.info("Time expired!");
+                        log.debug("Time expired!");
                     }
                 }
             }, 1000); // every one sec
@@ -196,7 +196,7 @@ const SocketEventRegistry: {
                     if (err) {
                         log.warn(`Not all clients responded in time for session ${gameSession.getId()}`);
                     } else {
-                        log.info(`game session start confirmed from all clients`);
+                        log.debug(`game session start confirmed from all clients`);
                         gameSession.setGameState(GameStateEnum.READY);
                     }
                 });
@@ -274,7 +274,14 @@ const SocketEventRegistry: {
                         player.setBodyPositions(bodyPositions);
                         io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_RESPAWNED, player.toJson());
                     }
-                }, 10000); // Respawn time
+                }, 10000); // Respawn time // TODO make configurable
+            } else {
+                // end game when zero players are alive
+                if (gameSession.countPlayersWithStatus(PlayerStatusEnum.ALIVE) === 0) {
+                    gameSession.setGameState(GameStateEnum.GAME_OVER);
+                    io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                    log.info("all players dead!");
+                }
             }
 
         } else {

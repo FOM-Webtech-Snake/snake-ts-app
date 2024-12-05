@@ -1,25 +1,24 @@
 import React from "react";
 import {Button, Modal} from "react-bootstrap";
 import {QRCodeSVG} from "qrcode.react";
+import {useTheme} from "./ThemeProvider";
 
 interface ShareInfoModalProps {
     show: boolean;
     onClose: () => void;
     sessionId: string;
-    theme: string;
 }
 
-const ShareInfoModal: React.FC<ShareInfoModalProps> = ({show, onClose, sessionId, theme}) => {
+const ShareInfoModal: React.FC<ShareInfoModalProps> = ({show, onClose, sessionId}) => {
+    const {theme} = useTheme();
     const shareUrl = `${window.location.origin}?sessionId=${sessionId}`;
 
     return (
-        <Modal show={show} onHide={onClose} centered backdrop="static">
-            <Modal.Header
-                closeButton
-                className={theme === 'light' ? 'bg-light text-dark' : 'bg-dark text-light'}>
+        <Modal className={`modal ${theme}`} show={show} onHide={onClose} centered backdrop="static">
+            <Modal.Header closeButton>
                 <Modal.Title>Share Session</Modal.Title>
             </Modal.Header>
-            <Modal.Body className={theme === 'light' ? 'bg-light text-dark' : 'bg-dark text-light'}>
+            <Modal.Body>
                 <div className="text-center">
                     <p>Share the session with your friends using this QR code or the link below:</p>
                     <QRCodeSVG value={shareUrl} size={200} level="H"/>
@@ -33,8 +32,8 @@ const ShareInfoModal: React.FC<ShareInfoModalProps> = ({show, onClose, sessionId
                     </p>
                 </div>
             </Modal.Body>
-            <Modal.Footer className={theme === 'light' ? 'bg-light' : 'bg-dark'}>
-                <Button variant={theme === 'light' ? 'secondary' : 'light'} onClick={onClose}>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={onClose}>
                     Close
                 </Button>
             </Modal.Footer>

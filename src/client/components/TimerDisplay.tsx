@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionSocketContext";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
+import {Card, Container} from "react-bootstrap";
 
 interface TimerDisplayProps {
 }
@@ -35,29 +36,26 @@ const TimerDisplay: React.FC<TimerDisplayProps> = () => {
     };
 
     return (
-        <div
+        <Container
             style={{
-                backgroundColor: '#343a40',
-                color: '#fff',
-                padding: '10px 20px',
-                borderRadius: '5px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: '20px',
-            }}
-        >
-            <span style={{fontSize: '1.2rem'}}>verbleibende Zeit:</span>
-            <span
-                style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                    letterSpacing: '1px',
-                }}
-            >
-        {formatTime(remainingTime)}
-    </span>
-        </div>
+                overflowY: 'auto',
+                padding: '1rem',
+            }}>
+            <Card className="p-4 shadow">
+                <Card.Body>
+                    <span style={{fontSize: '1.2rem'}}>remaining Time: </span>
+                    <span
+                        style={{
+                            fontSize: '1.5rem',
+                            fontWeight: 'bold',
+                            letterSpacing: '1px',
+                        }}
+                    >
+                        {formatTime(remainingTime)}
+                    </span>
+                </Card.Body>
+            </Card>
+        </Container>
 
     );
 };
