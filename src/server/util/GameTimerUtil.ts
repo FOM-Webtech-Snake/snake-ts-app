@@ -9,7 +9,12 @@ const log = getLogger("server.util.GameTimerUtil");
 
 export class GameTimerUtil {
     static startCountdown(io: Server, gameSession: GameSession, onCountdownEnd: () => void) {
+        if (gameSession.getIsCountdownRunning()) {
+            return;
+        }
+
         let countdown = 3;
+        gameSession.setIsCountdownRunning(true);
 
         const countdownInterval = setInterval(() => {
             io.to(gameSession.getId()).emit(SocketEvents.GameControl.COUNTDOWN_UPDATED, countdown);
@@ -17,6 +22,7 @@ export class GameTimerUtil {
             if (countdown <= 0) {
                 clearInterval(countdownInterval);
                 onCountdownEnd();
+                gameSession.setIsCountdownRunning(false);
             } else {
                 countdown--;
             }
