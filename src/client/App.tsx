@@ -9,6 +9,8 @@ import {PlayerRoleEnum} from "../shared/constants/PlayerRoleEnum";
 import {useGameSessionSocket} from "./components/GameSessionSocketContext";
 import LoadingOverlay from "./components/LoadingOverlay";
 import {useTheme} from "./components/ThemeProvider";
+import {SocketEvents} from "../shared/constants/SocketEvents";
+import {GameStateEnum} from "../shared/constants/GameStateEnum";
 
 const App: React.FC = () => {
     const {theme} = useTheme();
@@ -42,7 +44,7 @@ const App: React.FC = () => {
         const footerHeight = footerRef.current?.offsetHeight || 0;
         const viewportHeight = window.innerHeight;
 
-        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 20); // 20 = marginTop in GamePage
+        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 50);
     };
 
     useEffect(() => {
@@ -54,6 +56,24 @@ const App: React.FC = () => {
             window.removeEventListener('resize', updateAvailableHeight);
         };
     }, []);
+
+    useEffect(() => {
+        const handleStateChanged = (state: GameStateEnum) => {
+            if (state === GameStateEnum.GAME_OVER) {
+                setGameReady(false);
+            }
+        };
+
+        if (socket) {
+            socket.on(SocketEvents.GameControl.STATE_CHANGED, handleStateChanged);
+        }
+
+        return () => {
+            if (socket) {
+                socket.off(SocketEvents.GameControl.STATE_CHANGED, handleStateChanged);
+            }
+        };
+    }, [socket]);
 
     return (
         <div className={`app ${theme}`}>

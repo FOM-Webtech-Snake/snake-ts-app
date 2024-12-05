@@ -60,7 +60,6 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
                          style={{
                              width: '100%',
                              height: `${availableHeight}px`,
-                             marginTop: '20px',
                          }}>
                         {/* game content will be rendered here by Phaser */}
                     </div>
