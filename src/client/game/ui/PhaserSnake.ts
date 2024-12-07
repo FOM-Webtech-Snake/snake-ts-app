@@ -379,16 +379,12 @@ export class PhaserSnake {
             }
 
             if (positionB) {
-
-                // TODO: use interpolation?
-                // Apply interpolation to smooth the movement of the segment towards the new position
+                // apply interpolation to smooth the movement of the segment towards the new position
                 const interpolatedX = Phaser.Math.Linear(currentSegment.x, positionB.getX(), MOVEMENT_INTERPOLATION_FACTOR);
                 const interpolatedY = Phaser.Math.Linear(currentSegment.y, positionB.getY(), MOVEMENT_INTERPOLATION_FACTOR);
-                // Set the segment position to the interpolated position
+
+                // set the segment position to the interpolated position
                 currentSegment.setPosition(interpolatedX, interpolatedY);
-
-
-                //currentSegment.setPosition(positionB.getX(), positionB.getY());
             }
         }
     }
