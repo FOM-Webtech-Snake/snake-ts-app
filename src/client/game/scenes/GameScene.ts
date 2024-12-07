@@ -67,6 +67,8 @@ export class GameScene extends Phaser.Scene {
     }
 
     cameraFollow(snake: PhaserSnake) {
+        if (!snake?.getHead()) return; // follow nothing when head is not available
+
         this.cameras.main.startFollow(snake.getHead(), false, 0.1, 0.1);
     }
 

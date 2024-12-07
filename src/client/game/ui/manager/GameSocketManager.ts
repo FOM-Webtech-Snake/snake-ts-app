@@ -68,22 +68,27 @@ export class GameSocketManager {
         });
 
         registerPhaserEvent(SocketEvents.PlayerActions.PLAYER_DIED, (playerId: string) => {
-            self.playerManager.removePlayer(playerId);
-            if (playerId === this.getPlayerId()) {
-                self.scene.cameraFollow(self.playerManager.getFirstPlayer());
+            const player = self.playerManager.getPlayer(playerId);
+            if (player) {
+                player.die();
+                if (playerId === this.getPlayerId()) {
+                    self.scene.cameraFollow(self.playerManager.getFirstPlayer());
+                }
             }
         });
 
         registerPhaserEvent(SocketEvents.PlayerActions.PLAYER_RESPAWNED, (playerData: any) => {
             const respawnedPlayer = Player.fromData(playerData);
-            const snake = PhaserSnake.fromPlayer(this.scene, respawnedPlayer);
 
-            if (respawnedPlayer.getId() === this.getPlayerId()) {
-                this.inputManager.assignToSnake(snake);
-                this.scene.cameraFollow(snake);
+            log.info(respawnedPlayer);
+            const player = self.playerManager.getPlayer(respawnedPlayer.getId());
+            if (player) {
+                player.revive(respawnedPlayer.getBodyPositions());
+                player.updateFromPlayer(respawnedPlayer);
+                if (respawnedPlayer.getId() === this.getPlayerId()) {
+                    self.scene.cameraFollow(player);
+                }
             }
-
-            this.playerManager.addSnake(snake);
         });
 
 
@@ -143,11 +148,11 @@ export class GameSocketManager {
     private updateSnakes(players: Player[]) {
         if (players.length > 0) {
             players.forEach((player: Player) => {
-                const localPlayerCopy = this.playerManager.getPlayer(player.getId());
-                if (localPlayerCopy) {
+                const localPlayer = this.playerManager.getPlayer(player.getId());
+                if (localPlayer) {
                     log.trace(`player found with status: ${player.getStatus()}`);
-                    if (localPlayerCopy.getPlayerId() !== this.getPlayerId()) {
-                        localPlayerCopy.updateFromPlayer(player);
+                    if (localPlayer.getPlayerId() !== this.getPlayerId()) {
+                        localPlayer.updateFromPlayer(player);
                     }
                 }
             });
@@ -190,21 +195,27 @@ export class GameSocketManager {
         this.lastCollisionCheck = now;
 
         const player = this.playerManager.getPlayer(this.getPlayerId());
+
         if (!player) return;
 
-        this.collectableManager.checkCollisions(player, (uuid: string) =>
-            this.handleCollectableCollision(uuid, player)
-        );
+        // only collision check when snake is alive
+        if (player.getStatus() === PlayerStatusEnum.ALIVE) {
+            this.collectableManager.checkCollisions(player, (uuid: string) =>
+                this.handleCollectableCollision(uuid, player)
+            );
 
-        const {worldCollision, selfCollision} = player.checkCollisions();
-        if (worldCollision) {
-            this.handlePlayerCollision(player, CollisionTypeEnum.WORLD);
-        }
-        if (selfCollision) {
-            this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
+            const {worldCollision, selfCollision} = player.checkCollisions();
+            if (worldCollision) {
+                this.handlePlayerCollision(player, CollisionTypeEnum.WORLD);
+            }
+            if (selfCollision) {
+                this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
+            }
+
+            this.checkPlayerToPlayerCollisions(player, this.playerManager.getPlayersExcept(this.getPlayerId()));
         }
 
-        this.checkPlayerToPlayerCollisions(player, this.playerManager.getPlayersExcept(this.getPlayerId()));
+
     }
 
     private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
@@ -220,7 +231,10 @@ export class GameSocketManager {
         // create a spacial grip with suitable cell size
         const spatialGrid = new SpatialGrid(100);
         for (const player of otherPlayers) {
-            spatialGrid.addSnake(player);
+            // only add players that are alive to collision checks
+            if (player.getStatus() === PlayerStatusEnum.ALIVE) {
+                spatialGrid.addSnake(player);
+            }
         }
 
         const potentialColliders = spatialGrid.getPotentialColliders(localPlayer);

@@ -237,7 +237,7 @@ const SocketEventRegistry: {
         }
 
         const player = gameSession.getPlayer(socket.id);
-        if (!player) return;
+        if (!player || player.getStatus() !== PlayerStatusEnum.ALIVE) return; // prevent triggering multiple times
 
         if ((type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) ||
             (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) ||
