@@ -80,7 +80,7 @@ export class GameSocketManager {
         registerPhaserEvent(SocketEvents.PlayerActions.PLAYER_RESPAWNED, (playerData: any) => {
             const respawnedPlayer = Player.fromData(playerData);
 
-            log.info(respawnedPlayer);
+            log.trace("respawning player", respawnedPlayer);
             const player = self.playerManager.getPlayer(respawnedPlayer.getId());
             if (player) {
                 player.revive(respawnedPlayer.getBodyPositions());
