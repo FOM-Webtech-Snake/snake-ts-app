@@ -10,6 +10,8 @@ import {InputManager} from "../input/InputManager";
 import {GameStateEnum} from "../../../shared/constants/GameStateEnum";
 import {Overlay} from "../ui/Overlay";
 import {getLogger} from "../../../shared/config/LogConfig";
+import {GameSession} from "../../../shared/model/GameSession";
+import {CollisionManager} from "../ui/manager/CollisionManager";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -30,6 +32,7 @@ export class GameScene extends Phaser.Scene {
     private gameSocketManager: GameSocketManager
     private collectableManager: CollectableManager;
     private playerManager: PlayerManager;
+    private collisionManager: CollisionManager;
     private inputManager: InputManager;
 
     constructor() {
@@ -42,28 +45,60 @@ export class GameScene extends Phaser.Scene {
         this.gameSocketManager = null;
         this.collectableManager = null;
         this.playerManager = null;
+        this.collisionManager = null;
         this.inputManager = null;
     }
 
     create() {
-        // get necessary global properties
-
         // setup manager
+        this.gameSocketManager = new GameSocketManager();
+
         this.overlay = new Overlay(this);
         this.overlay.show("loading...");
 
-        this.collectableManager = new CollectableManager(this);
-        this.playerManager = new PlayerManager();
+        this.collectableManager = new CollectableManager(this, this.gameSocketManager);
+        this.playerManager = new PlayerManager(this, this.gameSocketManager);
+        this.collisionManager = new CollisionManager(this.playerManager, this.collectableManager, this.gameSocketManager);
+
         this.inputManager = new InputManager(this, this.collectableManager, this.playerManager);
-        this.gameSocketManager = new GameSocketManager(
-            this,
-            this.collectableManager,
-            this.playerManager,
-            this.inputManager);
+
+        // get necessary global properties
+        this.registerEventListeners();
+    }
+
+    private registerEventListeners() {
+        this.gameSocketManager.on("CURRENT_SESSION", (session: GameSession) => {
+            this.loadGameConfig(session.getConfig());
+            this.setState(session.getGameState());
+        });
+
+        this.gameSocketManager.on("SYNC_GAME_STATE", (session: GameSession) => {
+            this.setState(session.getGameState());
+        });
+
+        this.gameSocketManager.on("START_GAME", () => {
+            this.setState(GameStateEnum.RUNNING);
+        });
+
+        this.gameSocketManager.on("STATE_CHANGED", (state: GameStateEnum) => {
+            this.setState(state);
+        });
+
+        this.gameSocketManager.on("COUNTDOWN_UPDATED", (countdown: number) => {
+            if (countdown > 0) {
+                this.overlay.show(`Starting in ${countdown}...`);
+            } else {
+                this.overlay.hide();
+            }
+        });
     }
 
     public getOverlay(): Overlay {
         return this.overlay;
+    }
+
+    public getInputManager(): InputManager {
+        return this.inputManager;
     }
 
     cameraFollow(snake: PhaserSnake) {
@@ -98,18 +133,15 @@ export class GameScene extends Phaser.Scene {
         this.state = state;
 
         if (this.state === GameStateEnum.RUNNING) {
-            this.gameSocketManager.startSyncingGameState();
             this.physics.world.resume();
             this.overlay.hide();
         } else if (this.state === GameStateEnum.READY) {
             this.physics.world.pause();
             this.overlay.showPressKeyToAction("space, tap the screen or A an a controller", "start");
         } else if (this.state === GameStateEnum.PAUSED) {
-            this.gameSocketManager.stopSyncingGameState();
             this.physics.world.pause();
             this.overlay.showPressKeyToAction("p, long tap the screen or start on a controller", "resume");
         } else {
-            this.gameSocketManager.stopSyncingGameState();
             this.physics.world.pause();
             this.overlay.show(`current state: ${this.state}`);
         }
@@ -150,7 +182,8 @@ export class GameScene extends Phaser.Scene {
         })
 
         this.collectableManager?.update();
-        this.gameSocketManager?.handleCollisionUpdate();
+        this.collisionManager?.handleCollisionUpdate();
+        this.gameSocketManager.emitSnake(this.playerManager?.getPlayer(this.gameSocketManager.getPlayerId()));
     }
 
 
