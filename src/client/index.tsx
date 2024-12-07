@@ -2,7 +2,7 @@ import '../../public/css/main.css'; // this will apply the css globally
 import App from "./App";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
-import {GameSessionSocketProvider} from "./components/GameSessionSocketContext";
+import {GameSessionProvider} from "./components/GameSessionContext";
 import {ThemeProvider} from "./components/ThemeProvider";
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -11,11 +11,11 @@ window.addEventListener('DOMContentLoaded', () => {
         const root = ReactDOM.createRoot(rootElement);
         root.render(
             <React.StrictMode>
-                <GameSessionSocketProvider>
+                <GameSessionProvider>
                     <ThemeProvider>
                         <App/>
                     </ThemeProvider>
-                </GameSessionSocketProvider>
+                </GameSessionProvider>
             </React.StrictMode>
         );
     }

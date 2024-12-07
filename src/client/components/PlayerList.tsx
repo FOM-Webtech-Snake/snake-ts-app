@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Badge, Card, Container, ListGroup} from 'react-bootstrap';
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
 

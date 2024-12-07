@@ -23,7 +23,7 @@ export class PlayerManager {
 
     removePlayer(playerId: string): void {
         log.debug("removing player", playerId);
-        const playerSnake = this.players[playerId];
+        const playerSnake: PhaserSnake = this.players[playerId];
         if (playerSnake) {
             playerSnake.destroy();
             delete this.players[playerId];

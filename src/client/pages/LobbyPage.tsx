@@ -3,12 +3,14 @@ import {Player} from "../../shared/model/Player";
 import {Button, Card, Col, Container, Form, InputGroup, Row} from 'react-bootstrap';
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {getLogger} from "../../shared/config/LogConfig";
-import {useGameSessionSocket} from "../components/GameSessionSocketContext";
+import {useGameSessionSocket} from "../components/GameSessionContext";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import GameSessionConfigModal from "../components/GameSessionConfigModal";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import PlayerList from "../components/PlayerList";
 import ShareInfoModal from "../components/ShareModal";
+import {registerReactEvent} from "../socket/socketRouter";
+import socket from "../socket/socket";
 
 interface LobbyPageProps {
     player: Player;
@@ -18,7 +20,7 @@ interface LobbyPageProps {
 const log = getLogger("client.components.LobbyPage");
 
 const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
-    const {socket, session, joinSession, createSession, leaveSession, updateConfig} = useGameSessionSocket();
+    const {session, joinSession, createSession, leaveSession, updateConfig} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
     const [showShareModal, setShowShareModal] = useState(false);
     const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
@@ -32,7 +34,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             setSessionId(session.getId());
             inputRef.current.readOnly = true;
 
-            socket.once(SocketEvents.GameControl.GET_READY, (callback: any) => {
+            registerReactEvent(SocketEvents.GameControl.GET_READY, (callback: any) => {
                 log.debug("Getting ready, triggered by host");
                 onGameReady();
                 callback(); // ack the server when ready

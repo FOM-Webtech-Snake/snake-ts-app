@@ -1,7 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
-import {useGameSessionSocket} from "../components/GameSessionSocketContext";
 import {Col, Container, Row} from "react-bootstrap";
 import PlayerList from "../components/PlayerList";
 import TimerDisplay from "../components/TimerDisplay";
@@ -12,7 +11,6 @@ interface GamePageProps {
 }
 
 const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
-    const {socket} = useGameSessionSocket();
     const gameContainerRef = useRef<HTMLDivElement | null>(null);
     const gameCreatedRef = useRef(false);
     const gameInstanceRef = useRef<any>(null);
@@ -35,8 +33,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
                 "game-container"
             );
             const game = GameUtil.createGame(
-                gameConfig,
-                socket,
+                gameConfig
             );
             gameCreatedRef.current = true;
         }
