@@ -8,6 +8,7 @@ import {getLogger} from "../../../shared/config/LogConfig";
 import {GameScene} from "../scenes/GameScene";
 import {Player} from "../../../shared/model/Player";
 import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../../shared/config/GlobalTickRate";
+import {SNAKE_STARTING_SCALE} from "../../../shared/model/GameSessionConfig";
 
 const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
@@ -91,7 +92,7 @@ export class PhaserSnake {
 
         // create the face
         this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
-        this.face.setScale(this.scale);
+        this.face.setScale(SNAKE_STARTING_SCALE.default);
         this.face.setDepth(2);
         this.face.setOrigin(0.5, 0.5)
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
