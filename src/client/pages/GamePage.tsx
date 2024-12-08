@@ -4,6 +4,7 @@ import {ConfigUtil} from '../game/util/ConfigUtil';
 import {Col, Container, Row} from "react-bootstrap";
 import PlayerList from "../components/PlayerList";
 import TimerDisplay from "../components/TimerDisplay";
+import GameControl from "../components/GameControl";
 
 
 interface GamePageProps {
@@ -63,6 +64,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
                     </div>
                 </Col>
                 <Col className="col-4">
+                    <GameControl/>
                     <TimerDisplay/>
                     <PlayerList/>
                 </Col>
