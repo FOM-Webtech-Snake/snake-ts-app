@@ -109,9 +109,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart, theme}) => {
 
                                         <div className="d-grid">
                                             <button className="button" onClick={handleStart}>
-                                                <span className="actual-text">Start {sessionId && ("and Join")}</span>
-                                                <span aria-hidden="true"
-                                                      className="hover-text">Start {sessionId && ("and Join")}</span>
+                                                <span className="actual-text">Weiter {sessionId && ("and Join")}</span>
                                             </button>
                                         </div>
                                     </div>
