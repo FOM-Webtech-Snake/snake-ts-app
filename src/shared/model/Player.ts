@@ -25,7 +25,7 @@ export class Player {
                 name: string,
                 color: string,
                 role: PlayerRoleEnum,
-                status: PlayerStatusEnum = PlayerStatusEnum.READY,
+                status: PlayerStatusEnum = PlayerStatusEnum.ALIVE,
                 score: number = 0,
                 speed: number = SNAKE_STARTING_SPEED.default,
                 scale: number = SNAKE_STARTING_SCALE.default,
@@ -41,6 +41,14 @@ export class Player {
         this.scale = scale;
         this.direction = direction;
         this.bodyPositions = bodyPositions;
+    }
+
+    reset() {
+        this.status = PlayerStatusEnum.ALIVE;
+        this.score = 0;
+        this.speed = SNAKE_STARTING_SPEED.default;
+        this.scale = SNAKE_STARTING_SCALE.default;
+        this.bodyPositions = [];
     }
 
     getId() {

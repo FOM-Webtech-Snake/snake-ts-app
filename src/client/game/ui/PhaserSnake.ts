@@ -104,6 +104,7 @@ export class PhaserSnake {
     }
 
     destroy() {
+        log.debug("destroying snake", this.playerId);
         this.body.clear(true, true);
         this.lockedSegments.clear(true, true);
         this.targetPositions = [];

@@ -50,37 +50,36 @@ export class GameScene extends Phaser.Scene {
     }
 
     create() {
-        // setup manager
-        this.gameSocketManager = new GameSocketManager();
-
         this.overlay = new Overlay(this);
         this.overlay.show("loading...");
 
+        // setup manager
+        this.gameSocketManager = new GameSocketManager();
         this.collectableManager = new CollectableManager(this, this.gameSocketManager);
         this.playerManager = new PlayerManager(this, this.gameSocketManager);
         this.collisionManager = new CollisionManager(this.playerManager, this.collectableManager, this.gameSocketManager);
-
-        this.inputManager = new InputManager(this, this.collectableManager, this.playerManager);
+        this.inputManager = new InputManager(this, this.playerManager, this.collectableManager);
 
         // get necessary global properties
         this.registerEventListeners();
     }
 
     private registerEventListeners() {
-        this.gameSocketManager.on("CURRENT_SESSION", (session: GameSession) => {
-            this.loadGameConfig(session.getConfig());
-            this.setState(session.getGameState());
-        });
-
         this.gameSocketManager.on("SYNC_GAME_STATE", (session: GameSession) => {
+            log.trace("SYNC_GAME_STATE", session);
+            if (this.state !== GameStateEnum.RUNNING) {
+                this.loadGameConfig(session.getConfig()); // only update when game is not running
+            }
             this.setState(session.getGameState());
         });
 
         this.gameSocketManager.on("START_GAME", () => {
+            log.debug("START_GAME");
             this.setState(GameStateEnum.RUNNING);
         });
 
         this.gameSocketManager.on("STATE_CHANGED", (state: GameStateEnum) => {
+            log.trace("STATE_CHANGED", state);
             this.setState(state);
         });
 
@@ -152,7 +151,12 @@ export class GameScene extends Phaser.Scene {
     }
 
     loadGameConfig(conf: GameSessionConfig) {
-        log.debug("loading game config", conf);
+        if (conf == this.config) {
+            log.debug("game config not changed", conf);
+            return;
+        }
+
+        log.debug("loading new game config", conf);
         this.config = conf;
         // setup world & camera
         this.physics.world.setBounds(0, 0, this.config.getSize().getWidth(), this.config.getSize().getHeight()); // push the world bounds to (e.g. 1600x1200px)
@@ -162,29 +166,33 @@ export class GameScene extends Phaser.Scene {
             this.background.destroy();
         }
         this.background = new Background(this);
-
-        if (this.overlay) {
-            this.overlay.destroy();
-        }
-        this.overlay = new Overlay(this);
     }
 
     update() {
+        this.overlay.update();
+
         if (this.state !== GameStateEnum.RUNNING) {
             return;
         }
 
         ArrowManager.getInstance().reset();
         this.inputManager?.handleInput();
-        this.playerManager?.getPlayer(this.gameSocketManager.getPlayerId())?.update();
-        this.playerManager?.getPlayersExcept(this.gameSocketManager.getPlayerId())?.forEach((player: PhaserSnake) => {
-            player.interpolatePosition();
-        })
+
+        const players = this.playerManager?.getPlayers();
+        if (players) {
+            log.trace("players", players);
+            const localPlayerId = this.gameSocketManager.getPlayerId();
+            Object.keys(players).forEach((playerId) => {
+                if (playerId === localPlayerId) {
+                    players[playerId].update();
+                    this.gameSocketManager.emitSnake(players[playerId]);
+                } else {
+                    players[playerId].interpolatePosition();
+                }
+            });
+        }
 
         this.collectableManager?.update();
         this.collisionManager?.handleCollisionUpdate();
-        this.gameSocketManager.emitSnake(this.playerManager?.getPlayer(this.gameSocketManager.getPlayerId()));
     }
-
-
 }

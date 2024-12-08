@@ -15,17 +15,13 @@ export class GameSocketManager extends Phaser.Events.EventEmitter {
     constructor() {
         super();
         this.setup();
+        this.emitReady();
     }
 
     private setup() {
         const self = this;
 
         log.debug("setting up multiplayer");
-
-        registerPhaserEvent(SocketEvents.SessionState.CURRENT_SESSION, function (data: any) {
-            const gameSession: GameSession = GameSession.fromData(data);
-            self.emit("CURRENT_SESSION", gameSession);
-        });
 
         registerPhaserEvent(SocketEvents.GameControl.SYNC_GAME_STATE, function (data: any) {
             const gameSession: GameSession = GameSession.fromData(data);
@@ -34,6 +30,11 @@ export class GameSocketManager extends Phaser.Events.EventEmitter {
 
         registerPhaserEvent(SocketEvents.GameControl.START_GAME, () => {
             self.emit("START_GAME");
+        });
+
+        registerPhaserEvent(SocketEvents.GameControl.RESET_GAME, () => {
+            self.emit("RESET_GAME");
+            this.emitReady();
         });
 
         registerPhaserEvent(SocketEvents.GameControl.STATE_CHANGED, (state: GameStateEnum) => {
@@ -69,17 +70,14 @@ export class GameSocketManager extends Phaser.Events.EventEmitter {
         registerPhaserEvent(SocketEvents.GameControl.COUNTDOWN_UPDATED, (countdown: number) => {
             self.emit("COUNTDOWN_UPDATED", countdown);
         });
+    }
 
-        this.emitGetConfiguration();
+    private emitReady(){
+        socket.emitWithLog(SocketEvents.ClientState.READY);
     }
 
     public getPlayerId(): string {
         return socket.id;
-    }
-
-
-    public emitGetConfiguration() {
-        socket.emitWithLog(SocketEvents.SessionState.GET_CURRENT_SESSION, {});
     }
 
     public emitSnake(snake: PhaserSnake) {

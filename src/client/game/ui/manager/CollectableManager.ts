@@ -28,6 +28,10 @@ export class CollectableManager {
         this.gameSocketManager.on("SPAWN_NEW_COLLECTABLE", (collectable: Collectable) => {
             this.addCollectable(PhaserCollectable.fromCollectable(this.scene, collectable));
         })
+
+        this.gameSocketManager.on("RESET_GAME", () => {
+            this.reset();
+        });
     }
 
     addCollectable(collectable: PhaserCollectable) {
@@ -89,8 +93,8 @@ export class CollectableManager {
         });
     }
 
-    clear(): void {
-        log.debug("clear all collectables");
+    private reset(): void {
+        log.debug("clearing all collectables");
         Object.values(this.collectables).forEach(collectable => collectable?.destroy());
         this.collectables = {};
     }
