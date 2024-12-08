@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {getLogger} from "../../shared/config/LogConfig";
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {useGameSessionSocket} from "./GameSessionContext";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {Card, Container} from "react-bootstrap";
+import {registerReactEvent, unregisterReactEvent} from "../socket/socketRouter";
+import socket from "../socket/socket";
 
 interface TimerDisplayProps {
 }
@@ -10,7 +12,7 @@ interface TimerDisplayProps {
 const log = getLogger("client.components.TimerDisplay");
 
 const TimerDisplay: React.FC<TimerDisplayProps> = () => {
-    const {session, socket} = useGameSessionSocket();
+    const {session} = useGameSessionSocket();
     const [remainingTime, setRemainingTime] = useState(session.getConfig().getGameDuration());
 
     useEffect(() => {
@@ -21,10 +23,12 @@ const TimerDisplay: React.FC<TimerDisplayProps> = () => {
             setRemainingTime(time);
         };
 
-        socket.on(SocketEvents.GameEvents.TIMER_UPDATED, onTimerUpdated);
+        registerReactEvent(SocketEvents.GameEvents.TIMER_UPDATED, (data) => {
+            onTimerUpdated(data);
+        });
 
         return () => {
-            socket.off(SocketEvents.GameEvents.TIMER_UPDATED, onTimerUpdated);
+            unregisterReactEvent(SocketEvents.GameEvents.TIMER_UPDATED);
         };
 
     }, [socket]);

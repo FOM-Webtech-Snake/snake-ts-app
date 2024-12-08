@@ -1,9 +1,10 @@
 import React, {forwardRef} from 'react';
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {Button, Container, Navbar} from "react-bootstrap";
 import SnakeLogo from '../../../public/img/snake_logo.png';
 import {useTheme} from "./ThemeProvider";
+import socket from "../socket/socket";
 
 interface HeaderProps {
     player: Player | null;
@@ -11,7 +12,7 @@ interface HeaderProps {
 
 const Header = forwardRef<HTMLDivElement, HeaderProps>(({ player }, ref) => {
 
-    const {socket, session} = useGameSessionSocket()
+    const {session} = useGameSessionSocket()
     const {theme, toggleTheme} = useTheme();
 
     return (

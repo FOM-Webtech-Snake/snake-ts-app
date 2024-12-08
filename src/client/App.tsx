@@ -6,13 +6,13 @@ import Header from "./components/Header";
 import GamePage from "./pages/GamePage";
 import {Player} from "../shared/model/Player";
 import {PlayerRoleEnum} from "../shared/constants/PlayerRoleEnum";
-import {useGameSessionSocket} from "./components/GameSessionSocketContext";
+import {useGameSessionSocket} from "./components/GameSessionContext";
 import LoadingOverlay from "./components/LoadingOverlay";
 import {useTheme} from "./components/ThemeProvider";
 
 const App: React.FC = () => {
     const {theme} = useTheme();
-    const {socket, isConnected, joinSession} = useGameSessionSocket();
+    const {playerId, isConnected, joinSession} = useGameSessionSocket();
     const [gameReady, setGameReady] = useState(false);
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player | null>(null);
@@ -21,10 +21,10 @@ const App: React.FC = () => {
     const [availableHeight, setAvailableHeight] = useState(0);
 
     const handleStart = (playerName: string, color: string, sessionId: string) => {
-        if (socket.id == null) {
+        if (playerId == null) {
             return;
         }
-        const newPlayer = new Player(socket.id, playerName, color, PlayerRoleEnum.HOST);
+        const newPlayer = new Player(playerId, playerName, color, PlayerRoleEnum.HOST);
         setPlayer(newPlayer);
         setInLobby(true); // transition to the lobby
 

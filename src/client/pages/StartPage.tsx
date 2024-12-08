@@ -13,10 +13,11 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
     const [sessionId, setSessionId] = useState<string>("");
 
     const handleStart = () => {
-        if (playerName.trim()) {
+        if (inputRef.current) {
+            if (!inputRef.current.reportValidity()) {
+                return;
+            }
             onStart(playerName, color, sessionId);
-        } else {
-            alert("Please enter your name");
         }
     };
 
@@ -86,7 +87,10 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                                 aria-label="Player Name"
                                                 aria-describedby="playerNameAddon"
                                                 placeholder="Enter your name"
+                                                pattern="^[a-zA-Z0-9]*$"
+                                                title="Player Name can only contain letters and numbers, no special characters or spaces."
                                                 value={playerName}
+                                                required={true}
                                                 onChange={(e) => setPlayerName(e.target.value)}
                                                 onKeyDown={handleKeyDown}
                                                 ref={inputRef}

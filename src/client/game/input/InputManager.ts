@@ -16,7 +16,7 @@ export class InputManager {
     private handlers: Map<InputTypeEnum, InputHandler>;
     private autopilotKey: Phaser.Input.Keyboard.Key;
 
-    constructor(scene: GameScene, collectableManager: CollectableManager, playerManager: PlayerManager) {
+    constructor(scene: GameScene, playerManager: PlayerManager, collectableManager: CollectableManager) {
         this.handlers = new Map();
 
         // Add input handlers

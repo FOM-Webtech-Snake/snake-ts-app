@@ -2,9 +2,12 @@ import React, {useEffect, useState} from 'react';
 import {Badge, Card, Container, ListGroup} from 'react-bootstrap';
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
+import socket from "../socket/socket";
+import {registerReactEvent} from "../socket/socketRouter";
+import {SocketEvents} from "../../shared/constants/SocketEvents";
 
 interface PlayerListProps {
 }
@@ -12,21 +15,26 @@ interface PlayerListProps {
 const log = getLogger("client.components.PlayerList");
 
 const PlayerList: React.FC<PlayerListProps> = () => {
-    const {session, players} = useGameSessionSocket();
-    const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(null);
+    const {session} = useGameSessionSocket();
+    const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(session.getPlayersAsArray());
 
     useEffect(() => {
-        if (session) {
-            if (session.getPlayersAsArray()) {
-                // Listen for updates to the session and players
-                const sortedPlayers = (session.getPlayersAsArray() || []).sort(
-                    (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
-                );
-                setSortedPlayers(sortedPlayers);
-                log.debug(`updated players ${sortedPlayers}`);
-            }
-        }
-    }, [session, players]);
+        if (!socket) return;
+
+        registerReactEvent(SocketEvents.SessionState.PLAYER_LIST, (data) => {
+            log.trace("received player list", data);
+            const players = Object.values(data).map(entry => Player.fromData(entry));
+
+            log.trace("mapped player list", players);
+            const sortedPlayers = (players || []).sort(
+                (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
+            );
+
+            setSortedPlayers(sortedPlayers);
+            log.trace("updated players", sortedPlayers);
+        });
+
+    }, []);
 
     return (
         <Container style={{
@@ -36,7 +44,6 @@ const PlayerList: React.FC<PlayerListProps> = () => {
             <Card className="p-4 shadow">
                 <Card.Title className="text-center">Players in Lobby</Card.Title>
                 <Card.Body>
-                    <p className="text-center">{session.getPlayerCount()} / {session.getConfig().getMaxPlayers()}</p>
                     {!sortedPlayers ? (
                         <p className="text-center">Waiting for players to join...</p>
                     ) : (
