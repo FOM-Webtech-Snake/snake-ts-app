@@ -1,5 +1,3 @@
-import {DirectionEnum} from "../constants/DirectionEnum";
-
 export class Position {
     private x: number;
     private y: number;
