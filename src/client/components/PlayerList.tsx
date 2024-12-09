@@ -41,9 +41,11 @@ const PlayerList: React.FC<PlayerListProps> = () => {
             overflowY: 'auto',
             padding: '1rem',
         }}>
-            <Card className="p-4 shadow">
-                <Card.Title className="text-center">Players in Lobby</Card.Title>
-                <Card.Body>
+            <Card className="mb-3 shadow">
+                <Card.Header className="text-center">
+                    <h6 className="mb-0">Players in Lobby</h6>
+                </Card.Header>
+                <Card.Body className="text-center">
                     {!sortedPlayers ? (
                         <p className="text-center">Waiting for players to join...</p>
                     ) : (
