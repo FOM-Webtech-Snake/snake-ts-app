@@ -148,12 +148,12 @@ export class PhaserSnake {
 
     getHeadPosition(): Position {
         if (!this.head) return null;
-        return new Position(this.head.x, this.head.y);
+        return new Position(this.head.x, this.head.y, false, this.head.rotation);
     }
 
     getBodyPositions(): Position[] {
         return this.getBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
-            return new Position(segment.x, segment.y, this.lockedSegments.contains(segment));
+            return new Position(segment.x, segment.y, this.lockedSegments.contains(segment), segment.rotation);
         });
     }
 
@@ -247,14 +247,14 @@ export class PhaserSnake {
 
     doubleLength(): void {
         const currentLength = this.body.getLength();
-        const spawnPos: Position = new Position(this.head.x, this.head.y, true);
+        const spawnPos: Position = new Position(this.head.x, this.head.y, true, this.head.rotation);
         for (let i = 0; i < currentLength; i++) {
             this.addSegmentToBody(spawnPos);
         }
     }
 
     increase() {
-        const spawnPos: Position = new Position(this.head.x, this.head.y, true);
+        const spawnPos: Position = new Position(this.head.x, this.head.y, true, this.head.rotation);
         this.addSegmentToBody(spawnPos);
     }
 
@@ -315,6 +315,7 @@ export class PhaserSnake {
         bodyPart.setScale(this.scale);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+        bodyPart.setRotation(pos.getRotation())
         bodyPart.body.allowDrag = false;
 
         if (pos.getLocked()) this.lockedSegments.add(bodyPart);
