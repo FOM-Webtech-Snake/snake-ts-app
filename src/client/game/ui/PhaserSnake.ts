@@ -189,6 +189,7 @@ export class PhaserSnake {
         // update the head direction
         const directionVector = DirectionUtil.getDirectionVector(this.direction);
         this.headGroup.setVelocity(directionVector.x * this.speed, directionVector.y * this.speed);
+        this.head.setRotation(DirectionUtil.getRotationAngle(this.direction));
 
         // make face follow the direction
         this.updateFacePosition();
@@ -332,7 +333,7 @@ export class PhaserSnake {
 
     private saveCurrentHeadCoordinates(): void {
         // save the current head position at the start of the array
-        this.lastPositions.unshift(new Position(this.head.x, this.head.y));
+        this.lastPositions.unshift(new Position(this.head.x, this.head.y, false, DirectionUtil.getRotationAngle(this.direction)));
     }
 
     /**
@@ -407,6 +408,7 @@ export class PhaserSnake {
 
                 // set the segment position to the interpolated position
                 currentSegment.setPosition(interpolatedX, interpolatedY);
+                currentSegment.setRotation(positionB.getRotation());
             }
         }
     }
@@ -493,6 +495,7 @@ export class PhaserSnake {
             const interpolatedX = Phaser.Math.Linear(bodyParts[i].x, this.targetPositions[i].getX(), t);
             const interpolatedY = Phaser.Math.Linear(bodyParts[i].y, this.targetPositions[i].getY(), t);
             bodyParts[i].setPosition(interpolatedX, interpolatedY);
+            bodyParts[i].setRotation(this.targetPositions[i].getRotation())
         }
 
         this.updateFacePosition();
@@ -511,6 +514,7 @@ export class PhaserSnake {
                 x: segment.x,
                 y: segment.y,
                 locked: this.lockedSegments.contains(segment),
+                rotation: segment.rotation,
             })),
         };
     }
