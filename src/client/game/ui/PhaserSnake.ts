@@ -333,7 +333,7 @@ export class PhaserSnake {
 
     private saveCurrentHeadCoordinates(): void {
         // save the current head position at the start of the array
-        this.lastPositions.unshift(new Position(this.head.x, this.head.y, false, DirectionUtil.getRotationAngle(this.direction)));
+        this.lastPositions.unshift(new Position(this.head.x, this.head.y, false, this.head.rotation));
     }
 
     /**
