@@ -148,12 +148,12 @@ export class PhaserSnake {
 
     getHeadPosition(): Position {
         if (!this.head) return null;
-        return new Position(this.head.x, this.head.y);
+        return new Position(this.head.x, this.head.y, false, this.head.rotation);
     }
 
     getBodyPositions(): Position[] {
         return this.getBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
-            return new Position(segment.x, segment.y, this.lockedSegments.contains(segment));
+            return new Position(segment.x, segment.y, this.lockedSegments.contains(segment), segment.rotation);
         });
     }
 
@@ -189,6 +189,7 @@ export class PhaserSnake {
         // update the head direction
         const directionVector = DirectionUtil.getDirectionVector(this.direction);
         this.headGroup.setVelocity(directionVector.x * this.speed, directionVector.y * this.speed);
+        this.head.setRotation(DirectionUtil.getRotationAngle(this.direction));
 
         // make face follow the direction
         this.updateFacePosition();
@@ -246,14 +247,14 @@ export class PhaserSnake {
 
     doubleLength(): void {
         const currentLength = this.body.getLength();
-        const spawnPos: Position = new Position(this.head.x, this.head.y, true);
+        const spawnPos: Position = new Position(this.head.x, this.head.y, true, this.head.rotation);
         for (let i = 0; i < currentLength; i++) {
             this.addSegmentToBody(spawnPos);
         }
     }
 
     increase() {
-        const spawnPos: Position = new Position(this.head.x, this.head.y, true);
+        const spawnPos: Position = new Position(this.head.x, this.head.y, true, this.head.rotation);
         this.addSegmentToBody(spawnPos);
     }
 
@@ -314,6 +315,7 @@ export class PhaserSnake {
         bodyPart.setScale(this.scale);
         bodyPart.setDepth(1);
         bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+        bodyPart.setRotation(pos.getRotation())
         bodyPart.body.allowDrag = false;
 
         if (pos.getLocked()) this.lockedSegments.add(bodyPart);
@@ -332,7 +334,7 @@ export class PhaserSnake {
 
     private saveCurrentHeadCoordinates(): void {
         // save the current head position at the start of the array
-        this.lastPositions.unshift(new Position(this.head.x, this.head.y));
+        this.lastPositions.unshift(new Position(this.head.x, this.head.y, false, this.head.rotation));
     }
 
     /**
@@ -407,6 +409,7 @@ export class PhaserSnake {
 
                 // set the segment position to the interpolated position
                 currentSegment.setPosition(interpolatedX, interpolatedY);
+                currentSegment.setRotation(positionB.getRotation());
             }
         }
     }
@@ -493,6 +496,7 @@ export class PhaserSnake {
             const interpolatedX = Phaser.Math.Linear(bodyParts[i].x, this.targetPositions[i].getX(), t);
             const interpolatedY = Phaser.Math.Linear(bodyParts[i].y, this.targetPositions[i].getY(), t);
             bodyParts[i].setPosition(interpolatedX, interpolatedY);
+            bodyParts[i].setRotation(this.targetPositions[i].getRotation())
         }
 
         this.updateFacePosition();
@@ -511,6 +515,7 @@ export class PhaserSnake {
                 x: segment.x,
                 y: segment.y,
                 locked: this.lockedSegments.contains(segment),
+                rotation: segment.rotation,
             })),
         };
     }
