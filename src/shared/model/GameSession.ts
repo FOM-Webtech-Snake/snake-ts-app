@@ -9,6 +9,7 @@ import {PlayerRoleEnum} from "../constants/PlayerRoleEnum";
 import {PositionUtil} from "../../server/util/PositionUtil";
 import {DirectionEnum} from "../constants/DirectionEnum";
 import {Position} from "./Position";
+import {PlayerStatusEnum} from "../constants/PlayerStatusEnum";
 
 const log = getLogger("shared.GameSession");
 
@@ -20,6 +21,7 @@ export class GameSession {
     private collectables: Record<string, Collectable>;
     private remainingTime: number;
     private timerInterval: NodeJS.Timeout | null = null;
+    private isCountdownRunning: boolean = false;
 
 
     constructor(id: string,
@@ -35,6 +37,16 @@ export class GameSession {
         this.collectables = collectables;
         this.remainingTime = config.getGameDuration();
         this.timerInterval = timerInterval;
+        this.isCountdownRunning = false;
+    }
+
+    reset() {
+        this.gameState = GameStateEnum.READY;
+        Object.values(this.players).forEach((player: Player) => player.reset());
+        this.spawnPlayers();
+        this.collectables = {};
+        this.remainingTime = this.config.getGameDuration();
+        this.isCountdownRunning = false;
     }
 
     getId(): string {
@@ -46,6 +58,10 @@ export class GameSession {
             return null;
         }
         return this.players[playerId];
+    }
+
+    getPlayers(): Record<string, Player> {
+        return this.players;
     }
 
     getPlayersAsArray(): Player[] {
@@ -84,6 +100,14 @@ export class GameSession {
         this.remainingTime = remainingTime;
     }
 
+    getIsCountdownRunning() {
+        return this.isCountdownRunning;
+    }
+
+    setIsCountdownRunning(isCountdownRunning: boolean) {
+        this.isCountdownRunning = isCountdownRunning;
+    }
+
     getTimerInterval() {
         return this.timerInterval;
     }
@@ -101,17 +125,26 @@ export class GameSession {
         this.players[player.getId()] = player;
     }
 
+    isHighActivity(): boolean {
+        return this.gameState === GameStateEnum.RUNNING;
+    }
+
+    spawnPlayer(player: Player): void {
+        player.setStatus(PlayerStatusEnum.ALIVE);
+        player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spawn
+        player.setSpeed(this.config.getSnakeStartingSpeed());
+        player.setScale(this.config.getSnakeStartingScale())
+        const bodyPositions: Position[] = []
+        const spawnPosition = PositionUtil.randomUniquePosition(this);
+        for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
+            bodyPositions.push(spawnPosition);
+        }
+        player.setBodyPositions(bodyPositions);
+    }
+
     spawnPlayers(): void {
         Object.values(this.players).forEach(player => {
-            player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spawn
-            player.setSpeed(this.config.getSnakeStartingSpeed());
-            player.setScale(this.config.getSnakeStartingScale())
-            const bodyPositions: Position[] = []
-            const spawnPosition = PositionUtil.randomUniquePosition(this);
-            for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
-                bodyPositions.push(spawnPosition);
-            }
-            player.setBodyPositions(bodyPositions);
+            this.spawnPlayer(player);
         })
     }
 
@@ -142,6 +175,10 @@ export class GameSession {
         return Object.keys(this.players).length > 0;
     }
 
+    countPlayersWithStatus(status: PlayerStatusEnum): number {
+        return Object.values(this.players).filter(player => player.getStatus() === status).length
+    }
+
     isWaitingForPlayers(): boolean {
         log.debug(`game session ${this.id} waiting for players`);
         return this.gameState === GameStateEnum.WAITING_FOR_PLAYERS;
@@ -160,6 +197,7 @@ export class GameSession {
         log.warn(`Game Session ${this.id} state is not ready.`);
         return false;
     }
+
 
     toJson() {
         return {

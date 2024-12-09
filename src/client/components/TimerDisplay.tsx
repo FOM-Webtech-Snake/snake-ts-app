@@ -1,15 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {getLogger} from "../../shared/config/LogConfig";
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {useGameSessionSocket} from "./GameSessionContext";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
+import {Card, Container} from "react-bootstrap";
+import {registerReactEvent, unregisterReactEvent} from "../socket/socketRouter";
+import socket from "../socket/socket";
 
 interface TimerDisplayProps {
 }
 
 const log = getLogger("client.components.TimerDisplay");
 
-const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
-    const {session, socket} = useGameSessionSocket();
+const TimerDisplay: React.FC<TimerDisplayProps> = () => {
+    const {session} = useGameSessionSocket();
     const [remainingTime, setRemainingTime] = useState(session.getConfig().getGameDuration());
 
     useEffect(() => {
@@ -20,10 +23,12 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
             setRemainingTime(time);
         };
 
-        socket.on(SocketEvents.GameEvents.TIMER_UPDATED, onTimerUpdated);
+        registerReactEvent(SocketEvents.GameEvents.TIMER_UPDATED, (data) => {
+            onTimerUpdated(data);
+        });
 
         return () => {
-            socket.off(SocketEvents.GameEvents.TIMER_UPDATED, onTimerUpdated);
+            unregisterReactEvent(SocketEvents.GameEvents.TIMER_UPDATED);
         };
 
     }, [socket]);
@@ -35,30 +40,20 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({}) => {
     };
 
     return (
-        <div
+        <Container
             style={{
-                backgroundColor: '#343a40',
-                color: '#fff',
-                padding: '10px 20px',
-                borderRadius: '5px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginTop: '20px',
-            }}
-        >
-            <span style={{fontSize: '1.2rem'}}>verbleibende Zeit:</span>
-            <span
-                style={{
-                    fontSize: '1.5rem',
-                    fontWeight: 'bold',
-                    letterSpacing: '1px',
-                }}
-            >
-        {formatTime(remainingTime)}
-    </span>
-        </div>
-
+                overflowY: 'auto',
+                padding: '1rem',
+            }}>
+            <Card className="mb-3 shadow">
+                <Card.Header className="text-center">
+                    <h6 className="mb-0">Remaining Time</h6>
+                </Card.Header>
+                <Card.Body className="text-center">
+                    <span className="text-warning">{formatTime(remainingTime)}</span>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };
 

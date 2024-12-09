@@ -1,17 +1,18 @@
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
-import {io, Socket} from "socket.io-client";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import {GameSession} from "../../shared/model/GameSession";
 import {getLogger} from "../../shared/config/LogConfig";
 import {Player} from "../../shared/model/Player";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
-import customParser from "socket.io-msgpack-parser";
+import {GameStateEnum} from "../../shared/constants/GameStateEnum";
+import socket from "../socket/socket";
+import {registerReactEvent, unregisterReactEvent} from "../socket/socketRouter";
 
 
-interface GameSessionSocketContextType {
-    socket: Socket;
+interface GameSessionContextType {
     session: GameSession;
-    players: Player[];
+    playerId: string;
+    status: GameStateEnum;
     isConnected: boolean,
     createSession: (player: Player) => void;
     joinSession: (sessionId: string, player: Player) => void;
@@ -19,10 +20,10 @@ interface GameSessionSocketContextType {
     updateConfig: (config: GameSessionConfig) => void;
 }
 
-const GameSessionSocketContext = createContext<GameSessionSocketContextType>({
-    socket: null,
+const GameSessionContext = createContext<GameSessionContextType>({
     session: null,
-    players: null,
+    playerId: null,
+    status: null,
     isConnected: false,
     createSession: () => {
     },
@@ -40,53 +41,65 @@ interface SocketProviderProps {
 
 const log = getLogger("client.components.GameSessionSocketProvider");
 
-export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({children}) => {
-    const [socket, setSocket] = useState<Socket>(null);
+export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) => {
     const [session, setSession] = useState<GameSession>(null);
-    const [players, setPlayers] = useState<Player[] | null>(null);
-    const [isConnected, setIsConnected] = useState(false);
+    const [status, setStatus] = useState<GameStateEnum>(null);
+
+    const [playerId, setPlayerId] = useState<string | null>(socket.id);
+    const [isConnected, setIsConnected] = useState(socket.connected);
 
     useEffect(() => {
-        const newSocket = io({parser: customParser});
-        setSocket(newSocket);
-
-        const handleConnect = () => setIsConnected(true);
-        const handleDisconnect = () => {
+        socket.on("connect", () => {
+            setIsConnected(true);
+            setPlayerId(socket.id);
+        });
+        socket.on("disconnect", () => {
             setIsConnected(false);
-            setSession(null);
-        };
-
-        newSocket.on("connect", handleConnect);
-        newSocket.on("disconnect", handleDisconnect);
-
+            setPlayerId(null);
+        });
         // close/disconnect on unmount of this provider
         return () => {
-            newSocket.off("connect", handleConnect);
-            newSocket.off("disconnect", handleDisconnect);
-            newSocket.disconnect();
+            socket.off("connect");
+            socket.off("disconnect");
         };
     }, []);
 
+    function updateGameSessionContext(gameSession: GameSession) {
+        log.trace("updating game session context", gameSession);
+        if (gameSession) {
+            setSession(gameSession);
+            setStatus(gameSession.getGameState());
+        } else {
+            setSession(null);
+            setStatus(null);
+        }
+    }
+
     useEffect(() => {
         if (session) {
-            socket.on(SocketEvents.SessionState.CONFIG_UPDATED, (data: any) => {
+            registerReactEvent(SocketEvents.SessionState.CONFIG_UPDATED, (data: any) => {
                 log.debug("received session config update", data);
                 session.setConfig(GameSessionConfig.fromData(data));
                 log.trace("session", session);
             });
 
-            socket.on(SocketEvents.GameControl.SYNC_GAME_STATE, function (data: any) {
+            registerReactEvent(SocketEvents.GameControl.SYNC_GAME_STATE, function (data: any) {
                 log.debug("sync session state");
                 log.trace("session:", data.players);
-                setSession(GameSession.fromData(data));
+                updateGameSessionContext(GameSession.fromData(data));
             });
 
-            socket.on(SocketEvents.SessionState.PLAYER_JOINED, (data: any) => {
+            registerReactEvent(SocketEvents.SessionState.PLAYER_JOINED, (data: any) => {
                 log.debug("received player join session", data);
                 session.addPlayer(Player.fromData(data));
-                setPlayers(session.getPlayersAsArray());
             });
         }
+
+        return () => {
+            unregisterReactEvent(SocketEvents.SessionState.CONFIG_UPDATED);
+            unregisterReactEvent(SocketEvents.GameControl.SYNC_GAME_STATE);
+            unregisterReactEvent(SocketEvents.SessionState.PLAYER_JOINED);
+        };
     }, [session]);
 
     const createSession = (player: Player) => {
@@ -99,7 +112,7 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
                 } else {
                     const gameSession = GameSession.fromData(session);
                     log.debug("received created game session", gameSession);
-                    setSession(gameSession);
+                    updateGameSessionContext(gameSession);
                 }
             } catch (error) {
                 log.error("failed to process created session data:", error);
@@ -118,7 +131,7 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
                     } else {
                         const gameSession = GameSession.fromData(session);
                         log.debug("received joined game session", gameSession);
-                        setSession(gameSession);
+                        updateGameSessionContext(gameSession);
                     }
                 } catch (error) {
                     log.error("failed to process joined session data:", error);
@@ -136,19 +149,27 @@ export const GameSessionSocketProvider: React.FC<SocketProviderProps> = ({childr
         if (!socket || !session) return;
         socket.emit(SocketEvents.Connection.LEAVE_SESSION);
         log.debug("left session");
-        setSession(null);
-        setPlayers(null);
+        updateGameSessionContext(null);
     };
 
     return (
-        <GameSessionSocketContext.Provider
-            value={{socket, session, players, isConnected, createSession, joinSession, leaveSession, updateConfig}}>
+        <GameSessionContext.Provider
+            value={{
+                session,
+                playerId,
+                status,
+                isConnected,
+                createSession,
+                joinSession,
+                leaveSession,
+                updateConfig
+            }}>
             {children}
-        </GameSessionSocketContext.Provider>
+        </GameSessionContext.Provider>
     );
 };
 
 // hook for easier access
-export const useGameSessionSocket = (): GameSessionSocketContextType => {
-    return useContext(GameSessionSocketContext);
+export const useGameSessionSocket = (): GameSessionContextType => {
+    return useContext(GameSessionContext);
 };

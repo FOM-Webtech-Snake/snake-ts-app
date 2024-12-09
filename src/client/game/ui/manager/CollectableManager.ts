@@ -3,22 +3,45 @@ import {PhaserCollectable} from "../PhaserCollectable";
 import {getLogger} from "../../../../shared/config/LogConfig";
 import {Collectable} from "../../../../shared/model/Collectable";
 import {Position} from "../../../../shared/model/Position";
+import {GameSocketManager} from "./GameSocketManager";
 
 const log = getLogger("client.game.ui.manager.CollectableManager");
 
 export class CollectableManager {
     private scene: Phaser.Scene;
+    private gameSocketManager: GameSocketManager;
     private collectables: Record<string, PhaserCollectable>;
 
-    constructor(scene: Phaser.Scene) {
+    constructor(scene: Phaser.Scene, gameSocketManager: GameSocketManager) {
         this.scene = scene;
+        this.gameSocketManager = gameSocketManager;
         this.collectables = {};
+
+        this.registerEventListeners();
     }
 
-    spawnCollectable(data: any): void {
-        log.debug("spawnCollectable", data);
-        const phaserCollectable = PhaserCollectable.fromCollectable(this.scene, Collectable.fromData(data));
-        this.collectables[phaserCollectable.getId()] = phaserCollectable;
+    private registerEventListeners() {
+        this.gameSocketManager.on("ITEM_COLLECTED", (uuid: string) => {
+            this.removeCollectable(uuid);
+        });
+
+        this.gameSocketManager.on("SPAWN_NEW_COLLECTABLE", (collectable: Collectable) => {
+            this.addCollectable(PhaserCollectable.fromCollectable(this.scene, collectable));
+        })
+
+        this.gameSocketManager.on("RESET_GAME", () => {
+            this.reset();
+        });
+    }
+
+    addCollectable(collectable: PhaserCollectable) {
+        log.trace("adding collectable", collectable);
+        if (this.collectables[collectable.getId()]) {
+            log.warn(`collectable ${collectable.getId()} already exists.`);
+            return;
+        }
+        this.collectables[collectable.getId()] = collectable;
+        log.debug(`collectable ${collectable.getId()} added.`);
     }
 
     removeCollectable(uuid: string): void {
@@ -70,8 +93,8 @@ export class CollectableManager {
         });
     }
 
-    clear(): void {
-        log.debug("clear all collectables");
+    private reset(): void {
+        log.debug("clearing all collectables");
         Object.values(this.collectables).forEach(collectable => collectable?.destroy());
         this.collectables = {};
     }

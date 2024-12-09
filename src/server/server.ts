@@ -1,18 +1,10 @@
-import express, {Application, Request, Response} from "express";
-import bodyParser from 'body-parser';
-
-// Import routes
-import lobbyRoutes from './routes/lobbyRoutes.js';
-import configRoutes from './routes/configRoutes.js';
-import statusRoutes from './routes/statusRoutes.js';
-
+import express, {Application} from "express";
+import * as path from "node:path";
 
 const app: Application = express();
-app.use(express.static("dist")); // middleware to serve static files (like phaser client)
-
-app.use(bodyParser.json());
-app.use('/api/lobby', lobbyRoutes);
-app.use('/api/config', configRoutes);
-app.use('/api/status', statusRoutes);
+app.use(express.static(path.join(__dirname, "../../dist/client"))); // middleware to serve static files (like phaser client)
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../dist/client/index.html"));
+})
 
 export default app;

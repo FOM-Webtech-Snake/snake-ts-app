@@ -2,62 +2,60 @@ import React, {useEffect, useState} from 'react';
 import {Badge, Card, Container, ListGroup} from 'react-bootstrap';
 import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
 import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
+import socket from "../socket/socket";
+import {registerReactEvent} from "../socket/socketRouter";
+import {SocketEvents} from "../../shared/constants/SocketEvents";
 
 interface PlayerListProps {
-    theme: string;
 }
 
 const log = getLogger("client.components.PlayerList");
 
-const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
-    const {session, players} = useGameSessionSocket();
-    const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(null);
+const PlayerList: React.FC<PlayerListProps> = () => {
+    const {session} = useGameSessionSocket();
+    const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(session.getPlayersAsArray());
 
     useEffect(() => {
-        if (session) {
-            if (session.getPlayersAsArray()) {
-                // Listen for updates to the session and players
-                const sortedPlayers = (session.getPlayersAsArray() || []).sort(
-                    (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
-                );
-                setSortedPlayers(sortedPlayers);
-                log.debug(`updated players ${sortedPlayers}`);
-            }
-        }
-    }, [session, players]);
+        if (!socket) return;
+
+        registerReactEvent(SocketEvents.SessionState.PLAYER_LIST, (data) => {
+            log.trace("received player list", data);
+            const players = Object.values(data).map(entry => Player.fromData(entry));
+
+            log.trace("mapped player list", players);
+            const sortedPlayers = (players || []).sort(
+                (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
+            );
+
+            setSortedPlayers(sortedPlayers);
+            log.trace("updated players", sortedPlayers);
+        });
+
+    }, []);
 
     return (
-        <>
-            <Container style={{
-                height: '100vh',
-                position: 'sticky',
-                top: 0,
-                overflowY: 'auto',
-                padding: '1rem',
-            }}>
-                <Card className="p-4 shadow"
-                      bg={theme === 'light' ? 'light' : 'dark'}
-                      text={theme === 'light' ? 'dark' : 'light'}>
-                    <Card.Title className="text-center">Players in Lobby</Card.Title>
-                    <Card.Body>
-                        <p className="text-white text-center">{session.getPlayerCount()} / {session.getConfig().getMaxPlayers()}</p>
-                        {!sortedPlayers ? (
-                            <p className="text-white text-center">Waiting for players to join...</p>
-                        ) : (
-                            <>
-                                {/* Sidebar content here */}
-                                <ListGroup>
-                                    {Object.entries(sortedPlayers).map(([key, player]) => (
-                                        <ListGroup.Item
-                                            key={key}
-                                            className="d-flex justify-content-between align-items-center"
-                                            style={{
-                                                backgroundColor: '#343a40',
-                                                color: '#fff',
-                                            }}>
+        <Container style={{
+            overflowY: 'auto',
+            padding: '1rem',
+        }}>
+            <Card className="mb-3 shadow">
+                <Card.Header className="text-center">
+                    <h6 className="mb-0">Players in Lobby</h6>
+                </Card.Header>
+                <Card.Body className="text-center">
+                    {!sortedPlayers ? (
+                        <p className="text-center">Waiting for players to join...</p>
+                    ) : (
+                        <>
+                            {/* Sidebar content here */}
+                            <ListGroup>
+                                {Object.entries(sortedPlayers).map(([key, player]) => (
+                                    <ListGroup.Item
+                                        key={key}
+                                        className="d-flex justify-content-between align-items-center">
 
                                             <span className="d-flex align-items-center">
                                                 {player.getColor() && (
@@ -87,22 +85,21 @@ const PlayerList: React.FC<PlayerListProps> = ({theme}) => {
                                                 {player.getName()}
                                             </span>
 
-                                            <span className="d-flex align-items-center">
+                                        <span className="d-flex align-items-center">
                                                 <span className="me-3">Score: {player.getScore()}</span>
-                                                {player.getRole() === PlayerRoleEnum.HOST && (
-                                                    <Badge bg="success">Host</Badge>
-                                                )}
+                                            {player.getRole() === PlayerRoleEnum.HOST && (
+                                                <Badge bg="success">Host</Badge>
+                                            )}
                                             </span>
-                                        </ListGroup.Item>
-                                    ))}
-                                </ListGroup>
-                            </>
-                        )}
+                                    </ListGroup.Item>
+                                ))}
+                            </ListGroup>
+                        </>
+                    )}
 
-                    </Card.Body>
-                </Card>
-            </Container>
-        </>
+                </Card.Body>
+            </Card>
+        </Container>
     );
 };
 

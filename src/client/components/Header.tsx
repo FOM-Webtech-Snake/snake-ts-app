@@ -1,22 +1,22 @@
-import React from 'react';
-import {useGameSessionSocket} from "./GameSessionSocketContext";
+import React, {forwardRef} from 'react';
+import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
-import {Button, Container, Navbar} from "react-bootstrap";
+import {Button, Container, Navbar, Nav} from "react-bootstrap";
 import SnakeLogo from '../../../public/img/snake_logo.png';
+import {useTheme} from "./ThemeProvider";
+import socket from "../socket/socket";
 
 interface HeaderProps {
     player: Player | null;
-    theme: string;
-    toggleTheme: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({player, theme, toggleTheme}) => {
+const Header = forwardRef<HTMLDivElement, HeaderProps>(({player}, ref) => {
 
-    const {socket, session} = useGameSessionSocket()
+    const {session} = useGameSessionSocket()
+    const {theme, toggleTheme} = useTheme();
 
     return (
-        <Navbar bg={theme === 'light' ? 'light' : 'dark'} variant={theme === 'light' ? 'light' : 'dark'}
-                className="mb-4">
+        <Navbar ref={ref} expand="lg" className="mb-4">
             <Container>
                 <Navbar.Brand>
                     {/* todo replace this logo by another */}
@@ -29,47 +29,58 @@ const Header: React.FC<HeaderProps> = ({player, theme, toggleTheme}) => {
                     />
                 </Navbar.Brand>
 
-                <Navbar.Text>
-
-                    {/* player info */}
-                    {player?.getName() && (
+                {/* player info */}
+                {player?.getName() && (
+                    <Navbar.Text>
                         <div>
                             <strong>Player:</strong> {player.getName()}
                             <div
                                 style={{
-                                    width: "20px",
-                                    height: "20px",
+                                    width: '20px',
+                                    height: '20px',
                                     backgroundColor: player.getColor(),
-                                    display: "inline-block",
-                                    marginLeft: "10px",
-                                    border: "1px solid #fff",
-                                    borderRadius: "50%",
+                                    display: 'inline-block',
+                                    marginLeft: '10px',
+                                    border: '1px solid #fff',
+                                    borderRadius: '50%',
                                 }}
                             ></div>
-                        </div>)}
-
-                    {/* socket id */}
-                    {socket?.id && (
-                        <div>
-                            <strong>ID:</strong> {socket.id}
-                        </div>)}
-                </Navbar.Text>
-
-                {/* session id on the right */}
-                {session?.getId() && (
-                    <Navbar.Text className={"mr-auto"}>
-                        <strong>Session ID:</strong> {session.getId()}
+                        </div>
                     </Navbar.Text>
                 )}
 
-                <Navbar.Text className="ms-auto">
-                    <Button onClick={toggleTheme} variant={theme === 'light' ? 'secondary' : 'light'}>
-                        {theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-                    </Button>
-                </Navbar.Text>
+                {/* theme toggle button */}
+                <Button onClick={toggleTheme}
+                        variant={theme === 'light' ? "outline-dark" : "outline-light"}
+                        className="ms-auto me-0 border-0">
+                    <i className={theme === "light" ? "fa fa fa-moon" : "fa fa fa-sun"}/>
+                </Button>
+
+                {/* navbar roggle for mobile */}
+                <Navbar.Toggle aria-controls="basic-navbar-nav"/>
+
+                {/* collapse content */}
+                <Navbar.Collapse id="basic-navbar-nav">
+                    <Nav className="ms-auto">
+                        {/* socket id */}
+                        {socket?.id && (
+                            <Nav.Item>
+                                <strong>ID:</strong> {socket.id}
+                            </Nav.Item>
+                        )}
+
+                        {/* session id on the right */}
+                        {session?.getId() && (
+                            <Nav.Item>
+                                <strong>Session ID:</strong> {session.getId()}
+                            </Nav.Item>
+                        )}
+                    </Nav>
+                </Navbar.Collapse>
+
             </Container>
         </Navbar>
     );
-};
+});
 
 export default Header;

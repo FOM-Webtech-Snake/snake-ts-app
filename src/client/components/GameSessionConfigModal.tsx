@@ -7,22 +7,24 @@ import {
     GameSessionConfig,
     SNAKE_STARTING_LENGTH, SNAKE_STARTING_SCALE, SNAKE_STARTING_SPEED
 } from "../../shared/model/GameSessionConfig";
+import {useTheme} from "./ThemeProvider";
 
 
 interface SessionOptionsModalProps {
     show: boolean;
     onClose: () => void;
     onSave: (config: GameSessionConfig) => void;
-    theme: string;
 }
 
-const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave, theme}) => {
+const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave}) => {
+    const {theme} = useTheme();
     const [maxPlayers, setMaxPlayers] = useState(DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers());
     const [worldSize, setWorldSize] = useState(DEFAULT_GAME_SESSION_CONFIG.getSize());
     const [gameDuration, setGameDuration] = useState(DEFAULT_GAME_SESSION_CONFIG.getGameDuration());
     const [worldCollisionEnabled, setWorldCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getWorldCollisionEnabled());
     const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
     const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
+    const [respawnAfterDeathEnabled, setRespawnAfterDeathEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getRespawnAfterDeathEnabled());
 
     /* snake option parameters */
     const [startingLength, setStartingLength] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingLength());
@@ -37,6 +39,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
             worldCollisionEnabled,
             selfCollisionEnabled,
             playerToPlayerCollisionEnabled,
+            respawnAfterDeathEnabled,
             startingLength,
             startingSpeed,
             startingScale,
@@ -53,13 +56,12 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     };
 
     return (
-        <Modal show={show} onHide={onClose} centered backdrop="static">
+        <Modal className={`modal ${theme}`} show={show} onHide={onClose} centered backdrop="static">
             <Modal.Header
-                closeButton
-                className={theme === 'light' ? 'bg-light text-dark' : 'bg-dark text-light'}>
+                closeButton>
                 <Modal.Title>Configure your Session</Modal.Title>
             </Modal.Header>
-            <Modal.Body className={theme === 'light' ? 'bg-light text-dark' : 'bg-dark text-light'}>
+            <Modal.Body>
                 <Form>
                     <Form.Group controlId="maxPlayers">
                         <Form.Label>Max Players</Form.Label>
@@ -127,6 +129,13 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                         checked={selfCollisionEnabled}
                         onChange={(e) => setSelfCollisionEnabled(e.target.checked)}
                     />
+                    <Form.Check
+                        type="switch"
+                        id="respawn"
+                        label="Enable respawn after death"
+                        checked={respawnAfterDeathEnabled}
+                        onChange={(e) => setRespawnAfterDeathEnabled(e.target.checked)}
+                    />
 
                     <Form.Group controlId="startingLength">
                         <Form.Label>Snake Starting Length: {startingLength}</Form.Label>
@@ -161,11 +170,11 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
 
                 </Form>
             </Modal.Body>
-            <Modal.Footer className={theme === 'light' ? 'bg-light' : 'bg-dark'}>
-                <Button variant={theme === 'light' ? 'secondary' : 'light'} onClick={onClose}>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={onClose}>
                     Cancel
                 </Button>
-                <Button variant={theme === 'light' ? 'primary' : 'light'} onClick={handleSave}>
+                <Button variant="primary" onClick={handleSave}>
                     Save
                 </Button>
             </Modal.Footer>

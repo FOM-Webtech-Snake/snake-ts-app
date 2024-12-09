@@ -8,6 +8,7 @@ import {getLogger} from "../../../shared/config/LogConfig";
 import {GameScene} from "../scenes/GameScene";
 import {Player} from "../../../shared/model/Player";
 import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../../shared/config/GlobalTickRate";
+import {SNAKE_STARTING_SCALE} from "../../../shared/model/GameSessionConfig";
 
 const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
@@ -75,15 +76,23 @@ export class PhaserSnake {
         this.darkColor = ColorUtil.darkenColor(this.primaryColor);
         this.lightColor = ColorUtil.lightenColor(this.primaryColor);
 
+        this.spawn(positions);
+    }
+
+    spawn(positions: Position[]) {
+        this.targetPositions = positions;
+
         // create the body
         this.body = this.scene.physics.add.group();
         this.lockedSegments = this.scene.physics.add.group();
 
-        this.appendSegmentsByPositions(0, positions);
+        this.appendSegmentsByPositions(0, this.targetPositions);
+
+        this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite; // Update the head reference
 
         // create the face
         this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
-        this.face.setScale(this.scale);
+        this.face.setScale(SNAKE_STARTING_SCALE.default);
         this.face.setDepth(2);
         this.face.setOrigin(0.5, 0.5)
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
@@ -94,8 +103,32 @@ export class PhaserSnake {
         this.headGroup.add(this.face);
     }
 
+    destroy() {
+        log.debug("destroying snake", this.playerId);
+        this.body.clear(true, true);
+        this.lockedSegments.clear(true, true);
+        this.targetPositions = [];
+        this.lastPositions = [];
+
+        if (this.head) {
+            this.head.destroy(true);
+            this.head = null;
+        }
+
+        if (this.face) {
+            this.face.destroy(true);
+            this.face = null;
+        }
+
+        if (this.headGroup) {
+            this.headGroup.clear(true, true);
+            this.headGroup = null;
+        }
+    }
+
     private updateFacePosition() {
-        log.trace("body", this.body);
+        if (!this.head) return; // no update of face when head is not available
+
         log.trace("updateFacePosition", this.head);
         this.face.setPosition(this.head.x, this.head.y);
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
@@ -148,11 +181,9 @@ export class PhaserSnake {
     }
 
     update(): void {
+        if (this.status !== PlayerStatusEnum.ALIVE) return; // no update when snake is not alive
+
         log.trace("updating snake", this.playerId, this.status);
-        if (this.status == PlayerStatusEnum.DEAD) {
-            this.headGroup.setVelocity(0, 0);
-            return;
-        }
         this.moveBodyParts(); // move the body parts since the head is moving automatically by phaser
 
         // update the head direction
@@ -197,9 +228,8 @@ export class PhaserSnake {
     updateScaling(): void {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
 
-        for (let i = 0; i < bodyParts.length; i++) {
-            const bodyPart = bodyParts[i];
-            bodyPart.setScale(this.scale);
+        for (let segment of bodyParts) {
+            segment.setScale(this.scale);
         }
     }
 
@@ -237,28 +267,19 @@ export class PhaserSnake {
         this.justReversed = true;
     }
 
-    destroy(): void {
-        if (this.body) {
-            this.body.destroy(true);
-            this.body = null;
-        }
-        if (this.headGroup) {
-            this.headGroup.destroy(true);
-            this.headGroup = null;
-        }
-        if (this.head) {
-            this.head.destroy(true);
-            this.head = null;
-        }
-        if (this.face) {
-            this.face.destroy(true);
-            this.face = null;
-        }
-        if (this.lockedSegments) {
-            this.lockedSegments.destroy(true);
-            this.lockedSegments = null;
-        }
+    die() {
+        this.status = PlayerStatusEnum.DEAD;
+        this.headGroup.setVelocity(0, 0);
+        this.destroy();
+        log.trace("playerSnake died", this);
     }
+
+    revive(positions: Position[]) {
+        this.spawn(positions);
+        this.status = PlayerStatusEnum.ALIVE;
+        log.trace("playerSnake revived", this);
+    }
+
 
     private hasSelfCollision(): boolean {
         log.trace(`self-collision is ${this.scene.getConfig().getSelfCollisionEnabled()}`);
@@ -380,16 +401,12 @@ export class PhaserSnake {
             }
 
             if (positionB) {
-
-                // TODO: use interpolation?
-                // Apply interpolation to smooth the movement of the segment towards the new position
+                // apply interpolation to smooth the movement of the segment towards the new position
                 const interpolatedX = Phaser.Math.Linear(currentSegment.x, positionB.getX(), MOVEMENT_INTERPOLATION_FACTOR);
                 const interpolatedY = Phaser.Math.Linear(currentSegment.y, positionB.getY(), MOVEMENT_INTERPOLATION_FACTOR);
-                // Set the segment position to the interpolated position
+
+                // set the segment position to the interpolated position
                 currentSegment.setPosition(interpolatedX, interpolatedY);
-
-
-                //currentSegment.setPosition(positionB.getX(), positionB.getY());
             }
         }
     }
@@ -434,10 +451,7 @@ export class PhaserSnake {
 
     private appendSegmentsByPositions(startPosIdx: number, positions: Position[]) {
         for (let i = startPosIdx; i < positions.length; i++) {
-            const bodyPart = this.addSegmentToBody(positions[i]);
-            if (i === 0) {
-                this.head = bodyPart;
-            }
+            this.addSegmentToBody(positions[i]);
         }
     }
 
@@ -459,6 +473,8 @@ export class PhaserSnake {
     }
 
     interpolatePosition() {
+        if (this.status != PlayerStatusEnum.ALIVE) return; // no interpolation when player is not alive
+
         if (!this.targetPositions || !this.body) {
             return
         }

@@ -5,18 +5,20 @@ const log = getLogger("client.game.ui.Overlay");
 
 export class Overlay {
     private scene: Phaser.Scene;
+    private isVisible: boolean;
     private backgroundObject: Phaser.GameObjects.Rectangle;
     private textObject: Phaser.GameObjects.Text;
 
     constructor(scene: Phaser.Scene, defaultMessage: string = "") {
         this.scene = scene;
+        this.isVisible = false;
 
         this.backgroundObject = this.scene.add.rectangle(this.scene.cameras.main.width / 2,
             this.scene.cameras.main.height / 2, this.scene.cameras.main.width,
             this.scene.cameras.main.height, 0x000000, 0.5)
             .setOrigin(0.5)
             .setScrollFactor(0)
-            .setVisible(false)
+            .setVisible(this.isVisible)
             .setDepth(99);
 
         this.textObject = this.scene.add.text(
@@ -28,7 +30,7 @@ export class Overlay {
             .setOrigin(0.5)
             .setWordWrapWidth(this.scene.cameras.main.width * 0.8)
             .setScrollFactor(0) // Ensures it stays fixed on the camera
-            .setVisible(false)
+            .setVisible(this.isVisible)
             .setDepth(99);
     }
 
@@ -38,9 +40,10 @@ export class Overlay {
      */
     public show(message: string): void {
         log.debug("show triggered");
-        this.backgroundObject.setVisible(true);
+        this.isVisible = true;
+        this.backgroundObject.setVisible(this.isVisible);
         this.textObject.setText(message);
-        this.textObject.setVisible(true);
+        this.textObject.setVisible(this.isVisible);
     }
 
     /**
@@ -49,6 +52,7 @@ export class Overlay {
      * @param action The action description
      */
     public showPressKeyToAction(key: string, action: string): void {
+        log.debug("show press key to action", key, action);
         const message = `Press [${key}] to ${action}`;
         this.show(message);
     }
@@ -58,8 +62,9 @@ export class Overlay {
      */
     public hide(): void {
         log.debug("hide triggered");
-        this.backgroundObject.setVisible(false);
-        this.textObject.setVisible(false);
+        this.isVisible = false;
+        this.backgroundObject.setVisible(this.isVisible);
+        this.textObject.setVisible(this.isVisible);
     }
 
     public destroy(): void {
@@ -69,5 +74,18 @@ export class Overlay {
         if (this.textObject) {
             this.textObject.destroy(true);
         }
+    }
+
+    update() {
+        if (!this.isVisible) return;
+
+        this.backgroundObject.setPosition(this.scene.cameras.main.width / 2,
+            this.scene.cameras.main.height / 2);
+        this.backgroundObject.setSize(
+            this.scene.cameras.main.width,
+            this.scene.cameras.main.height
+        );
+        this.textObject.setPosition(this.scene.cameras.main.width / 2,
+            this.scene.cameras.main.height / 2);
     }
 }

@@ -2,21 +2,97 @@
 @import '@fortawesome/fontawesome-free/css/all.min.css';
 @import "button.css";
 
+
+:root {
+    --light-primary: #ffffff;
+    --dark-primary: #181818;
+    --light-secondary: #eaeaea;
+    --dark-secondary: #212529;
+
+    --light-text: #000000;
+    --dark-text: #ffffff;
+
+    --border-light: #cccccc;
+    --border-dark: #444444;
+}
+
 body {
     height: 100%;
     margin: 0;
     padding: 0;
 }
 
+/* general themes */
 .app.light {
-    background-color: #ffffff;
-    color: #000000;
+    background-color: var(--light-primary);
+    color: var(--light-text);
 }
 
 .app.dark {
-    background-color: #181818;
-    color: #ffffff;
+    background-color: var(--dark-primary);
+    color: var(--dark-text);
 }
+
+/* navbar */
+.app.light .navbar, .app.light .navbar-text {
+    background-color: var(--light-secondary);
+    color: var(--light-text);
+}
+
+.app.dark .navbar, .app.dark .navbar-text {
+    background-color: var(--dark-secondary);
+    color: var(--dark-text);
+}
+
+/* card styles */
+.app.light .card {
+    background-color: var(--light-secondary);
+    color: var(--light-text);
+    border: 1px solid var(--border-light);
+}
+
+.app.dark .card {
+    background-color: var(--dark-secondary);
+    color: var(--dark-text);
+    border: 1px solid var(--border-dark);
+}
+
+/* list group styles */
+.app.light .list-group-item {
+    background-color: var(--light-primary);
+    color: var(--light-text);
+    border: 1px solid var(--border-light);
+}
+
+.app.dark .list-group-item {
+    background-color: var(--dark-primary);
+    color: var(--dark-text);
+    border: 1px solid var(--border-dark);
+}
+
+
+/* button styles */
+.app.light .btn-secondary {
+
+}
+
+.app.dark .btn-secondary {
+
+}
+
+/* modal styles */
+.modal.light .modal-content {
+    background-color: var(--light-primary);
+    color: var(--light-text);
+    border: 1px solid var(--border-light);
+}
+
+.modal.dark .modal-content {
+    background-color: var(--dark-primary);
+    color: var(--dark-text);
+    border: 1px solid var(--border-dark);
+}
+
 
 .app {
     transition: background-color 0.3s, color 0.3s;

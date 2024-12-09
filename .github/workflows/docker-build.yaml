@@ -23,7 +23,30 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      # Step 3: Log in to GitHub Container Registry (GHCR)
+      # Step 3: Determine the version
+      - name: Determine version
+        id: version
+        run: |
+          CLEANUP="false"
+          LATEST="false"
+          BASE_VERSION=$(jq -r .version package.json)
+          if [[ "${GITHUB_REF}" =~ ^refs/tags/v(.+)$ ]]; then
+            VERSION="${BASH_REMATCH[1]}"
+            LATEST="true"
+          elif [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            VERSION="${BASE_VERSION}-${GITHUB_RUN_NUMBER}"
+            LATEST="true"
+            CLEANUP="true"
+          else
+            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            VERSION="${BASE_VERSION}-${BRANCH_NAME}-SNAPSHOT"
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "LATEST=${LATEST}" >> $GITHUB_ENV
+        env:
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+
+      # Step 4: Log in to GitHub Container Registry (GHCR)
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -31,32 +54,35 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 4: Build and push Docker image with branch name tag (non-main branches)
-      - name: Build and push Docker image with SNAPSHOT tag for non-main branches
-        if: github.ref_type == 'branch' && github.ref != 'refs/heads/main'
+      # Step 5: Build and push Docker image
+      - name: Build and push Docker image
         run: |
-          BRANCH_NAME=${GITHUB_REF#refs/heads/}
-          SNAPSHOT_TAG="${BRANCH_NAME}-SNAPSHOT"
           docker buildx create --use
-          docker buildx build --platform linux/amd64,linux/arm64 \
-            -t ghcr.io/fom-webtech-snake/snake-ts-app:${SNAPSHOT_TAG} --push .
+          if [ "${{ env.LATEST }}" = "true" ]; then
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              --build-arg APP_VERSION=${{ env.VERSION }} \
+              -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
+              -t ghcr.io/fom-webtech-snake/snake-ts-app:latest \
+              --push .
+          else
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              --build-arg APP_VERSION=${{ env.VERSION }} \
+              -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
+              --push .
+          fi
 
-      # Step 5: Build and push Docker image with version tag for main branch
-      - name: Build and push Docker image with version tag for main branch
-        if: github.ref == 'refs/heads/main'
-        run: |
-          VERSION_TAG="v1.0.${{ github.run_number }}"  # Example: v1.0.23
-          docker buildx create --use
-          docker buildx build --platform linux/amd64,linux/arm64 \
-            -t ghcr.io/fom-webtech-snake/snake-ts-app:${VERSION_TAG} \
-            -t ghcr.io/fom-webtech-snake/snake-ts-app:latest --push .
-
-      # Step 6: Build and push Docker image with release tag and 'latest' for tags
-      - name: Build and push Docker image with release tag
-        if: startsWith(github.ref, 'refs/tags/')
-        run: |
-          VERSION_TAG=${GITHUB_REF#refs/tags/}
-          docker buildx create --use
-          docker buildx build --platform linux/amd64,linux/arm64 \
-            -t ghcr.io/fom-webtech-snake/snake-ts-app:${VERSION_TAG} \
-            -t ghcr.io/fom-webtech-snake/snake-ts-app:latest --push .
+  cleanup:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Only run on main branch
+    steps:
+      # Step 1: Clean up older package versions
+      - name: Delete old package versions
+        uses: actions/delete-package-versions@v5
+        with:
+          owner: ${{ github.repository_owner }}
+          package-name: "snake-ts-app"
+          package-type: "container"
+          min-versions-to-keep: 10
+          delete-only-untagged-versions: "true"
+          token: ${{ secrets.GITHUB_TOKEN }}

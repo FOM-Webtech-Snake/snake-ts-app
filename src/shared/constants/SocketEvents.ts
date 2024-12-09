@@ -20,10 +20,12 @@ export namespace SocketEvents {
     export enum GameControl {
         STATE_CHANGED = "stateChanged",
         START_GAME = "startGame",
+        RESET_GAME = "resetGame",
         GET_READY = "getReady",
         PAUSE_GAME = "pauseGame",
         RESUME_GAME = "resumeGame",
         SYNC_GAME_STATE = "syncGameState",
+        COUNTDOWN_UPDATED = "countdownUpdated",
     }
 
     export enum SessionState {
@@ -33,6 +35,7 @@ export namespace SocketEvents {
         NEW_PLAYER = "newPlayer",
         LEFT_SESSION = "leftSession",
         PLAYER_JOINED = "playerJoined",
+        PLAYER_LIST = "playerList",
         SESSION_UPDATED = "sessionUpdated",
         CONFIG_UPDATED = "configUpdated",
         DISCONNECTED = "disconnected",
@@ -50,10 +53,16 @@ export namespace SocketEvents {
         COLLISION = "collision"
     }
 
+    export enum ClientState {
+        READY = "ready",
+    }
+
     export enum PlayerActions {
+        PLAYER_READY = "playerReady",
         PLAYER_MOVEMENT = "playerMovement",
         PLAYER_MOVED = "playerMoved",
         PLAYER_DIED = "playerDied",
+        PLAYER_RESPAWNED = "playerRespawned",
     }
 
     export enum GameStatus {

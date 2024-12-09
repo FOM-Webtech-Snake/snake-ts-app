@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import StartPage from './pages/StartPage';
 import LobbyPage from './pages/LobbyPage';
 import Footer from "./components/Footer";
@@ -6,26 +6,26 @@ import Header from "./components/Header";
 import GamePage from "./pages/GamePage";
 import {Player} from "../shared/model/Player";
 import {PlayerRoleEnum} from "../shared/constants/PlayerRoleEnum";
-import {useGameSessionSocket} from "./components/GameSessionSocketContext";
+import {useGameSessionSocket} from "./components/GameSessionContext";
 import LoadingOverlay from "./components/LoadingOverlay";
+import {useTheme} from "./components/ThemeProvider";
 import logo from '../../public/assets/logo.svg';
 
 const App: React.FC = () => {
-    const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-    const {socket, isConnected, joinSession} = useGameSessionSocket();
+    const {theme} = useTheme();
+    const {playerId, isConnected, joinSession} = useGameSessionSocket();
     const [gameReady, setGameReady] = useState(false);
     const [inLobby, setInLobby] = useState(false);
     const [player, setPlayer] = useState<Player | null>(null);
-
-    useEffect(() => {
-        localStorage.setItem('theme', theme);
-    }, [theme]);
+    const headerRef = useRef<HTMLDivElement | null>(null);
+    const footerRef = useRef<HTMLDivElement | null>(null);
+    const [availableHeight, setAvailableHeight] = useState(0);
 
     const handleStart = (playerName: string, color: string, sessionId: string) => {
-        if (socket.id == null) {
+        if (playerId == null) {
             return;
         }
-        const newPlayer = new Player(socket.id, playerName, color, PlayerRoleEnum.HOST);
+        const newPlayer = new Player(playerId, playerName, color, PlayerRoleEnum.HOST);
         setPlayer(newPlayer);
         setInLobby(true); // transition to the lobby
 
@@ -38,14 +38,28 @@ const App: React.FC = () => {
         setGameReady(true);
     };
 
-    const toggleTheme = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
+    const updateAvailableHeight = () => {
+        const headerHeight = headerRef.current?.offsetHeight || 0;
+        const footerHeight = footerRef.current?.offsetHeight || 0;
+        const viewportHeight = window.innerHeight;
+
+        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 20); // 20 = marginTop in GamePage
     };
+
+    useEffect(() => {
+        updateAvailableHeight();
+
+        // Event-Listener für Fenster-Resize
+        window.addEventListener('resize', updateAvailableHeight);
+        return () => {
+            window.removeEventListener('resize', updateAvailableHeight);
+        };
+    }, []);
 
     return (
         <div className={`app ${theme}`}>
             {!isConnected && <LoadingOverlay/>}
-            <Header player={player} theme={theme} toggleTheme={toggleTheme}/>
+            <Header ref={headerRef} player={player}/>
             <div className="content" style={{
                 backgroundImage: `url(${logo})`,
                 backgroundSize: "cover", // Hintergrund proportional abdecken
@@ -53,17 +67,16 @@ const App: React.FC = () => {
                 backgroundRepeat: "repeat", // Keine Wiederholung
             }}>
                 {gameReady ? ( // when game is ready -> show the game
-                    <GamePage theme={theme}/>
+                    <GamePage availableHeight={availableHeight}/>
                 ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
                     <LobbyPage
                         player={player!}
-                        onGameReady={handleGameReady}
-                        theme={theme}/>
+                        onGameReady={handleGameReady}/>
                 ) : (
-                    <StartPage onStart={handleStart} theme={theme}/>
+                    <StartPage onStart={handleStart}/>
                 )}
             </div>
-            <Footer/>
+            <Footer ref={footerRef}/>
         </div>
     );
 };
