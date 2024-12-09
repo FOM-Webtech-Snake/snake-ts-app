@@ -45,22 +45,13 @@ const TimerDisplay: React.FC<TimerDisplayProps> = () => {
                 overflowY: 'auto',
                 padding: '1rem',
             }}>
-            <Card className="p-4 shadow">
-                <Card.Body>
-                    <span style={{fontSize: '1.2rem'}}>remaining Time: </span>
-                    <span
-                        style={{
-                            fontSize: '1.5rem',
-                            fontWeight: 'bold',
-                            letterSpacing: '1px',
-                        }}
-                    >
-                        {formatTime(remainingTime)}
-                    </span>
+            <Card className="mb-3 shadow">
+                <Card.Body className="text-center">
+                    <h6 className="mb-0">Remaining Time: <span
+                        className="text-warning">{formatTime(remainingTime)}</span></h6>
                 </Card.Body>
             </Card>
         </Container>
-
     );
 };
 
