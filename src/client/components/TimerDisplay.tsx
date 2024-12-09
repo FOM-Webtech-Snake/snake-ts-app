@@ -46,9 +46,11 @@ const TimerDisplay: React.FC<TimerDisplayProps> = () => {
                 padding: '1rem',
             }}>
             <Card className="mb-3 shadow">
+                <Card.Header className="text-center">
+                    <h6 className="mb-0">Remaining Time:</h6>
+                </Card.Header>
                 <Card.Body className="text-center">
-                    <h6 className="mb-0">Remaining Time: <span
-                        className="text-warning">{formatTime(remainingTime)}</span></h6>
+                    <span className="text-warning">{formatTime(remainingTime)}</span>
                 </Card.Body>
             </Card>
         </Container>
