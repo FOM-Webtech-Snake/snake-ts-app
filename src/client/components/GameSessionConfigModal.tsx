@@ -25,6 +25,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
     const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
     const [respawnAfterDeathEnabled, setRespawnAfterDeathEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getRespawnAfterDeathEnabled());
+    const [obstaclesEnabled, setObstaclesEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getObstacleEnabled());
 
     /* snake option parameters */
     const [startingLength, setStartingLength] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingLength());
@@ -40,6 +41,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
             selfCollisionEnabled,
             playerToPlayerCollisionEnabled,
             respawnAfterDeathEnabled,
+            obstaclesEnabled,
             startingLength,
             startingSpeed,
             startingScale,
@@ -135,6 +137,13 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                         label="Enable respawn after death"
                         checked={respawnAfterDeathEnabled}
                         onChange={(e) => setRespawnAfterDeathEnabled(e.target.checked)}
+                    />
+                    <Form.Check
+                        type="switch"
+                        id="obstacles"
+                        label="Enable Obstacles"
+                        checked={obstaclesEnabled}
+                        onChange={(e) => setObstaclesEnabled(e.target.checked)}
                     />
 
                     <Form.Group controlId="startingLength">

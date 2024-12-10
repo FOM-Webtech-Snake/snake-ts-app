@@ -91,6 +91,13 @@ export class Player {
         return this.color;
     }
 
+    getHeadPosition(): Position | null {
+        if (this.bodyPositions && this.bodyPositions.length > 0) {
+            return this.bodyPositions[0];
+        }
+        return null;
+    }
+
     getBodyPositions(): Position[] {
         return this.bodyPositions;
     }

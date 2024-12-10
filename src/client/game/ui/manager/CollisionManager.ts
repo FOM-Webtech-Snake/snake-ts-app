@@ -8,17 +8,24 @@ import {SpatialGrid} from "../SpatialGrid";
 import socket from "../../../socket/socket";
 import {SocketEvents} from "../../../../shared/constants/SocketEvents";
 import {getLogger} from "../../../../shared/config/LogConfig";
+import {ObstacleManager} from "./ObstacleManager";
 
 const log = getLogger("client.game.ui.manager.CollisionManager");
 
 export class CollisionManager {
     private playerManager: PlayerManager;
     private collectableManager: CollectableManager;
+    private obstacleManager: ObstacleManager;
     private gameSocketManager: GameSocketManager;
 
-    constructor(playerManager: PlayerManager, collectableManager: CollectableManager, gameSocketManager: GameSocketManager) {
+    constructor(
+        playerManager: PlayerManager,
+        collectableManager: CollectableManager,
+        obstacleManager: ObstacleManager,
+        gameSocketManager: GameSocketManager) {
         this.playerManager = playerManager;
         this.collectableManager = collectableManager;
+        this.obstacleManager = obstacleManager;
         this.gameSocketManager = gameSocketManager;
     }
 
@@ -28,6 +35,10 @@ export class CollisionManager {
 
         // only collision check when snake is alive
         if (player?.getStatus() !== PlayerStatusEnum.ALIVE) return;
+
+        this.obstacleManager.checkCollisions(player, () =>
+            this.handlePlayerCollision(player, CollisionTypeEnum.OBSTACLE)
+        );
 
         this.collectableManager.checkCollisions(player, (uuid: string) =>
             this.handleCollectableCollision(uuid, player)

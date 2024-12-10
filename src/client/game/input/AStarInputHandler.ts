@@ -111,7 +111,7 @@ export class AStarInputHandler extends InputHandler {
         this.grid = this.createGrid(); // Reset grid
 
         // Mark all players snake body positions as obstacles
-        const snakeBody = this.playerManager.getAllPlayerPositions()
+        const snakeBody = this.playerManager.getAllPlayerPositions();
         for (const segment of snakeBody) {
             const gridX = this.toGridIndex(segment.getX());
             const gridY = this.toGridIndex(segment.getY());

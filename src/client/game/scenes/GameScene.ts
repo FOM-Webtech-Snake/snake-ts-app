@@ -12,6 +12,7 @@ import {Overlay} from "../ui/Overlay";
 import {getLogger} from "../../../shared/config/LogConfig";
 import {GameSession} from "../../../shared/model/GameSession";
 import {CollisionManager} from "../ui/manager/CollisionManager";
+import {ObstacleManager} from "../ui/manager/ObstacleManager";
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -31,6 +32,7 @@ export class GameScene extends Phaser.Scene {
     private config: GameSessionConfig;
     private gameSocketManager: GameSocketManager
     private collectableManager: CollectableManager;
+    private obstacleManager: ObstacleManager;
     private playerManager: PlayerManager;
     private collisionManager: CollisionManager;
     private inputManager: InputManager;
@@ -44,6 +46,7 @@ export class GameScene extends Phaser.Scene {
         this.config = DEFAULT_GAME_SESSION_CONFIG;
         this.gameSocketManager = null;
         this.collectableManager = null;
+        this.obstacleManager = null;
         this.playerManager = null;
         this.collisionManager = null;
         this.inputManager = null;
@@ -56,8 +59,9 @@ export class GameScene extends Phaser.Scene {
         // setup manager
         this.gameSocketManager = new GameSocketManager();
         this.collectableManager = new CollectableManager(this, this.gameSocketManager);
+        this.obstacleManager = new ObstacleManager(this, this.gameSocketManager);
         this.playerManager = new PlayerManager(this, this.gameSocketManager);
-        this.collisionManager = new CollisionManager(this.playerManager, this.collectableManager, this.gameSocketManager);
+        this.collisionManager = new CollisionManager(this.playerManager, this.collectableManager, this.obstacleManager, this.gameSocketManager);
         this.inputManager = new InputManager(this, this.playerManager, this.collectableManager);
 
         // get necessary global properties
