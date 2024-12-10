@@ -134,8 +134,8 @@ export class PhaserSnake {
         this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
     }
 
-    getBody() {
-        return this.body.getChildren();
+    getBody(): Phaser.Physics.Arcade.Sprite[] {
+        return this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
     }
 
     getPlayerId() {
