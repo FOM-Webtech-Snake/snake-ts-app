@@ -66,7 +66,7 @@ export class CollisionManager {
 
     private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake, otherPlayers: PhaserSnake[]) {
         // create a spacial grip with suitable cell size
-        const spatialGrid = new SpatialGrid(100);
+        const spatialGrid = new SpatialGrid(25);
         for (const player of otherPlayers) {
             // only add players that are alive to collision checks
             if (player.getStatus() === PlayerStatusEnum.ALIVE) {
