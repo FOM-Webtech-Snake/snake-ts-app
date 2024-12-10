@@ -15,18 +15,32 @@ export class SpatialGrid {
     }
 
     public addSnake(snake: PhaserSnake): void {
-        const head = snake.getHead();
-        const cellKey = this.getCellKey(head.x, head.y);
-        if (!this.grid.has(cellKey)) {
-            this.grid.set(cellKey, []);
+        for (const bodyPart of snake.getBody()) {
+            const cellKey = this.getCellKey(bodyPart.x, bodyPart.y);
+            if (!this.grid.has(cellKey)) {
+                this.grid.set(cellKey, []);
+            }
+            this.grid.get(cellKey).push(snake);
         }
-        this.grid.get(cellKey).push(snake);
     }
 
     public getPotentialColliders(snake: PhaserSnake): PhaserSnake[] {
         const head = snake.getHead();
-        const cellKey = this.getCellKey(head.x, head.y);
-        return this.grid.get(cellKey) || [];
+        const baseCell = this.getCellKey(head.x, head.y);
+        const [baseX, baseY] = baseCell.split(':').map(Number);
+
+        const potentialColliders: PhaserSnake[] = [];
+
+        for (let offsetX = -1; offsetX <= 1; offsetX++) {
+            for (let offsetY = -1; offsetY <= 1; offsetY++) {
+                const neighborKey = `${baseX + offsetX}:${baseY + offsetY}`;
+                if (this.grid.has(neighborKey)) {
+                    potentialColliders.push(...this.grid.get(neighborKey));
+                }
+            }
+        }
+
+        return potentialColliders;
     }
 
     public clear(): void {
