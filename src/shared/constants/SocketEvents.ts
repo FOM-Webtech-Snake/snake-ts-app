@@ -47,6 +47,7 @@ export namespace SocketEvents {
         SPAWN_FOOD_ITEM = "spawnFoodItem",
         COLLECTABLE_COLLECTED = "collectableCollected",
         SPAWN_NEW_COLLECTABLE = "spawnNewItem",
+        SPAWN_NEW_OBSTACLE = "spawnNewObstacle",
         ITEM_SPAWNED = "itemSpawned",
         ITEM_COLLECTED = "itemCollected",
         TIMER_UPDATED = "timerUpdated",

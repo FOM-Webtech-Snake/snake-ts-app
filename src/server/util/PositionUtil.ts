@@ -16,8 +16,15 @@ export class PositionUtil {
             });
         });
 
+        // add used collectable positions
         Object.values(session.getCollectables()).forEach(collectable => {
             const pos = collectable.getPosition();
+            usedPositions.add(pos);
+        });
+
+        // add used obstacle positions
+        Object.values(session.getObstacles()).forEach(obstacle => {
+            const pos = obstacle.getPosition();
             usedPositions.add(pos);
         });
 

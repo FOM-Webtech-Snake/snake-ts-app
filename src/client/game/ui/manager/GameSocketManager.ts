@@ -7,6 +7,7 @@ import {Player} from "../../../../shared/model/Player";
 import {registerPhaserEvent} from "../../../socket/socketRouter";
 import socket from "../../../socket/socket";
 import {Collectable} from "../../../../shared/model/Collectable";
+import {Obstacle} from "../../../../shared/model/Obstacle";
 
 const log = getLogger("client.game.GameSocketManager");
 
@@ -59,6 +60,11 @@ export class GameSocketManager extends Phaser.Events.EventEmitter {
             self.emit("SPAWN_NEW_COLLECTABLE", newCollectable);
         });
 
+        registerPhaserEvent(SocketEvents.GameEvents.SPAWN_NEW_OBSTACLE, function (data: any) {
+            const newObstacle: Obstacle = Obstacle.fromData(data);
+            self.emit("SPAWN_NEW_OBSTACLE", newObstacle);
+        })
+
         registerPhaserEvent(SocketEvents.SessionState.LEFT_SESSION, function (playerId: string) {
             self.emit("LEFT_SESSION", playerId);
         })
@@ -72,7 +78,7 @@ export class GameSocketManager extends Phaser.Events.EventEmitter {
         });
     }
 
-    private emitReady(){
+    private emitReady() {
         socket.emitWithLog(SocketEvents.ClientState.READY);
     }
 

@@ -10,6 +10,7 @@ import {PositionUtil} from "../../server/util/PositionUtil";
 import {DirectionEnum} from "../constants/DirectionEnum";
 import {Position} from "./Position";
 import {PlayerStatusEnum} from "../constants/PlayerStatusEnum";
+import {Obstacle} from "./Obstacle";
 
 const log = getLogger("shared.GameSession");
 
@@ -18,6 +19,7 @@ export class GameSession {
     private gameState: GameStateEnum;
     private config: GameSessionConfig;
     private players: Record<string, Player>;
+    private obstacles: Record<string, Obstacle>;
     private collectables: Record<string, Collectable>;
     private remainingTime: number;
     private timerInterval: NodeJS.Timeout | null = null;
@@ -29,12 +31,14 @@ export class GameSession {
                 gameState: GameStateEnum = GameStateEnum.WAITING_FOR_PLAYERS,
                 players: Record<string, Player> = {},
                 collectables: Record<string, Collectable> = {},
+                obstacles: Record<string, Obstacle> = {},
                 timerInterval: NodeJS.Timeout | null = null) {
         this.id = id;
         this.gameState = gameState;
         this.config = config;
         this.players = players;
         this.collectables = collectables;
+        this.obstacles = obstacles;
         this.remainingTime = config.getGameDuration();
         this.timerInterval = timerInterval;
         this.isCountdownRunning = false;
@@ -80,16 +84,20 @@ export class GameSession {
         this.gameState = state;
     }
 
-    getConfig() {
+    getConfig(): GameSessionConfig {
         return this.config;
     }
 
-    getCollectables() {
+    getCollectables(): Record<string, Collectable> {
         return this.collectables;
     }
 
     getCollectableById(id: string): Collectable | undefined {
         return this.collectables[id];
+    }
+
+    getObstacles(): Record<string, Obstacle> {
+        return this.obstacles;
     }
 
     getRemainingTime() {
@@ -152,6 +160,10 @@ export class GameSession {
         this.collectables[collectable.getId()] = collectable;
     }
 
+    addObstacle(obstacle: Obstacle): void {
+        this.obstacles[obstacle.getId()] = obstacle;
+    }
+
     removePlayer(playerId: string): void {
         delete this.players[playerId];
         log.trace("removedPlayer player from session", playerId);
@@ -210,6 +222,9 @@ export class GameSession {
             collectables: Object.fromEntries(
                 Object.entries(this.collectables).map(([id, collectable]) => [id, collectable.toJson()])
             ),
+            obstacles: Object.fromEntries(
+                Object.entries(this.obstacles).map(([id, obstacle]) => [id, obstacle.toJson()])
+            ),
             remainingTime: this.remainingTime,
         };
     }
@@ -225,6 +240,9 @@ export class GameSession {
             ),
             Object.fromEntries(
                 Object.entries(data.collectables).map(([id, collectableData]) => [id, Collectable.fromData(collectableData)])
+            ),
+            Object.fromEntries(
+                Object.entries(data.obstacles).map(([id, obstacleData]) => [id, Obstacle.fromData(obstacleData)])
             ),
             data.remainingTime
         );

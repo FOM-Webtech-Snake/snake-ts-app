@@ -17,6 +17,7 @@ import {
 import {PositionUtil} from "../util/PositionUtil";
 import {Position} from "../../shared/model/Position";
 import {GameTimerUtil} from "../util/GameTimerUtil";
+import {SpawnUtil} from "../util/SpawnUtil";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -258,15 +259,20 @@ const SocketEventRegistry: {
             return;
         }
 
-        const player = gameSession.getPlayer(socket.id);
+        const player: Player = gameSession.getPlayer(socket.id);
         if (!player || player.getStatus() !== PlayerStatusEnum.ALIVE) return; // prevent triggering multiple times
 
         if ((type === CollisionTypeEnum.WORLD && gameSession.getConfig().getWorldCollisionEnabled()) ||
             (type === CollisionTypeEnum.SELF && gameSession.getConfig().getSelfCollisionEnabled()) ||
-            (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled())) {
+            (type === CollisionTypeEnum.PLAYER && gameSession.getConfig().getPlayerToPlayerCollisionEnabled()) ||
+            (type === CollisionTypeEnum.OBSTACLE && gameSession.getConfig().getObstacleEnabled())) {
             callback({status: true});
             player.setStatus(PlayerStatusEnum.DEAD);
             io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
+
+            if(gameSession.getConfig().getObstacleEnabled()){
+                SpawnUtil.spawnNewObstacle(io, player.getHeadPosition(), gameSession);
+            }
 
             // Respawn the player after a set amount of time
             if (gameSession.getConfig().getRespawnAfterDeathEnabled()) {

@@ -7,6 +7,9 @@ import {ChildCollectableTypeEnum} from "../../shared/constants/CollectableTypeEn
 import {getLogger} from "../../shared/config/LogConfig";
 import {childCollectables} from "../../shared/config/Collectables";
 import {v4 as uuidV4} from "uuid";
+import {Position} from "../../shared/model/Position";
+import {Obstacle} from "../../shared/model/Obstacle";
+import {ObstacleTypeEnum} from "../../shared/constants/ObstacleTypeEnum";
 
 const log = getLogger("server.util.SpawnUtil");
 
@@ -35,6 +38,16 @@ export class SpawnUtil {
             io.to(session.getId()).emit(SocketEvents.GameEvents.SPAWN_NEW_COLLECTABLE, newCollectable);
             log.debug(`new collectable of type ${newCollectable.getType()} spawned after ${delay}ms delay.`);
         }, delay);
+    }
+
+    static spawnNewObstacle(io: Server, position: Position, session: GameSession) {
+        if (position === null) return;
+        const newObstacle = new Obstacle(uuidV4(), ObstacleTypeEnum.GRAVESTONE, position);
+        session.addObstacle(newObstacle);
+
+        io.to(session.getId()).emit(SocketEvents.GameEvents.SPAWN_NEW_OBSTACLE, newObstacle);
+        log.debug(`new obstacle of type ${newObstacle.getType()} spawned.`);
+
     }
 
     static createCollectable(session: GameSession) {
