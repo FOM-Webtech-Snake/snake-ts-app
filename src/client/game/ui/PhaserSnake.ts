@@ -430,15 +430,17 @@ export class PhaserSnake {
 
         this.lastUpdateTime = Date.now();
 
-        // Update existing segments
+        this.path = this.rebuildPath(player.getBodyPositions());
+
+        // update body parts to match the new positions
         const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
         player.getBodyPositions().forEach((segment, index) => {
-            if(index < bodyParts.length) {
+            if (index < bodyParts.length) {
                 const bodyPart = bodyParts[index];
                 bodyPart.setPosition(segment.getX(), segment.getY());
                 bodyPart.setRotation(segment.getRotation());
 
-                if(segment.getLocked() && !this.lockedSegments.contains(bodyPart)) {
+                if (segment.getLocked() && !this.lockedSegments.contains(bodyPart)) {
                     this.lockedSegments.add(bodyPart);
                 } else if (!segment.getLocked() && this.lockedSegments.contains(bodyPart)) {
                     this.lockedSegments.remove(bodyPart);
@@ -448,7 +450,8 @@ export class PhaserSnake {
             }
         });
 
-        for(let i = player.getBodyPositions().length; i < bodyParts.length; i++) {
+        // remove extra body parts if needed
+        for (let i = player.getBodyPositions().length; i < bodyParts.length; i++) {
             const extraSegment = bodyParts[i];
             this.body.remove(extraSegment, true, true);
             this.lockedSegments.remove(extraSegment);
@@ -467,6 +470,49 @@ export class PhaserSnake {
             log.trace("updating color from player", player);
             this.setPrimaryColor(ColorUtil.rgbToHex(player.getColor()));
         }
+    }
+
+    private rebuildPath(newBodyPositions: Position[]): Phaser.Math.Vector3[] {
+        if (newBodyPositions.length < 1) {
+            return [];
+        }
+
+        const segmentWidth = Math.ceil(this.head.displayWidth);
+        const newPath: Phaser.Math.Vector3[] = [];
+
+        for (let i = 0; i < newBodyPositions.length; i++) {
+            const currentSegment = newBodyPositions[i];
+            const start = new Phaser.Math.Vector3(
+                currentSegment.getX(),
+                currentSegment.getY(),
+                currentSegment.getRotation()
+            );
+            newPath.push(start);
+
+            if (i < newBodyPositions.length - 1) {
+                const nextSegment = newBodyPositions[i + 1];
+                const end = new Phaser.Math.Vector3(
+                    nextSegment.getX(),
+                    nextSegment.getY(),
+                    nextSegment.getRotation()
+                );
+
+                // calculate interpolation
+                const distance = Phaser.Math.Distance.Between(start.x, start.y, end.x, end.y);
+                const steps = Math.floor(distance / segmentWidth);
+
+                for (let t = 1; t < steps; t++) {
+                    const ratio = t / steps;
+                    const interpolatedX = Phaser.Math.Linear(start.x, end.x, ratio);
+                    const interpolatedY = Phaser.Math.Linear(start.y, end.y, ratio);
+                    const interpolatedZ = Phaser.Math.Linear(start.z, end.z, ratio);
+
+                    newPath.push(new Phaser.Math.Vector3(interpolatedX, interpolatedY, interpolatedZ));
+                }
+            }
+        }
+
+        return newPath;
     }
 
     private appendSegmentsByPositions(startPosIdx: number, positions: Position[]) {
