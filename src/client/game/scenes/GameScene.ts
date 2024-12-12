@@ -187,11 +187,9 @@ export class GameScene extends Phaser.Scene {
             log.trace("players", players);
             const localPlayerId = this.gameSocketManager.getPlayerId();
             Object.keys(players).forEach((playerId) => {
+                players[playerId].update();
                 if (playerId === localPlayerId) {
-                    players[playerId].update();
                     this.gameSocketManager.emitSnake(players[playerId]);
-                } else {
-                    players[playerId].update();
                 }
             });
         }
