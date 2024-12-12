@@ -7,10 +7,8 @@ import {PlayerStatusEnum} from "../../../shared/constants/PlayerStatusEnum";
 import {getLogger} from "../../../shared/config/LogConfig";
 import {GameScene} from "../scenes/GameScene";
 import {Player} from "../../../shared/model/Player";
-import {GLOBAL_SYNC_INTERVAL_IN_MILLIS} from "../../../shared/config/GlobalTickRate";
 import {SNAKE_STARTING_SCALE} from "../../../shared/model/GameSessionConfig";
 
-const MOVEMENT_INTERPOLATION_FACTOR = 0.2; // 0-1 => 0: smooth movement, 1: direct movement
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
 
 const log = getLogger("client.game.ui.PhaserSnake");
@@ -43,9 +41,8 @@ export class PhaserSnake {
     private lockedSegments: Phaser.Physics.Arcade.Group;
 
     // location history
-    private lastPositions: Position[] = []; // To store the last positions of body parts
+    private path: Phaser.Math.Vector3[] = [];
 
-    private targetPositions: Position[] = []; // this is only used for remoteSnakes
     private lastUpdateTime: number = Date.now();
 
     constructor(
@@ -80,13 +77,11 @@ export class PhaserSnake {
     }
 
     spawn(positions: Position[]) {
-        this.targetPositions = positions;
-
         // create the body
         this.body = this.scene.physics.add.group();
         this.lockedSegments = this.scene.physics.add.group();
 
-        this.appendSegmentsByPositions(0, this.targetPositions);
+        this.appendSegmentsByPositions(0, positions);
 
         this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite; // Update the head reference
 
@@ -107,8 +102,7 @@ export class PhaserSnake {
         log.debug("destroying snake", this.playerId);
         this.body.clear(true, true);
         this.lockedSegments.clear(true, true);
-        this.targetPositions = [];
-        this.lastPositions = [];
+        this.path = [];
 
         if (this.head) {
             this.head.destroy(true);
@@ -131,7 +125,7 @@ export class PhaserSnake {
 
         log.trace("updateFacePosition", this.head);
         this.face.setPosition(this.head.x, this.head.y);
-        this.face.setRotation(DirectionUtil.getRotationAngle(this.direction));
+        this.face.setRotation(this.head.rotation);
     }
 
     getBody(): Phaser.Physics.Arcade.Sprite[] {
@@ -333,8 +327,13 @@ export class PhaserSnake {
     }
 
     private saveCurrentHeadCoordinates(): void {
-        // save the current head position at the start of the array
-        this.lastPositions.unshift(new Position(this.head.x, this.head.y, false, this.head.rotation));
+        // Save key position only when direction changes or head moves a significant distance
+        const lastPosition = this.path[this.path.length - 1];
+        const currentHeadPosition = new Phaser.Math.Vector3(this.head.x, this.head.y, this.head.rotation);
+
+        if (!lastPosition || lastPosition.distance(currentHeadPosition) > 1) {
+            this.path.unshift(currentHeadPosition);
+        }
     }
 
     /**
@@ -347,9 +346,9 @@ export class PhaserSnake {
         const minPositionsNeeded = (bodyLength * segmentWidth) * POSITION_HISTORY_BUFFER_MULTIPLIER;
 
         // remove all excess positions at once if we have more than the minimum required
-        if (this.lastPositions.length > minPositionsNeeded) {
+        if (this.path.length > minPositionsNeeded) {
             // remove all excess positions from the end of the array
-            this.lastPositions.splice(minPositionsNeeded + 1);
+            this.path.splice(minPositionsNeeded + 1);
         }
     }
 
@@ -360,56 +359,49 @@ export class PhaserSnake {
         const segmentSpacing: number = Math.round(this.head.displayWidth);
 
         // loop through each segment of the body, skipping the head (index 0)
-        let lastUsedPositionsIndex = 0;
         for (let i = 1; i < bodyParts.length; i++) {
-            const currentSegment = bodyParts[i];
 
             // locked position logic (follow when old tail has reached spawn position
-            if (this.lockedSegments.contains(currentSegment)) {
+            if (this.lockedSegments.contains(bodyParts[i])) {
                 // check all smaller indexed segments for overlapping
                 let isOverlapping = false;
                 for (let k = 0; k < i; k++) {
                     const smallerSegment = bodyParts[k];
-                    if (Phaser.Geom.Intersects.RectangleToRectangle(currentSegment.getBounds(), smallerSegment.getBounds())) {
+                    if (Phaser.Geom.Intersects.RectangleToRectangle(bodyParts[i].getBounds(), smallerSegment.getBounds())) {
                         isOverlapping = true;
                         break;
                     }
                 }
                 if (!isOverlapping) {
-                    this.lockedSegments.remove(currentSegment, false, false);
+                    this.lockedSegments.remove(bodyParts[i], false, false);
                 } else {
                     // skip element if it is locked in position
                     continue;
                 }
             }
 
-            // The target distance for this segment from the head
-            let positionA: Position = this.lastPositions[lastUsedPositionsIndex];
-            let positionB: Position = null;
-            let distance: number = 0;
+            const targetDistance = segmentSpacing * i;
 
-            // loop through lastPositions to find the next position in relation to the segment spacing
-            for (let j = lastUsedPositionsIndex; j < this.lastPositions.length; j++) {
-                positionB = this.lastPositions[j];
+            // find pos where current segment should be located (based on distance)
+            let accumulatedDistance = 0;
+            for (let j = 1; j < this.path.length; j++) {
+                const p1 = this.path[j - 1];
+                const p2 = this.path[j];
+                const segmentDistance = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
+                if (accumulatedDistance + segmentDistance >= targetDistance) {
 
-                // calculate the distance between the two positions
-                distance = Phaser.Math.Distance.Between(positionA.getX(), positionA.getY(), positionB.getX(), positionB.getY());
+                    // calc interpolated position
+                    const t = (targetDistance - accumulatedDistance) / segmentDistance;
+                    const interpolatedX = Phaser.Math.Linear(p1.x, p2.x, t);
+                    const interpolatedY = Phaser.Math.Linear(p1.y, p2.y, t);
+                    const interpolatedZ = Phaser.Math.Linear(p1.z, p2.z, t);
 
-                // Stop once the distance reaches or exceeds the necessary segment spacing
-                if (distance >= segmentSpacing) {
-                    lastUsedPositionsIndex = j;
+                    bodyParts[i].setPosition(interpolatedX, interpolatedY);
+                    bodyParts[i].setRotation(interpolatedZ);
                     break;
                 }
-            }
 
-            if (positionB) {
-                // apply interpolation to smooth the movement of the segment towards the new position
-                const interpolatedX = Phaser.Math.Linear(currentSegment.x, positionB.getX(), MOVEMENT_INTERPOLATION_FACTOR);
-                const interpolatedY = Phaser.Math.Linear(currentSegment.y, positionB.getY(), MOVEMENT_INTERPOLATION_FACTOR);
-
-                // set the segment position to the interpolated position
-                currentSegment.setPosition(interpolatedX, interpolatedY);
-                currentSegment.setRotation(positionB.getRotation());
+                accumulatedDistance += segmentDistance;
             }
         }
     }
@@ -434,11 +426,36 @@ export class PhaserSnake {
         this.status = player.getStatus();
         this.speed = player.getSpeed();
         this.score = player.getScore();
-        this.direction = player.getDirection()
+        this.direction = player.getDirection();
 
-        // update the target positions
-        this.targetPositions = player.getBodyPositions();
         this.lastUpdateTime = Date.now();
+
+        // Update existing segments
+        const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
+        player.getBodyPositions().forEach((segment, index) => {
+            if(index < bodyParts.length) {
+                const bodyPart = bodyParts[index];
+                bodyPart.setPosition(segment.getX(), segment.getY());
+                bodyPart.setRotation(segment.getRotation());
+
+                if(segment.getLocked() && !this.lockedSegments.contains(bodyPart)) {
+                    this.lockedSegments.add(bodyPart);
+                } else if (!segment.getLocked() && this.lockedSegments.contains(bodyPart)) {
+                    this.lockedSegments.remove(bodyPart);
+                }
+            } else {
+                this.addSegmentToBody(segment);
+            }
+        });
+
+        for(let i = player.getBodyPositions().length; i < bodyParts.length; i++) {
+            const extraSegment = bodyParts[i];
+            this.body.remove(extraSegment, true, true);
+            this.lockedSegments.remove(extraSegment);
+        }
+
+        this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite;
+        this.updateFacePosition();
 
         if (this.scale != player.getScale()) {
             log.trace("updating scale from player", player);
@@ -456,50 +473,6 @@ export class PhaserSnake {
         for (let i = startPosIdx; i < positions.length; i++) {
             this.addSegmentToBody(positions[i]);
         }
-    }
-
-    private updateLength(bodyParts: Phaser.GameObjects.Sprite[], targetPositions: Position[]) {
-        const targetLength = targetPositions.length;
-        const bodyLength = bodyParts.length;
-
-        log.trace("currentLength", bodyLength, "playerBodyLength", targetLength);
-
-        if (targetLength > bodyLength) {
-            this.appendSegmentsByPositions(bodyLength, targetPositions);
-        } else if (targetLength < bodyLength) {
-            // Remove extra segments
-            for (let i = bodyLength - 1; i >= targetLength; i--) {
-                const segment = this.body.getChildren()[i] as Phaser.Physics.Arcade.Sprite;
-                this.body.remove(segment, true, true);
-            }
-        }
-    }
-
-    interpolatePosition() {
-        if (this.status != PlayerStatusEnum.ALIVE) return; // no interpolation when player is not alive
-
-        if (!this.targetPositions || !this.body) {
-            return
-        }
-
-        const elapsedTime = Date.now() - this.lastUpdateTime;
-        const t = Math.min(elapsedTime / GLOBAL_SYNC_INTERVAL_IN_MILLIS, 1);
-
-        // Update existing segments
-        const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
-        if (bodyParts.length !== this.targetPositions.length) {
-            log.trace("bodyParts and targetPos are not the same length", bodyParts, this.targetPositions);
-            this.updateLength(bodyParts, this.targetPositions)
-        }
-
-        for (let i = 0; i < bodyParts.length; i++) {
-            const interpolatedX = Phaser.Math.Linear(bodyParts[i].x, this.targetPositions[i].getX(), t);
-            const interpolatedY = Phaser.Math.Linear(bodyParts[i].y, this.targetPositions[i].getY(), t);
-            bodyParts[i].setPosition(interpolatedX, interpolatedY);
-            bodyParts[i].setRotation(this.targetPositions[i].getRotation())
-        }
-
-        this.updateFacePosition();
     }
 
     toJson() {

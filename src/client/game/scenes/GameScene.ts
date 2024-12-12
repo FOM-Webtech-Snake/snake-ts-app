@@ -191,7 +191,7 @@ export class GameScene extends Phaser.Scene {
                     players[playerId].update();
                     this.gameSocketManager.emitSnake(players[playerId]);
                 } else {
-                    players[playerId].interpolatePosition();
+                    players[playerId].update();
                 }
             });
         }
