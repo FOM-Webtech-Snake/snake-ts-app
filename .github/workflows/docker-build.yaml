@@ -5,9 +5,11 @@ on:
   push:
     branches:
       - 'main'
-      - 'fabian-remoteSnakeSync'
     tags:
       - 'v*'  # Match version tags like v1.0, v1.1.1, etc.
+  pull_request:
+    branches:
+      - '**' # trigger on all branches
 
 permissions: write-all
 
@@ -40,7 +42,7 @@ jobs:
             CLEANUP="true"
           else
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
-            VERSION="${BASE_VERSION}-${BRANCH_NAME}-SNAPSHOT"
+            VERSION="${BASE_VERSION}-${BRANCH_NAME}-${GITHUB_RUN_NUMBER}"
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "LATEST=${LATEST}" >> $GITHUB_ENV
