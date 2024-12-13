@@ -10,7 +10,7 @@ export class PositionUtil {
         const usedPositions = new Set<Position>();
 
         // Collect all used positions (by players and collectables)
-        session.getPlayersAsArray().forEach(player => {
+        Object.values(session.getPlayers()).forEach(player => {
             player.getBodyPositions().forEach(pos => {
                 usedPositions.add(pos);
             });
