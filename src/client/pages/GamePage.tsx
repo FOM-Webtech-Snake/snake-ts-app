@@ -53,17 +53,16 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
     return (
         <Container className="vh-100 d-flex flex-column justify-content-center">
             <Row className="flex-grow-1">
-                <Col className="col-8">
+                <Col className="cl-12 col-md-8">
                     <div id="game-container" ref={gameContainerRef}
                          style={{
                              width: '100%',
                              height: `${availableHeight}px`,
-                             marginTop: '20px',
                          }}>
                         {/* game content will be rendered here by Phaser */}
                     </div>
                 </Col>
-                <Col className="col-4">
+                <Col className="col-4 d-none d-md-block">
                     <GameControl/>
                     <TimerDisplay/>
                     <PlayerList/>
