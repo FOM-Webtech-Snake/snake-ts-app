@@ -42,6 +42,7 @@ jobs:
             CLEANUP="true"
           else
             BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            BRANCH_NAME=${BRANCH_NAME//[^a-zA-Z0-9._-]/-} # Replace invalid characters with '-'
             VERSION="${BASE_VERSION}-${BRANCH_NAME}-${GITHUB_RUN_NUMBER}"
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
