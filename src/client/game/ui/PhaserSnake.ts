@@ -433,8 +433,10 @@ export class PhaserSnake {
         player.getBodyPositions().forEach((segment, index) => {
             if (index < bodyParts.length) {
                 const bodyPart = bodyParts[index];
-                bodyPart.setPosition(segment.getX(), segment.getY());
-                bodyPart.setRotation(segment.getRotation());
+                if (index === 0) {
+                    bodyPart.setPosition(segment.getX(), segment.getY());
+                    bodyPart.setRotation(segment.getRotation());
+                }
 
                 if (segment.getLocked() && !this.lockedSegments.contains(bodyPart)) {
                     this.lockedSegments.add(bodyPart);
