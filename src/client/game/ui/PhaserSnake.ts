@@ -43,8 +43,6 @@ export class PhaserSnake {
     // location history
     private path: Phaser.Math.Vector3[] = [];
 
-    private lastUpdateTime: number = Date.now();
-
     constructor(
         scene: GameScene,
         playerId: string,
@@ -427,8 +425,6 @@ export class PhaserSnake {
         this.speed = player.getSpeed();
         this.score = player.getScore();
         this.direction = player.getDirection();
-
-        this.lastUpdateTime = Date.now();
 
         this.path = this.rebuildPath(player.getBodyPositions());
 
