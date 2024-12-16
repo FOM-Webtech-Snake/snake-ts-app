@@ -203,3 +203,35 @@ range.
 partitioning the game world. It reduces the number of collision checks by limiting the search area to nearby grid cells.
 Imagine just checking for collision in a specific area of the whole world.
 
+## Phaser
+### Manager "Pattern" (for separation of concerns)
+InputManager, PlayerManager, ObstacleManager, CollectableManager, CollisionManager, GameSocketManager
+
+## Socket Router (Client)
+### React 
+### Phaser
+gameSocketManager -> mapping to phaserEvents
+
+## A* Algorithm for path finding (Bots)
+TODO
+
+## Snake Body Movement
+TODO
+
+## Multiplayer Remote Snake Sync Mechanism
+TODO
+
+## Error Scenarios
+TODO
+
+## Server Based Timing
+TODO
+
+## Custom Game Config
+TODO
+
+## Input Controller Types
+TODO
+
+
+
