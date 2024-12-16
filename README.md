@@ -96,6 +96,7 @@ After executing, just open a browser and visit http://localhost:8081.
 - **Phaser**: [https://phaser.io/](https://phaser.io/)
 - **Socket.IO**: [https://socket.io/](https://socket.io/)
 - **TypeScript**: [https://www.typescriptlang.org/](https://www.typescriptlang.org/)
+- **Pino**: [https://getpino.io/](https://getpino.io/)
 - **Webpack**: [https://webpack.js.org/](https://webpack.js.org/)
 - **Node.js**: [https://nodejs.org/](https://nodejs.org/)
 - **Nodemon**: [https://nodemon.io/](https://nodemon.io/)
