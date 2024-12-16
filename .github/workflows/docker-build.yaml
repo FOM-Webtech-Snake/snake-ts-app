@@ -41,9 +41,9 @@ jobs:
             LATEST="true"
             CLEANUP="true"
           else
-            if [[ "${GITHUB_REF}" =~ ^refs/heads/(.+)$ ]]; then
-              BRANCH_NAME=${BASH_REMATCH[1]}
-            elif [[ "${GITHUB_REF}" =~ ^refs/pull/([0-9]+)/merge$ ]]; then
+            if [[ -n "${GITHUB_HEAD_REF}" ]]; then
+              BRANCH_NAME="${GITHUB_HEAD_REF}"
+            elif [[ "${GITHUB_REF}" =~ ^refs/heads/(.+)$ ]]; then
               BRANCH_NAME=${BASH_REMATCH[1]}
             else
               BRANCH_NAME="unknown"
@@ -51,7 +51,7 @@ jobs:
           
             # Replace invalid characters with '-'
             BRANCH_NAME=${BRANCH_NAME//[^a-zA-Z0-9._-]/-}
-            VERSION="${BASE_VERSION}-${BRANCH_NAME}-${GITHUB_RUN_NUMBER}"
+            VERSION="${BASE_VERSION}-${BRANCH_NAME}-SNAPSHOT"
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "LATEST=${LATEST}" >> $GITHUB_ENV
