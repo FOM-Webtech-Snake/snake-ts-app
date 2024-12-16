@@ -326,11 +326,11 @@ export class PhaserSnake {
 
     private saveCurrentHeadCoordinates(): void {
         // Save key position only when direction changes or head moves a significant distance
-        const lastPosition = this.path[this.path.length - 1];
+        const lastPosition = this.path[0]; // access the most recent position
         const currentHeadPosition = new Phaser.Math.Vector3(this.head.x, this.head.y, this.head.rotation);
 
         if (!lastPosition || lastPosition.distance(currentHeadPosition) > 1) {
-            this.path.unshift(currentHeadPosition);
+            this.path.unshift(currentHeadPosition); // add new position to the beginning of the array
         }
     }
 
