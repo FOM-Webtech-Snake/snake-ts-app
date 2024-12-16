@@ -43,13 +43,13 @@ export class PositionUtil {
         return newPosition;
     }
 
-    private static randomPosition(config: GameSessionConfig): Position {
+    static randomPosition(config: GameSessionConfig): Position {
         return new Position(
             Math.floor(Math.random() * (config.getSize().getHeight())),
             Math.floor(Math.random() * (config.getSize().getWidth())));
     }
 
-    private static calculateDistance(pos1: Position, pos2: Position): number {
+    static calculateDistance(pos1: Position, pos2: Position): number {
         const dx = pos1.getX() - pos2.getX();
         const dy = pos1.getY() - pos2.getY();
         return Math.sqrt(dx * dx + dy * dy); // euclidean distance
