@@ -77,8 +77,8 @@ Ensure that Docker is running and your environment is properly set up to build a
 ### Docker Run
 
 ```shell
-docker build -t  snake-webapp .
-docker run -p 8081:8081 snake-webapp
+docker build -t  snake-ts-app .
+docker run -p 8081:8081 snake-ts-app
 ```
 
 ### (Alternative to Docker Run) Docker Compose
