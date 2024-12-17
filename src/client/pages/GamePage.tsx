@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
 import {Col, Container, Row} from "react-bootstrap";
@@ -53,7 +53,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
     return (
         <Container className="vh-100 d-flex flex-column justify-content-center">
             <Row className="flex-grow-1">
-                <Col className="cl-12 col-md-8">
+                <Col className="col-12 col-md-8">
                     <div id="game-container" ref={gameContainerRef}
                          style={{
                              width: '100%',
@@ -62,7 +62,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
                         {/* game content will be rendered here by Phaser */}
                     </div>
                 </Col>
-                <Col className="col-4 d-none d-md-block">
+                <Col className="col-md-4">
                     <GameControl/>
                     <TimerDisplay/>
                     <PlayerList/>

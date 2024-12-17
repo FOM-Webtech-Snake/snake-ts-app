@@ -50,7 +50,9 @@ const GameControlPanel: React.FC<GameControlPanelProps> = () => {
         <Container style={{
             overflowY: 'auto',
             padding: '1rem',
-        }}>
+        }}
+        className="d-none d-md-block"
+        >
             <Card className="p-4 shadow">
                 <Card.Body>
                     <div className="d-flex justify-content-center">
