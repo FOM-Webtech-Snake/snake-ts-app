@@ -79,7 +79,7 @@ const PlayerList: React.FC<PlayerListProps> = () => {
                 style={{
                     top: '75px',
                     width: '175px',
-                    maxHeight: '400px',
+                    maxHeight: '200px',
                     overflowY: 'auto',
                     opacity: 0.6,
                     fontSize: '0.9rem',
