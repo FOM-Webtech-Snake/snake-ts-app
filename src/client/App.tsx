@@ -42,7 +42,7 @@ const App: React.FC = () => {
         const footerHeight = footerRef.current?.offsetHeight || 0;
         const viewportHeight = window.innerHeight;
 
-        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 20); // 20 = marginTop in GamePage
+        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 50);
     };
 
     useEffect(() => {
