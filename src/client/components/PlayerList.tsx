@@ -11,9 +11,10 @@ import PlayerListItem from "./PlayerListItem";
 const log = getLogger("client.components.PlayerList");
 
 interface PlayerListProps {
+    desktopViewOnly?: boolean;
 }
 
-const PlayerList: React.FC<PlayerListProps> = () => {
+const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
     const {session} = useGameSessionSocket();
     const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(session.getPlayersAsArray());
 
@@ -53,29 +54,35 @@ const PlayerList: React.FC<PlayerListProps> = () => {
         );
     };
 
+    const renderPlayerCard = (isMobile: boolean) => (
+        <Card className={`mb-3 shadow ${isMobile ? 'bg-dark text-light rounded' : ''}`}>
+            <Card.Header className="text-center">
+                <h6 className="mb-0">{isMobile ? 'Players' : 'Players in Lobby'}</h6>
+            </Card.Header>
+            <Card.Body className="text-center">
+                {renderPlayerList(isMobile)}
+            </Card.Body>
+        </Card>
+    );
+
+    if (desktopViewOnly) {
+        return (
+            <Container style={{ overflowY: 'auto', padding: '1rem' }}>
+                {renderPlayerCard(false)}
+            </Container>
+        );
+    }
+
     return (
         <>
             {/* Desktop view */}
-            <Container
-                style={{
-                    overflowY: 'auto',
-                    padding: '1rem',
-                }}
-                className="d-none d-md-block"
-            >
-                <Card className="mb-3 shadow">
-                    <Card.Header className="text-center">
-                        <h6 className="mb-0">Players in Lobby</h6>
-                    </Card.Header>
-                    <Card.Body className="text-center">
-                        {renderPlayerList(false)}
-                    </Card.Body>
-                </Card>
+            <Container className="d-none d-md-block" style={{overflowY: 'auto', padding: '1rem'}}>
+                {renderPlayerCard(false)}
             </Container>
 
             {/* Mobile view */}
             <div
-                className="d-md-none position-absolute start-0 m-2 bg-dark text-light rounded p-2 z-3"
+                className="d-md-none position-absolute start-0 m-2 z-3"
                 style={{
                     top: '75px',
                     width: '175px',
@@ -85,8 +92,7 @@ const PlayerList: React.FC<PlayerListProps> = () => {
                     fontSize: '0.9rem',
                 }}
             >
-                <h6 className="text-center mb-2">Players</h6>
-                {renderPlayerList(true)}
+                {renderPlayerCard(true)}
             </div>
         </>
     );

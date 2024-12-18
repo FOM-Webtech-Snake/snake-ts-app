@@ -11,7 +11,7 @@ interface PlayerListItemProps {
 
 const PlayerListItem: React.FC<PlayerListItemProps> = ({player, isMobile = false}) => {
     const playerNameStyle = {
-        maxWidth: isMobile ? '75px' : '100px',
+        maxWidth: isMobile ? '60px' : '100px',
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis'
