@@ -11,6 +11,7 @@ import PlayerList from "../components/PlayerList";
 import ShareInfoModal from "../components/ShareModal";
 import {registerReactEvent} from "../socket/socketRouter";
 import socket from "../socket/socket";
+import GameSessionError from "../components/GameSessionError";
 
 interface LobbyPageProps {
     player: Player;
@@ -181,6 +182,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                             </Col>
                         </Row>
                     )}
+                    <GameSessionError />
                 </div>
             </Container>
 
