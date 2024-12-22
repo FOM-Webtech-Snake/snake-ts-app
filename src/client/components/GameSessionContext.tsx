@@ -14,6 +14,8 @@ interface GameSessionContextType {
     playerId: string;
     status: GameStateEnum;
     isConnected: boolean,
+    error: string | null;
+    clearError: () => void;
     createSession: (player: Player) => void;
     joinSession: (sessionId: string, player: Player) => void;
     leaveSession: () => void;
@@ -25,6 +27,9 @@ const GameSessionContext = createContext<GameSessionContextType>({
     playerId: null,
     status: null,
     isConnected: false,
+    error: null,
+    clearError: () => {
+    },
     createSession: () => {
     },
     joinSession: () => {
@@ -44,6 +49,9 @@ const log = getLogger("client.components.GameSessionSocketProvider");
 export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) => {
     const [session, setSession] = useState<GameSession>(null);
     const [status, setStatus] = useState<GameStateEnum>(null);
+
+    const [error, setError] = useState<string | null>(null);
+    const clearError = () => setError(null);
 
     const [playerId, setPlayerId] = useState<string | null>(socket.id);
     const [isConnected, setIsConnected] = useState(socket.connected);
@@ -104,11 +112,12 @@ export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) =
 
     const createSession = (player: Player) => {
         if (!socket || session) return;
+        clearError();
         socket.emit(SocketEvents.Connection.CREATE_SESSION, player.toJson(), (session: any) => {
             try {
-                /* TODO show error to user */
                 if (session.error) {
                     log.error(session.error);
+                    setError(session.error);
                 } else {
                     const gameSession = GameSession.fromData(session);
                     log.debug("received created game session", gameSession);
@@ -123,11 +132,12 @@ export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) =
     const joinSession =
         (sessionId: string, player: Player) => {
             if (!socket || session) return;
+            clearError();
             socket.emit(SocketEvents.Connection.JOIN_SESSION, sessionId, player.toJson(), (session: any) => {
                 try {
-                    /* TODO show error to user */
                     if (session.error) {
                         log.error(session.error);
+                        setError(session.error);
                     } else {
                         const gameSession = GameSession.fromData(session);
                         log.debug("received joined game session", gameSession);
@@ -159,6 +169,8 @@ export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) =
                 playerId,
                 status,
                 isConnected,
+                error,
+                clearError,
                 createSession,
                 joinSession,
                 leaveSession,
