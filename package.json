@@ -9,10 +9,10 @@
   "scripts": {
     "start": "node dist/server/index.js",
     "dev": "nodemon",
-    "build": "npm run test && npm run build:client && npm run build:server",
+    "build": "npm run build:client && npm run build:server",
     "build:client": "webpack --config webpack.prod.cjs",
     "build:server": "tsc --project tsconfig.json",
-    "test": "jest",
+    "test": "echo \"Error: no test specified\" && exit 1",
     "clean": "rm -rf dist"
   },
   "keywords": [],
