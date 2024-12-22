@@ -9,6 +9,7 @@ import {PlayerRoleEnum} from "../shared/constants/PlayerRoleEnum";
 import {useGameSessionSocket} from "./components/GameSessionContext";
 import LoadingOverlay from "./components/LoadingOverlay";
 import {useTheme} from "./components/ThemeProvider";
+import logo from '../../public/assets/logo.svg';
 
 const App: React.FC = () => {
     const {theme} = useTheme();
@@ -42,7 +43,7 @@ const App: React.FC = () => {
         const footerHeight = footerRef.current?.offsetHeight || 0;
         const viewportHeight = window.innerHeight;
 
-        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 20); // 20 = marginTop in GamePage
+        setAvailableHeight(viewportHeight - headerHeight - footerHeight - 50);
     };
 
     useEffect(() => {
@@ -59,15 +60,22 @@ const App: React.FC = () => {
         <div className={`app ${theme}`}>
             {!isConnected && <LoadingOverlay/>}
             <Header ref={headerRef} player={player}/>
-            {gameReady ? ( // when game is ready -> show the game
-                <GamePage availableHeight={availableHeight}/>
-            ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
-                <LobbyPage
-                    player={player!}
-                    onGameReady={handleGameReady}/>
-            ) : (
-                <StartPage onStart={handleStart}/>
-            )}
+            <div className="content" style={{
+                backgroundImage: `url(${logo})`,
+                backgroundSize: "cover", // Hintergrund proportional abdecken
+                backgroundPosition: "center", // Hintergrund zentrieren
+                backgroundRepeat: "repeat", // Keine Wiederholung
+            }}>
+                {gameReady ? ( // when game is ready -> show the game
+                    <GamePage availableHeight={availableHeight}/>
+                ) : inLobby ? ( // when in lobby, but game not ready -> show lobby
+                    <LobbyPage
+                        player={player!}
+                        onGameReady={handleGameReady}/>
+                ) : (
+                    <StartPage onStart={handleStart}/>
+                )}
+            </div>
             <Footer ref={footerRef}/>
         </div>
     );

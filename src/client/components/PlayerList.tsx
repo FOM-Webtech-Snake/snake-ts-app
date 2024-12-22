@@ -1,20 +1,20 @@
 import React, {useEffect, useState} from 'react';
-import {Badge, Card, Container, ListGroup} from 'react-bootstrap';
-import {PlayerStatusEnum} from "../../shared/constants/PlayerStatusEnum";
-import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
+import {Card, Container, ListGroup} from 'react-bootstrap';
 import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
 import socket from "../socket/socket";
 import {registerReactEvent} from "../socket/socketRouter";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
-
-interface PlayerListProps {
-}
+import PlayerListItem from "./PlayerListItem";
 
 const log = getLogger("client.components.PlayerList");
 
-const PlayerList: React.FC<PlayerListProps> = () => {
+interface PlayerListProps {
+    desktopViewOnly?: boolean;
+}
+
+const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
     const {session} = useGameSessionSocket();
     const [sortedPlayers, setSortedPlayers] = useState<Player[] | null>(session.getPlayersAsArray());
 
@@ -36,70 +36,65 @@ const PlayerList: React.FC<PlayerListProps> = () => {
 
     }, []);
 
+    const renderPlayerList = (isMobile: boolean) => {
+        if (!sortedPlayers) {
+            return <p className="text-center">Waiting for players to join...</p>;
+        }
+
+        return (
+            <ListGroup variant={isMobile ? "flush" : undefined}>
+                {sortedPlayers.map((player, index) => (
+                    <PlayerListItem
+                        key={`player-${index}`}
+                        player={player}
+                        isMobile={isMobile}
+                    />
+                ))}
+            </ListGroup>
+        );
+    };
+
+    const renderPlayerCard = (isMobile: boolean) => (
+        <Card className={`mb-3 shadow ${isMobile ? 'bg-dark text-light rounded' : ''}`}>
+            <Card.Header className="text-center">
+                <h6 className="mb-0">{isMobile ? 'Players' : 'Players in Lobby'}</h6>
+            </Card.Header>
+            <Card.Body className="text-center">
+                {renderPlayerList(isMobile)}
+            </Card.Body>
+        </Card>
+    );
+
+    if (desktopViewOnly) {
+        return (
+            <Container style={{ overflowY: 'auto', padding: '1rem' }}>
+                {renderPlayerCard(false)}
+            </Container>
+        );
+    }
+
     return (
-        <Container style={{
-            overflowY: 'auto',
-            padding: '1rem',
-        }}>
-            <Card className="mb-3 shadow">
-                <Card.Header className="text-center">
-                    <h6 className="mb-0">Players in Lobby</h6>
-                </Card.Header>
-                <Card.Body className="text-center">
-                    {!sortedPlayers ? (
-                        <p className="text-center">Waiting for players to join...</p>
-                    ) : (
-                        <>
-                            {/* Sidebar content here */}
-                            <ListGroup>
-                                {Object.entries(sortedPlayers).map(([key, player]) => (
-                                    <ListGroup.Item
-                                        key={key}
-                                        className="d-flex justify-content-between align-items-center">
+        <>
+            {/* Desktop view */}
+            <Container className="d-none d-md-block" style={{overflowY: 'auto', padding: '1rem'}}>
+                {renderPlayerCard(false)}
+            </Container>
 
-                                            <span className="d-flex align-items-center">
-                                                {player.getColor() && (
-                                                    <div
-                                                        style={{
-                                                            width: '20px',
-                                                            height: '20px',
-                                                            backgroundColor: player.getColor(),
-                                                            borderRadius: '50%',
-                                                            border: '1px solid #fff',
-                                                            marginRight: '10px',
-                                                        }}
-                                                    ></div>
-                                                )}
-                                                {player.getStatus() === PlayerStatusEnum.DEAD && (
-                                                    <span
-                                                        style={{
-                                                            marginLeft: '10px',
-                                                            color: 'red',
-                                                            fontSize: '1.2rem',
-                                                        }}
-                                                        title="Player is dead"
-                                                    >
-                                                        &#x2620; {/* Unicode skull and crossbones symbol */}
-                                                    </span>
-                                                )}
-                                                {player.getName()}
-                                            </span>
-
-                                        <span className="d-flex align-items-center">
-                                                <span className="me-3">Score: {player.getScore()}</span>
-                                            {player.getRole() === PlayerRoleEnum.HOST && (
-                                                <Badge bg="success">Host</Badge>
-                                            )}
-                                            </span>
-                                    </ListGroup.Item>
-                                ))}
-                            </ListGroup>
-                        </>
-                    )}
-
-                </Card.Body>
-            </Card>
-        </Container>
+            {/* Mobile view */}
+            <div
+                className="d-md-none position-absolute start-0 m-2 z-3"
+                style={{
+                    top: '75px',
+                    width: '175px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    opacity: 0.6,
+                    fontSize: '0.9rem',
+                }}
+            >
+                {renderPlayerCard(true)}
+            </div>
+        </>
     );
 };
 

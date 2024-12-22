@@ -7,7 +7,7 @@ import SnailImage from '../../../../public/assets/snail.png';
 import UTurnImage from '../../../../public/assets/u_turn.png';
 import OrangeImage from '../../../../public/assets/orange.png';
 import SplitImage from '../../../../public/assets/split.png';
-import LogoImage from '../../../../public/assets/logo.png';
+import LogoImage from '../../../../public/assets/logo.svg';
 import SnakeBody from '../../../../public/assets/snakeBody.png';
 import SnakeFace from '../../../../public/assets/snakeFace.png';
 import CollectableArrow from '../../../../public/assets/collectable_arrow.png';

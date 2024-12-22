@@ -109,8 +109,8 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                     </Form.Group>
 
                                     <div className="d-grid">
-                                        <Button variant="primary" size="lg" onClick={handleStart}>
-                                            Start {sessionId && ("and Join")}
+                                        <Button className="button" onClick={handleStart}>
+                                            <span className="actual-text">Continue {sessionId && "and Join"}</span>
                                         </Button>
                                     </div>
                                 </div>

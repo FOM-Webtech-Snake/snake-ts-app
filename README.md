@@ -77,8 +77,8 @@ Ensure that Docker is running and your environment is properly set up to build a
 ### Docker Run
 
 ```shell
-docker build -t  snake-webapp .
-docker run -p 8081:8081 snake-webapp
+docker build -t  snake-ts-app .
+docker run -p 8081:8081 snake-ts-app
 ```
 
 ### (Alternative to Docker Run) Docker Compose
@@ -96,6 +96,7 @@ After executing, just open a browser and visit http://localhost:8081.
 - **Phaser**: [https://phaser.io/](https://phaser.io/)
 - **Socket.IO**: [https://socket.io/](https://socket.io/)
 - **TypeScript**: [https://www.typescriptlang.org/](https://www.typescriptlang.org/)
+- **Pino**: [https://getpino.io/](https://getpino.io/)
 - **Webpack**: [https://webpack.js.org/](https://webpack.js.org/)
 - **Node.js**: [https://nodejs.org/](https://nodejs.org/)
 - **Nodemon**: [https://nodemon.io/](https://nodemon.io/)
@@ -201,4 +202,36 @@ range.
 `SpatialGrid` is used to keep collision detection (player to player) efficient. It improves performance in the game by
 partitioning the game world. It reduces the number of collision checks by limiting the search area to nearby grid cells.
 Imagine just checking for collision in a specific area of the whole world.
+
+## Phaser
+### Manager "Pattern" (for separation of concerns)
+InputManager, PlayerManager, ObstacleManager, CollectableManager, CollisionManager, GameSocketManager
+
+## Socket Router (Client)
+### React 
+### Phaser
+gameSocketManager -> mapping to phaserEvents
+
+## A* Algorithm for path finding (Bots)
+TODO
+
+## Snake Body Movement
+TODO
+
+## Multiplayer Remote Snake Sync Mechanism
+TODO
+
+## Error Scenarios
+TODO
+
+## Server Based Timing
+TODO
+
+## Custom Game Config
+TODO
+
+## Input Controller Types
+TODO
+
+
 
