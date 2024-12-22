@@ -426,8 +426,6 @@ export class PhaserSnake {
         this.score = player.getScore();
         this.direction = player.getDirection();
 
-        this.updatePath(player.getBodyPositions());
-
         // update body parts to match the new positions
         const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
         player.getBodyPositions().forEach((segment, index) => {
@@ -468,40 +466,6 @@ export class PhaserSnake {
             log.trace("updating color from player", player);
             this.setPrimaryColor(ColorUtil.rgbToHex(player.getColor()));
         }
-    }
-
-    // Update the path based on new positions
-    private updatePath(newPositions: Position[]) {
-        const maxPathLength = this.path.length; // Maximum path length
-        const segmentSpacing = this.speed / 10; // Adjust spacing based on speed
-        const updatedPath: Phaser.Math.Vector3[] = [];
-
-        // Start with the first segment's position as the path's start
-        if (newPositions.length > 0) {
-            updatedPath.push(new Phaser.Math.Vector3(newPositions[0].getX(), newPositions[0].getY(), newPositions[0].getRotation()));
-        }
-
-        // Interpolate between received positions to maintain smoothness
-        for (let i = 1; i < newPositions.length; i++) {
-            const start = newPositions[i - 1];
-            const end = newPositions[i];
-            const distance = Phaser.Math.Distance.Between(start.getX(), start.getY(), end.getX(), end.getY());
-            const steps = Math.ceil(distance / segmentSpacing);
-
-            for (let step = 1; step <= steps; step++) {
-                const t = step / steps;
-                const interpolatedX = Phaser.Math.Linear(start.getX(), end.getX(), t);
-                const interpolatedY = Phaser.Math.Linear(start.getY(), end.getY(), t);
-                const interpolatedZ = Phaser.Math.Linear(start.getRotation(), end.getRotation(), t);
-                updatedPath.push(new Phaser.Math.Vector3(interpolatedX, interpolatedY, interpolatedZ));
-
-                // Break if path exceeds maximum length
-                if (updatedPath.length >= maxPathLength) break;
-            }
-        }
-
-        // Trim path to the maximum length
-        this.path = updatedPath.slice(-maxPathLength);
     }
 
     private appendSegmentsByPositions(startPosIdx: number, positions: Position[]) {
