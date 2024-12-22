@@ -8,7 +8,11 @@ export const ThemeProvider = ({children}) => {
     const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light'); // default theme
 
     const toggleTheme = () => {
-        setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
+        setTheme((prevTheme) => {
+            const newTheme = prevTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            return newTheme;
+        });
     };
 
     return (
