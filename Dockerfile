@@ -12,6 +12,7 @@ COPY tsconfig*.json ./
 COPY webpack.*.cjs ./
 COPY .env ./
 COPY src ./src
+COPY tests ./tests
 COPY public ./public
 
 # Install dependencies
