@@ -88,7 +88,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
             <Container className="vh-100 d-flex justify-content-center">
                 <div>
                     <Row>
-                        <Col className="col-12">
+                        <Col className="col-12 mt-4">
                             <h1 className="text-center">Hello {player.getName()}!</h1>
                         </Col>
                     </Row>
