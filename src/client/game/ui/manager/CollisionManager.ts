@@ -10,6 +10,10 @@ import {SocketEvents} from "../../../../shared/constants/SocketEvents";
 import {getLogger} from "../../../../shared/config/LogConfig";
 import {ObstacleManager} from "./ObstacleManager";
 
+
+
+
+
 const log = getLogger("client.game.ui.manager.CollisionManager");
 
 export class CollisionManager {
@@ -67,13 +71,7 @@ export class CollisionManager {
         });
     }
 
-    private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
-        socket.emitWithLog(SocketEvents.GameEvents.COLLISION, collisionType, (response: any) => {
-            if (response.status) {
-                player.setStatus(PlayerStatusEnum.DEAD);
-            }
-        });
-    }
+
 
     private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake, otherPlayers: PhaserSnake[]) {
         // create a spacial grip with suitable cell size
@@ -101,5 +99,13 @@ export class CollisionManager {
                 }
             }
         }
+    }
+
+    private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
+        socket.emitWithLog(SocketEvents.GameEvents.COLLISION, collisionType, (response: any) => {
+            if (response.status) {
+                player.setStatus(PlayerStatusEnum.DEAD);
+            }
+        });
     }
 }

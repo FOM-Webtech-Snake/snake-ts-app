@@ -112,7 +112,6 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                         <Button className="button" onClick={handleStart}>
                                             <span className="actual-text">Continue {sessionId && "and Join"}</span>
                                         </Button>
-
                                     </div>
                                 </div>
                             </Card.Body>
