@@ -45,8 +45,8 @@ export class PositionUtil {
 
     static randomPosition(config: GameSessionConfig): Position {
         return new Position(
-            Math.floor(Math.random() * (config.getSize().getHeight())),
-            Math.floor(Math.random() * (config.getSize().getWidth())));
+            Math.floor(Math.random() * (config.getSize().getWidth())),
+            Math.floor(Math.random() * (config.getSize().getHeight())));
     }
 
     static calculateDistance(pos1: Position, pos2: Position): number {
