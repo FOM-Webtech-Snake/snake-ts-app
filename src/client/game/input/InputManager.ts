@@ -25,7 +25,7 @@ export class InputManager {
         this.handlers.set(InputTypeEnum.GAMEPAD, new GamepadInputHandler(scene));
         this.handlers.set(InputTypeEnum.AUTOPILOT, new AStarInputHandler(scene, collectableManager, playerManager));
 
-        this.autopilotKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.HOME);
+        this.autopilotKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F10);
         this.autopilotKey.on("down", () => this.toggleAutopilot());
     }
 
