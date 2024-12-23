@@ -53,7 +53,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
     return (
         <Container className="vh-100 d-flex flex-column justify-content-center">
             <Row className="flex-grow-1">
-                <Col className="col-12 col-md-8">
+                <Col className="col-12 col-md-8 mt-4">
                     <div id="game-container" ref={gameContainerRef}
                          style={{
                              width: '100%',

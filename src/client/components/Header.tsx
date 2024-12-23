@@ -16,7 +16,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(({player}, ref) => {
     const {theme, toggleTheme} = useTheme();
 
     return (
-        <Navbar ref={ref} expand="lg" className="mb-4">
+        <Navbar ref={ref} expand="lg">
             <Container>
                 <Navbar.Brand>
                     {/* todo replace this logo by another */}
