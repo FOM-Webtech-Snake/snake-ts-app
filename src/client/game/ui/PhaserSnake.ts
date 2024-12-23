@@ -346,7 +346,7 @@ export class PhaserSnake {
         // remove all excess positions at once if we have more than the minimum required
         if (this.path.length > minPositionsNeeded) {
             // remove all excess positions from the end of the array
-            this.path.splice(minPositionsNeeded + 1);
+            this.path = this.path.slice(0, minPositionsNeeded);
         }
     }
 
