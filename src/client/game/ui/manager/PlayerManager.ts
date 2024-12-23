@@ -5,6 +5,7 @@ import {GameScene} from "../../scenes/GameScene";
 import {Player} from "../../../../shared/model/Player";
 import {GameSocketManager} from "./GameSocketManager";
 import {GameSession} from "../../../../shared/model/GameSession";
+import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
 
 const log = getLogger("client.game.ui.manager.PlayerManager");
 
@@ -12,6 +13,7 @@ export class PlayerManager {
     private scene: GameScene;
     private gameSocketManager: GameSocketManager;
     private players: Record<string, PhaserSnake>;
+    private currentFollowedPlayerId: string | null = null;
 
     constructor(scene: GameScene, gameSocketManager: GameSocketManager) {
         this.scene = scene;
@@ -52,13 +54,35 @@ export class PlayerManager {
                     this.addSnake(localPlayer);
                     if (localPlayer.getPlayerId() === this.gameSocketManager.getPlayerId()) {
                         this.scene.getInputManager().assignToSnake(localPlayer);
-                        this.scene.cameraFollow(localPlayer);
+                        this.cameraFollowPlayer(localPlayer);
                     }
                 }
                 if (localPlayer.getPlayerId() !== this.gameSocketManager.getPlayerId()) {
                     localPlayer.updateFromPlayer(player);
                 }
             });
+        }
+    }
+
+    private cameraFollowPlayer(playerSnake: PhaserSnake | null): void {
+        if (playerSnake?.getHead()) {
+            log.debug(`Camera following player: ${playerSnake.getPlayerId()}`);
+            this.currentFollowedPlayerId = playerSnake.getPlayerId();
+            this.scene.cameras.main.startFollow(playerSnake.getHead());
+        } else {
+            log.warn("No valid player to follow. Camera will not follow.");
+            this.currentFollowedPlayerId = null;
+            this.scene.cameras.main.stopFollow();
+        }
+    }
+
+    private switchToNextPlayer(): void {
+        const nextPlayer = this.getFirstPlayer();
+        if (nextPlayer) {
+            this.cameraFollowPlayer(nextPlayer);
+        } else {
+            log.warn("No players available to follow after current player died.");
+            this.scene.cameras.main.stopFollow();
         }
     }
 
@@ -71,9 +95,9 @@ export class PlayerManager {
             const player = this.getPlayer(playerId);
             if (player) {
                 player.die();
-
-                if (playerId === this.gameSocketManager.getPlayerId()) {
-                    this.scene.cameraFollow(this.getFirstPlayer());
+                if (this.currentFollowedPlayerId === playerId) {
+                    log.debug(`followed player ${playerId} died. switching camera.`);
+                    this.switchToNextPlayer();
                 }
             }
         });
@@ -85,7 +109,7 @@ export class PlayerManager {
                 player.revive(respawnedPlayer.getBodyPositions());
                 player.updateFromPlayer(respawnedPlayer);
                 if (respawnedPlayer.getId() === this.gameSocketManager.getPlayerId()) {
-                    this.scene.cameraFollow(player);
+                    this.cameraFollowPlayer(player);
                 }
             }
         });
@@ -125,7 +149,7 @@ export class PlayerManager {
         }
     }
 
-    private getFirstPlayer(): PhaserSnake {
+    private getFirstPlayer(): PhaserSnake | null {
         log.debug("getting first player");
 
         const playerList = Object.values(this.players);
@@ -136,9 +160,11 @@ export class PlayerManager {
             return null; // Handle case where no players exist
         }
 
-        return playerList.reduce((highestScorer, currentPlayer) =>
-            currentPlayer.getScore() > highestScorer.getScore() ? currentPlayer : highestScorer
-        );
+        return playerList
+            .filter((player) => player.getStatus() == PlayerStatusEnum.ALIVE)
+            .reduce((highestScorer, currentPlayer) =>
+                currentPlayer.getScore() > highestScorer.getScore() ? currentPlayer : highestScorer
+            );
     }
 
     private reset(): void {

@@ -104,12 +104,6 @@ export class GameScene extends Phaser.Scene {
         return this.inputManager;
     }
 
-    cameraFollow(snake: PhaserSnake) {
-        if (!snake?.getHead()) return; // follow nothing when head is not available
-
-        this.cameras.main.startFollow(snake.getHead(), false, 0.1, 0.1);
-    }
-
     togglePause(): void {
         log.debug("game state toggled running/pause");
         if (this.state === GameStateEnum.RUNNING) {
