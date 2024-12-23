@@ -62,7 +62,7 @@ export class GameScene extends Phaser.Scene {
         this.obstacleManager = new ObstacleManager(this, this.gameSocketManager);
         this.playerManager = new PlayerManager(this, this.gameSocketManager);
         this.collisionManager = new CollisionManager(this.playerManager, this.collectableManager, this.obstacleManager, this.gameSocketManager);
-        this.inputManager = new InputManager(this, this.playerManager, this.collectableManager);
+        this.inputManager = new InputManager(this, this.playerManager, this.collectableManager, this.obstacleManager);
 
         // get necessary global properties
         this.registerEventListeners();
@@ -102,12 +102,6 @@ export class GameScene extends Phaser.Scene {
 
     public getInputManager(): InputManager {
         return this.inputManager;
-    }
-
-    cameraFollow(snake: PhaserSnake) {
-        if (!snake?.getHead()) return; // follow nothing when head is not available
-
-        this.cameras.main.startFollow(snake.getHead(), false, 0.1, 0.1);
     }
 
     togglePause(): void {

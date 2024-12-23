@@ -19,6 +19,7 @@ export class PhaserObstacle extends Obstacle {
 
         // init collectable sprite
         this.item = this.scene.physics.add.sprite(this.position.getX(), this.position.getY(), obstacles[this.type].imageKey);
+        this.item.setOrigin(0.5, 0.5);
         this.item.setScale(OBSTACLE_SCALE);
         this.item.setDepth(1);
     }

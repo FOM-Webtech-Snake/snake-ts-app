@@ -7,6 +7,7 @@ import {Position} from "../../../shared/model/Position";
 import {getLogger} from "../../../shared/config/LogConfig";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 import {PlayerManager} from "../ui/manager/PlayerManager";
+import {ObstacleManager} from "../ui/manager/ObstacleManager";
 
 const log = getLogger("client.game.input.AIInputHandler");
 
@@ -16,12 +17,18 @@ export class AStarInputHandler extends InputHandler {
     private lastUpdateTime: number = 0;
     private directionCooldown: number = 200;
     private collectableManager: CollectableManager;
+    private obstacleManager: ObstacleManager;
     private playerManager: PlayerManager;
 
-    constructor(scene: GameScene, collectableManager: CollectableManager, playerManager: PlayerManager, active: boolean = false) {
+    constructor(scene: GameScene,
+                collectableManager: CollectableManager,
+                obstacleManager: ObstacleManager,
+                playerManager: PlayerManager,
+                active: boolean = false) {
         super(scene, InputTypeEnum.AUTOPILOT, active);
 
         this.collectableManager = collectableManager;
+        this.obstacleManager = obstacleManager;
         this.playerManager = playerManager;
 
         // init easy* (a* algo)
@@ -30,7 +37,7 @@ export class AStarInputHandler extends InputHandler {
     }
 
     async handleInput(): Promise<void> {
-        if (!this.isAssigned() || !this.snake || !this.snake.getHeadPosition()) {
+        if (!this.isAssigned() || !this.snake?.getHeadPosition()) {
             log.debug("Input handler AutopilotInputHandler is not assigned");
             return;
         }
@@ -110,11 +117,15 @@ export class AStarInputHandler extends InputHandler {
     private updateGrid(): void {
         this.grid = this.createGrid(); // Reset grid
 
-        // Mark all players snake body positions as obstacles
-        const snakeBody = this.playerManager.getAllPlayerPositions();
-        for (const segment of snakeBody) {
-            const gridX = this.toGridIndex(segment.getX());
-            const gridY = this.toGridIndex(segment.getY());
+        // mark all obstacle positions in grid
+        const allObstacles = [
+            ...this.playerManager.getAllPlayerPositions(),
+            ...this.obstacleManager.getPositionsFromAllObstacles()
+        ];
+
+        for (const obstacle of allObstacles) {
+            const gridX = this.toGridIndex(obstacle.getX());
+            const gridY = this.toGridIndex(obstacle.getY());
 
             if (this.isWithinBounds(gridX, gridY)) {
                 this.grid[gridY][gridX] = 1; // 1 indicates an obstacle

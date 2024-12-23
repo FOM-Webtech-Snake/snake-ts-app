@@ -6,7 +6,6 @@ import {getLogger} from "../../../shared/config/LogConfig";
 
 const log = getLogger("client.game.input.GamepadInputHandler");
 
-// TODO needs to be tested!!!
 export class GamepadInputHandler extends InputHandler {
     private gamepad: Phaser.Input.Gamepad.Gamepad;
 
@@ -19,20 +18,30 @@ export class GamepadInputHandler extends InputHandler {
 
         this.scene.input.gamepad.once("connected", (pad: Phaser.Input.Gamepad.Gamepad) => {
             this.gamepad = pad;
+            log.debug("gamepad connected");
         });
+
+        this.scene.input.gamepad.on("down", (pad, button, value) => {
+            log.debug(`button pressed on gamepad ${pad.id}`, button);
+            log.debug("button value", value);
+            this.handleButtonDown(button.index);
+        })
+    }
+
+    private handleButtonDown(buttonIndex: number) {
+        switch (buttonIndex) {
+            case 9: // start/menu button on xbox controller
+                this.togglePause();
+                break;
+            case 0: // a-button
+                this.startGame();
+        }
     }
 
     handleInput(): void {
         if (!this.gamepad || !this.isAssigned()) {
             log.debug("Input handler TouchInputHandler is not assigned");
             return;
-        }
-
-        if (this.gamepad.A) {
-            this.startGame();
-        }
-        if (this.gamepad.buttons[9]?.pressed) {
-            this.togglePause();
         }
 
         if (this.gamepad.left) {
