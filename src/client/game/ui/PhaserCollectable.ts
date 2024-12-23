@@ -22,6 +22,7 @@ export class PhaserCollectable extends Collectable {
 
         // init collectable sprite
         this.item = this.scene.physics.add.sprite(this.position.getX(), this.position.getY(), childCollectables[this.type].imageKey);
+        this.item.setOrigin(0.5, 0.5);
         this.item.setScale(COLLECTABLE_SCALE);
         this.item.setDepth(1);
 

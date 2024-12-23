@@ -62,7 +62,7 @@ export class GameScene extends Phaser.Scene {
         this.obstacleManager = new ObstacleManager(this, this.gameSocketManager);
         this.playerManager = new PlayerManager(this, this.gameSocketManager);
         this.collisionManager = new CollisionManager(this.playerManager, this.collectableManager, this.obstacleManager, this.gameSocketManager);
-        this.inputManager = new InputManager(this, this.playerManager, this.collectableManager);
+        this.inputManager = new InputManager(this, this.playerManager, this.collectableManager, this.obstacleManager);
 
         // get necessary global properties
         this.registerEventListeners();

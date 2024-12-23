@@ -9,6 +9,7 @@ import {getLogger} from "../../../shared/config/LogConfig";
 import {AStarInputHandler} from "./AStarInputHandler";
 import {CollectableManager} from "../ui/manager/CollectableManager";
 import {PlayerManager} from "../ui/manager/PlayerManager";
+import {ObstacleManager} from "../ui/manager/ObstacleManager";
 
 const log = getLogger("client.game.input.InputManager");
 
@@ -16,14 +17,17 @@ export class InputManager {
     private handlers: Map<InputTypeEnum, InputHandler>;
     private autopilotKey: Phaser.Input.Keyboard.Key;
 
-    constructor(scene: GameScene, playerManager: PlayerManager, collectableManager: CollectableManager) {
+    constructor(scene: GameScene,
+                playerManager: PlayerManager,
+                collectableManager: CollectableManager,
+                obstacleManager: ObstacleManager) {
         this.handlers = new Map();
 
         // Add input handlers
         this.handlers.set(InputTypeEnum.KEYBOARD, new KeyboardInputHandler(scene));
         this.handlers.set(InputTypeEnum.TOUCH, new TouchInputHandler(scene));
         this.handlers.set(InputTypeEnum.GAMEPAD, new GamepadInputHandler(scene));
-        this.handlers.set(InputTypeEnum.AUTOPILOT, new AStarInputHandler(scene, collectableManager, playerManager));
+        this.handlers.set(InputTypeEnum.AUTOPILOT, new AStarInputHandler(scene, collectableManager, obstacleManager, playerManager));
 
         this.autopilotKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F10);
         this.autopilotKey.on("down", () => this.toggleAutopilot());
