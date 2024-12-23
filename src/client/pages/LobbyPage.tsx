@@ -189,7 +189,9 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                         </Button>
                                                     </InputGroup>
                                                 ) : (
-                                                    <p>Waiting for the host to start the game</p>
+                                                    <p className="d-flex justify-content-center align-items-center">
+                                                        Waiting for the host to start the game
+                                                    </p>
                                                 )}
                                                 <InputGroup className="mb-3 justify-content-center mt-3">
                                                     <div className="">
@@ -242,7 +244,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                             </Col>
                         </Row>
                     )}
-                    <GameSessionError />
+                    <GameSessionError/>
                 </div>
             </Container>
 
