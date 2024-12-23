@@ -12,6 +12,8 @@ import SnakeBody from '../../../../public/assets/snakeBody.png';
 import SnakeFace from '../../../../public/assets/snakeFace.png';
 import CollectableArrow from '../../../../public/assets/collectable_arrow.png';
 import Gravestone from '../../../../public/assets/gravestone.png';
+import DeathmatchImage from '../../../../public/assets/deathmatch.png'
+import EnduranceImage from '../../../../public/assets/endurance.png'
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -44,6 +46,8 @@ export class BootScene extends Phaser.Scene {
         this.load.image('snake_face', SnakeFace);
         this.load.image('collectable_arrow', CollectableArrow);
         this.load.image('gravestone', Gravestone);
+        this.load.image('deathmatch_logo', DeathmatchImage);
+        this.load.image('endurance_logo', EnduranceImage);
     }
 
     create() {

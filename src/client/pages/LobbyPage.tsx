@@ -26,6 +26,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const [showShareModal, setShowShareModal] = useState(false);
     const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+    const [gameMode, setGameMode] = useState('Deathmatch');
 
     const handleShowShareModal = () => setShowShareModal(true);
     const handleCloseShareModal = () => setShowShareModal(false);
@@ -40,6 +41,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                 onGameReady();
                 callback(); // ack the server when ready
             });
+            setGameMode(session.getConfig().getRespawnAfterDeathEnabled() ? 'Endurance' : 'Deathmatch');
         } else {
             inputRef.current.readOnly = false;
         }
@@ -74,6 +76,30 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter") {
             createJoinSession();
+        }
+    };
+
+    const handleGameModeClick = (mode) => {
+        if (session?.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
+            const oldConfig = session.getConfig();
+            const config = new GameSessionConfig(
+                oldConfig.getMaxPlayers(),
+                oldConfig.getSize(),
+                oldConfig.getGameDuration(),
+                oldConfig.getWorldCollisionEnabled(),
+                oldConfig.getSelfCollisionEnabled(),
+                oldConfig.getPlayerToPlayerCollisionEnabled(),
+                mode === 'Endurance',
+                oldConfig.getObstacleEnabled(),
+                oldConfig.getSnakeStartingLength(),
+                oldConfig.getSnakeStartingSpeed(),
+                oldConfig.getSnakeStartingScale(),
+            )
+
+            updateConfig(config);
+            setGameMode(mode);
+        } else {
+            log.debug("player not host!");
         }
     };
 
@@ -165,6 +191,42 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                 ) : (
                                                     <p>Waiting for the host to start the game</p>
                                                 )}
+                                                <InputGroup className="mb-3 justify-content-center mt-3">
+                                                    <div className="">
+                                                        {/*Button Deathmatch*/}
+                                                        <Button
+                                                            variant={gameMode === 'Deathmatch' ? 'primary' : 'outline-primary'}
+                                                            onClick={() => handleGameModeClick('Deathmatch')}
+                                                            style={{
+                                                                height: "100px",
+                                                                width: "100px",
+                                                                backgroundImage: "url('/assets/deathmatch.png')",
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                backgroundRepeat: "no-repeat",
+                                                                filter: gameMode === 'Deathmatch' ? 'none' : 'grayscale(100%)',
+                                                            }}
+                                                            title="Deathmatch"
+                                                        >
+                                                        </Button>
+                                                        {/*Button Endurance*/}
+                                                        <Button
+                                                            variant={gameMode === 'Endurance' ? 'primary' : 'outline-primary'}
+                                                            onClick={() => handleGameModeClick('Endurance')}
+                                                            style={{
+                                                                height: "100px",
+                                                                width: "100px",
+                                                                backgroundImage: "url('/assets/endurance.png')",
+                                                                backgroundSize: "contain",
+                                                                backgroundPosition: "center",
+                                                                backgroundRepeat: "no-repeat",
+                                                                filter: gameMode === 'Endurance' ? 'none' : 'grayscale(100%)',
+                                                            }}
+                                                            title="Endurance"
+                                                        >
+                                                        </Button>
+                                                    </div>
+                                                </InputGroup>
                                             </div>
                                         )}
                                     </div>
