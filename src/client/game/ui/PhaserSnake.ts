@@ -210,12 +210,12 @@ export class PhaserSnake {
     }
 
     changeScaleBy(value: number): void {
-        const newScale = this.scale + value;
-        if (newScale <= 0) {
-            throw new Error("new scale must be greater 0");
+        const newScale = this.head.scale + value;
+        if (SNAKE_STARTING_SCALE.min <= newScale && newScale <= SNAKE_STARTING_SCALE.max) {
+            // limit scaling to min max values
+            this.scale = newScale;
+            this.updateScaling();
         }
-        this.scale = newScale;
-        this.updateScaling();
     }
 
     private updateScaling(): void {
