@@ -53,7 +53,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
         <Container className="vh-100 d-flex justify-content-center">
             <div>
                 <Row>
-                    <Col className="col-12 text-center">
+                    <Col className="col-12 text-center mt-4">
                         <h1>Welcome to Snake Extreme!</h1>
                     </Col>
                 </Row>

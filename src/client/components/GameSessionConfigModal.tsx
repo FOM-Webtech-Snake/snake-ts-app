@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Button, Col, Form, Modal, Row} from 'react-bootstrap';
 
 import {Size} from "../../shared/model/Size";
@@ -8,6 +8,7 @@ import {
     SNAKE_STARTING_LENGTH, SNAKE_STARTING_SCALE, SNAKE_STARTING_SPEED
 } from "../../shared/model/GameSessionConfig";
 import {useTheme} from "./ThemeProvider";
+import {useGameSessionSocket} from "./GameSessionContext";
 
 
 interface SessionOptionsModalProps {
@@ -18,6 +19,7 @@ interface SessionOptionsModalProps {
 
 const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave}) => {
     const {theme} = useTheme();
+    const {session} = useGameSessionSocket();
     const [maxPlayers, setMaxPlayers] = useState(DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers());
     const [worldSize, setWorldSize] = useState(DEFAULT_GAME_SESSION_CONFIG.getSize());
     const [gameDuration, setGameDuration] = useState(DEFAULT_GAME_SESSION_CONFIG.getGameDuration());
@@ -31,6 +33,14 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     const [startingLength, setStartingLength] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingLength());
     const [startingSpeed, setStartingSpeed] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingSpeed());
     const [startingScale, setStartingScale] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingScale());
+
+    useEffect(() => {
+        if (session) {
+            const config = session.getConfig();
+            // update respawnAfterDeath on game mode change
+            setRespawnAfterDeathEnabled(config.getRespawnAfterDeathEnabled());
+        }
+    }, [session]);
 
     const handleSave = () => {
         const config = new GameSessionConfig(
