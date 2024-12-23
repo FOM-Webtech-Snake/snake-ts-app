@@ -210,12 +210,12 @@ export class PhaserSnake {
     }
 
     changeScaleBy(value: number): void {
-        const newScale = this.scale + value;
-        if (newScale <= 0) {
-            throw new Error("new scale must be greater 0");
+        const newScale = this.head.scale + value;
+        if (SNAKE_STARTING_SCALE.min <= newScale && newScale <= SNAKE_STARTING_SCALE.max) {
+            // limit scaling to min max values
+            this.scale = newScale;
+            this.updateScaling();
         }
-        this.scale = newScale;
-        this.updateScaling();
     }
 
     private updateScaling(): void {
@@ -346,7 +346,7 @@ export class PhaserSnake {
         // remove all excess positions at once if we have more than the minimum required
         if (this.path.length > minPositionsNeeded) {
             // remove all excess positions from the end of the array
-            this.path.splice(minPositionsNeeded + 1);
+            this.path = this.path.slice(0, minPositionsNeeded);
         }
     }
 
@@ -356,39 +356,21 @@ export class PhaserSnake {
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
         const segmentSpacing: number = Math.round(this.head.displayWidth);
 
+        this.processLockedSegments(bodyParts);
+
         // loop through each segment of the body, skipping the head (index 0)
         for (let i = 1; i < bodyParts.length; i++) {
-
-            // locked position logic (follow when old tail has reached spawn position
-            if (this.lockedSegments.contains(bodyParts[i])) {
-                // check all smaller indexed segments for overlapping
-                let isOverlapping = false;
-                for (let k = 0; k < i; k++) {
-                    const smallerSegment = bodyParts[k];
-                    if (Phaser.Geom.Intersects.RectangleToRectangle(bodyParts[i].getBounds(), smallerSegment.getBounds())) {
-                        isOverlapping = true;
-                        break;
-                    }
-                }
-                if (!isOverlapping) {
-                    this.lockedSegments.remove(bodyParts[i], false, false);
-                } else {
-                    // skip element if it is locked in position
-                    continue;
-                }
-            }
+            if (this.lockedSegments.contains(bodyParts[i])) continue;
 
             const targetDistance = segmentSpacing * i;
-
-            // find pos where current segment should be located (based on distance)
             let accumulatedDistance = 0;
+
             for (let j = 1; j < this.path.length; j++) {
                 const p1 = this.path[j - 1];
                 const p2 = this.path[j];
                 const segmentDistance = Phaser.Math.Distance.Between(p1.x, p1.y, p2.x, p2.y);
-                if (accumulatedDistance + segmentDistance >= targetDistance) {
 
-                    // calc interpolated position
+                if (accumulatedDistance + segmentDistance >= targetDistance) {
                     const t = (targetDistance - accumulatedDistance) / segmentDistance;
                     const interpolatedX = Phaser.Math.Linear(p1.x, p2.x, t);
                     const interpolatedY = Phaser.Math.Linear(p1.y, p2.y, t);
@@ -400,6 +382,24 @@ export class PhaserSnake {
                 }
 
                 accumulatedDistance += segmentDistance;
+            }
+        }
+    }
+
+    private processLockedSegments(bodyParts: Phaser.Physics.Arcade.Sprite[]) {
+        for (let i = 1; i < bodyParts.length; i++) {
+            if (this.lockedSegments.contains(bodyParts[i])) {
+                let isOverlapping = false;
+                for (let k = 0; k < i; k++) {
+                    const smallerSegment = bodyParts[k];
+                    if (Phaser.Geom.Intersects.RectangleToRectangle(bodyParts[i].getBounds(), smallerSegment.getBounds())) {
+                        isOverlapping = true;
+                        break;
+                    }
+                }
+                if (!isOverlapping) {
+                    this.lockedSegments.remove(bodyParts[i], false, false);
+                }
             }
         }
     }
