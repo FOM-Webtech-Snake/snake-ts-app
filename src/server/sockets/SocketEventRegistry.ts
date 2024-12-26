@@ -238,7 +238,10 @@ const SocketEventRegistry: {
 
         const collectable = gameSession?.getCollectableById(uuid);
         if (collectable) {
-            gameSession.getPlayer(socket.id)?.addScore(childCollectables[collectable.getType()].value);
+            // add points in timed game mode
+            if (gameSession.getConfig().getRespawnAfterDeathEnabled()) {
+                gameSession.getPlayer(socket.id)?.addScore(childCollectables[collectable.getType()].value);
+            }
             gameSession.removeCollectable(uuid);
             callback({status: true});
             io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
@@ -270,6 +273,11 @@ const SocketEventRegistry: {
             player.setStatus(PlayerStatusEnum.DEAD);
             io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_DIED, socket.id);
 
+            // add points in deathmatch
+            if (!gameSession.getConfig().getRespawnAfterDeathEnabled()) {
+                gameSession.getPlayer(socket.id)?.addScore(gameSession.countPlayersWithStatus(PlayerStatusEnum.DEAD));
+            }
+
             if(gameSession.getConfig().getObstacleEnabled()){
                 SpawnUtil.spawnNewObstacle(io, player.getHeadPosition(), gameSession);
             }
@@ -291,11 +299,16 @@ const SocketEventRegistry: {
                     }
                 }, 10000); // Respawn time // TODO make configurable
             } else {
-                // end game when zero players are alive
-                if (gameSession.countPlayersWithStatus(PlayerStatusEnum.ALIVE) === 0) {
+                // end game when one player is alive
+                if (gameSession.countPlayersWithStatus(PlayerStatusEnum.ALIVE) <= 1) {
                     gameSession.setGameState(GameStateEnum.GAME_OVER);
                     io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
                     log.info("all players dead!");
+
+                    // add points in deathmatch for last player
+                    if (!gameSession.getConfig().getRespawnAfterDeathEnabled()) {
+                        gameSession.getAlivePlayers()[0]?.addScore(gameSession.countPlayersWithStatus(PlayerStatusEnum.DEAD) + 1);
+                    }
                 }
             }
 
