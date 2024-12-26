@@ -176,7 +176,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                         {session && (
                                             <div className="d-grid">
                                                 {(session?.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) ? (
-                                                    <InputGroup>
+                                                    <div>
                                                         <Button
                                                             className="button" onClick={startGame}>
                                                             <span className="actual-text">Start Game</span>
@@ -187,14 +187,18 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                             onClick={showConfigModal}>
                                                             <i className="fa fa-gear"/>
                                                         </Button>
-                                                    </InputGroup>
+                                                    </div>
                                                 ) : (
                                                     <p className="d-flex justify-content-center align-items-center">
                                                         Waiting for the host to start the game
                                                     </p>
                                                 )}
-                                                <InputGroup className="mb-3 justify-content-center mt-3">
-                                                    <div className="">
+                                                <InputGroup className="mb-3 justify-content-space-evenly mt-3">
+                                                    <div className="d-flex" style={{
+                                                        justifyContent: "space-evenly",
+                                                        alignItems: "center",
+                                                        width: "100%",
+                                                    }}>
                                                         {/*Button Deathmatch*/}
                                                         <Button
                                                             variant={gameMode === 'Deathmatch' ? 'primary' : 'outline-primary'}
