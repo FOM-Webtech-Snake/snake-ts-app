@@ -303,7 +303,7 @@ const SocketEventRegistry: {
                 if (gameSession.countPlayersWithStatus(PlayerStatusEnum.ALIVE) <= 1) {
                     gameSession.setGameState(GameStateEnum.GAME_OVER);
                     io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
-                    log.info("all players dead!");
+                    log.info("One player left! Ending the game!");
 
                     // add points in deathmatch for last player
                     if (!gameSession.getConfig().getRespawnAfterDeathEnabled()) {
