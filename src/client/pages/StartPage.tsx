@@ -7,9 +7,13 @@ interface StartPageProps {
 }
 
 const StartPage: React.FC<StartPageProps> = ({onStart}) => {
-    const [playerName, setPlayerName] = useState("");
+    const [playerName, setPlayerName] = useState(() => {
+        return localStorage.getItem("playerName") || "";
+    });
     const inputRef = useRef<HTMLInputElement>(null);
-    const [color, setColor] = useState<string>(ColorUtil.getRandomColorRGB());
+    const [color, setColor] = useState<string>(() => {
+        return localStorage.getItem("color") || ColorUtil.getRandomColorRGB();
+    });
     const [sessionId, setSessionId] = useState<string>("");
 
     const handleStart = () => {
@@ -35,6 +39,14 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
             handleStart();
         }
     };
+
+    useEffect(() => {
+        localStorage.setItem("playerName", playerName);
+    }, [playerName]);
+
+    useEffect(() => {
+        localStorage.setItem("color", color);
+    }, [color]);
 
     useEffect(() => {
         if (inputRef.current) {
@@ -91,7 +103,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                                 title="Player Name can only contain letters and numbers, no special characters or spaces."
                                                 value={playerName}
                                                 required={true}
-                                                onChange={(e) => setPlayerName(e.target.value)}
+                                                onChange={(e) => setPlayerName(e.target.value.trim())}
                                                 onKeyDown={handleKeyDown}
                                                 ref={inputRef}
                                             />
