@@ -15,6 +15,7 @@ interface GameSessionContextType {
     status: GameStateEnum;
     isConnected: boolean,
     error: string | null;
+    setError: (error: string | null) => void,
     clearError: () => void;
     createSession: (player: Player) => void;
     joinSession: (sessionId: string, player: Player) => void;
@@ -28,6 +29,8 @@ const GameSessionContext = createContext<GameSessionContextType>({
     status: null,
     isConnected: false,
     error: null,
+    setError: error => {
+    },
     clearError: () => {
     },
     createSession: () => {
@@ -170,6 +173,7 @@ export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) =
                 status,
                 isConnected,
                 error,
+                setError,
                 clearError,
                 createSession,
                 joinSession,

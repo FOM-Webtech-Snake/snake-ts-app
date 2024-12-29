@@ -21,7 +21,7 @@ interface LobbyPageProps {
 const log = getLogger("client.components.LobbyPage");
 
 const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
-    const {session, joinSession, createSession, leaveSession, updateConfig} = useGameSessionSocket();
+    const {session, joinSession, createSession, leaveSession, updateConfig, setError} = useGameSessionSocket();
     const [sessionId, setSessionId] = useState("");
     const [showShareModal, setShowShareModal] = useState(false);
     const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
@@ -68,6 +68,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     };
 
     const startGame = () => {
+        if (gameMode === "Deathmatch" && session.getPlayerCount() < 2) {
+            setError("Deathmatch erfordert mind. 2 Spieler!");
+            return;
+        }
         if (socket) {
             socket.emit(SocketEvents.GameControl.GET_READY);
         }

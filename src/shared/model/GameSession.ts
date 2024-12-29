@@ -72,6 +72,10 @@ export class GameSession {
         return Object.values(this.players);
     }
 
+    getAlivePlayers(): Player[] {
+        return this.getPlayersAsArray().filter(player => player.getStatus() === PlayerStatusEnum.ALIVE);
+    }
+
     getPlayerCount(): number {
         return Object.keys(this.players).length;
     }
