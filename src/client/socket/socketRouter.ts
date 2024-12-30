@@ -37,14 +37,15 @@ socket.onAny((event, data) => {
     const reactEvent = reactEventHandlers.get(event);
     if (!phaserEvent && !reactEvent) {
         log.warn("unknown event:", event, data);
+    } else {
+        if (phaserEvent) {
+            phaserEvent(data);
+        }
+        if (reactEvent) {
+            reactEvent(data);
+        }
     }
 
-    if (phaserEvent) {
-        phaserEvent(data);
-    }
-    if (reactEvent) {
-        reactEvent(data);
-    }
 });
 
 export default socket;
