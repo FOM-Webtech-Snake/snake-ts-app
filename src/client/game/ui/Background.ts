@@ -1,39 +1,68 @@
-import Phaser from "phaser";
+import Phaser, {Scene} from "phaser";
 
-const tileSize: number = 25; // tile size in pixel
-const colors = [0xA9D751, 0xA2D04A]; // two colors of the tiles
+const TILE_SIZE: number = 25; // tile size in pixel
+const COLORS = [0xA9D751, 0xA2D04A]; // two colors of the tiles
+const BORDER_WIDTH: number = 10;
 
 export class Background {
     private graphics: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene) {
-        let cols = Math.ceil(scene.physics.world.bounds.width / tileSize);
-        let rows = Math.ceil(scene.physics.world.bounds.height / tileSize);
+        let cols = Math.ceil(scene.physics.world.bounds.width / TILE_SIZE);
+        let rows = Math.ceil(scene.physics.world.bounds.height / TILE_SIZE);
 
         this.graphics = scene.add.graphics();
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < cols; col++) {
                 const colorIndex = (row + col) % 2;
-                const color = colors[colorIndex];
+                const color = COLORS[colorIndex];
 
                 this.graphics.fillStyle(color, 1);
 
-                const x = col * tileSize;
-                const y = row * tileSize;
-                this.graphics.fillRect(x, y, tileSize, tileSize);
+                const x = col * TILE_SIZE;
+                const y = row * TILE_SIZE;
+                this.graphics.fillRect(x, y, TILE_SIZE, TILE_SIZE);
             }
         }
 
-        this.drawBorder(scene.physics.world.bounds);
+        this.drawBorder(scene);
     }
 
-    private drawBorder(bounds: Phaser.Geom.Rectangle) {
-        const borderColor = 0x3236a8;
-        const borderWidth = 15;
+    private drawBorder(scene: Scene) {
+        const bounds = scene.physics.world.bounds;
 
-        this.graphics.lineStyle(borderWidth, borderColor, 1);
+        // create borders
+        scene.add.tileSprite(
+            bounds.x,
+            bounds.y,
+            bounds.width,
+            BORDER_WIDTH,
+            'border_texture'
+        ).setOrigin(0, 0); // top
 
-        this.graphics.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        scene.add.tileSprite(
+            bounds.x,
+            bounds.y + bounds.height - BORDER_WIDTH,
+            bounds.width,
+            BORDER_WIDTH,
+            'border_texture'
+        ).setOrigin(0, 0); // bottom
+
+        scene.add.tileSprite(
+            bounds.x,
+            bounds.y,
+            BORDER_WIDTH,
+            bounds.height,
+            'border_texture'
+        ).setOrigin(0, 0); // left
+
+        scene.add.tileSprite(
+            bounds.x + bounds.width - BORDER_WIDTH,
+            bounds.y,
+            BORDER_WIDTH,
+            bounds.height,
+            'border_texture'
+        ).setOrigin(0, 0); // right
     }
 
     destroy(){
