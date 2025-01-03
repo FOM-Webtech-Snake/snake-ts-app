@@ -1,6 +1,7 @@
 import {Position} from "../../shared/model/Position";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import {GameSession} from "../../shared/model/GameSession";
+import {BORDER_WIDTH} from "../../shared/constants/BorderWidth";
 
 const MIN_DISTANCE: number = 25;
 
@@ -44,9 +45,17 @@ export class PositionUtil {
     }
 
     static randomPosition(config: GameSessionConfig): Position {
+        const width = config.getSize().getWidth();
+        const height = config.getSize().getHeight();
+
+        // exclude positions on border
+        const innerWidth = width - (BORDER_WIDTH * 2);
+        const innerHeight = height - (BORDER_WIDTH * 2);
+
         return new Position(
-            Math.floor(Math.random() * (config.getSize().getWidth())),
-            Math.floor(Math.random() * (config.getSize().getHeight())));
+            Math.floor(Math.random() * innerWidth) + BORDER_WIDTH,
+            Math.floor(Math.random() * innerHeight) + BORDER_WIDTH
+        );
     }
 
     static calculateDistance(pos1: Position, pos2: Position): number {

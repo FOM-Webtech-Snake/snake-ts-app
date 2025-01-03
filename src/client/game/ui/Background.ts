@@ -1,8 +1,8 @@
 import Phaser, {Scene} from "phaser";
+import {BORDER_WIDTH} from "../../../shared/constants/BorderWidth";
 
 const TILE_SIZE: number = 25; // tile size in pixel
 const COLORS = [0xA9D751, 0xA2D04A]; // two colors of the tiles
-const BORDER_WIDTH: number = 10;
 
 export class Background {
     private graphics: Phaser.GameObjects.Graphics;
