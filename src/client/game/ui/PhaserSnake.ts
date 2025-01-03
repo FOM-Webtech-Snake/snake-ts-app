@@ -8,6 +8,7 @@ import {getLogger} from "../../../shared/config/LogConfig";
 import {GameScene} from "../scenes/GameScene";
 import {Player} from "../../../shared/model/Player";
 import {SNAKE_STARTING_SCALE} from "../../../shared/model/GameSessionConfig";
+import {BORDER_WIDTH} from "../../../shared/constants/BorderWidth";
 
 const POSITION_HISTORY_BUFFER_MULTIPLIER: number = 2;
 
@@ -294,7 +295,13 @@ export class PhaserSnake {
     private hasWorldCollision(): boolean {
         log.trace(`world-collision is ${this.scene.getConfig().getWorldCollisionEnabled()}`);
         if (this.scene.getConfig().getWorldCollisionEnabled() && this.status !== PlayerStatusEnum.DEAD) {
-            if (!Phaser.Geom.Rectangle.Contains(this.scene.physics.world.bounds, this.head.x, this.head.y)) {
+            const bounds = this.scene.physics.world.bounds;
+            if (
+                this.head.x <= bounds.x + 5 + BORDER_WIDTH || // left border
+                this.head.x >= bounds.x - 5 + bounds.width - BORDER_WIDTH || // right border
+                this.head.y <= bounds.y + 5 + BORDER_WIDTH || // top border
+                this.head.y >= bounds.y - 5 + bounds.height - BORDER_WIDTH // bottom border
+            ) {
                 log.info("worldCollision detected!");
                 return true;
             }
