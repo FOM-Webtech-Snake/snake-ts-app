@@ -35,6 +35,7 @@ interface EventHandlers {
     [SocketEvents.GameEvents.COLLISION]: [CollisionTypeEnum, (response: { status: boolean }) => void];
     [SocketEvents.Connection.LEAVE_SESSION]: [];
     [SocketEvents.Connection.DISCONNECT]: [];
+    [SocketEvents.SessionState.PLAYER_COLOR_CHANGED]: [string];
 }
 
 // Map event names to handler functions
@@ -179,7 +180,7 @@ const SocketEventRegistry: {
             return;
         }
 
-        if (gameSession.getGameState() !== state) {
+        if (gameSession.getGameState() !== state && gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             gameSession.setGameState(state);
             io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, state);
         }
@@ -355,6 +356,20 @@ const SocketEventRegistry: {
         } else {
             io.to(gameSession.getId()).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
         }
+    },
+
+    [SocketEvents.SessionState.PLAYER_COLOR_CHANGED]: async (
+        io: Server,
+        socket: Socket,
+        [color]: [string]
+    ) => {
+        const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
+        if (!gameSession) {
+            return;
+        }
+
+        gameSession.getPlayer(socket.id).setColor(color);
+        io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
     },
 };
 

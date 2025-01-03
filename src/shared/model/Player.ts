@@ -91,6 +91,10 @@ export class Player {
         return this.color;
     }
 
+    setColor(color: string) {
+        this.color = color;
+    }
+
     getHeadPosition(): Position | null {
         if (this.bodyPositions && this.bodyPositions.length > 0) {
             return this.bodyPositions[0];
