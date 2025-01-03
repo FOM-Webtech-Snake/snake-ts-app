@@ -39,6 +39,7 @@ export namespace SocketEvents {
         SESSION_UPDATED = "sessionUpdated",
         CONFIG_UPDATED = "configUpdated",
         DISCONNECTED = "disconnected",
+        PLAYER_COLOR_CHANGED = "playerColorChanged",
     }
 
     export enum GameEvents {
