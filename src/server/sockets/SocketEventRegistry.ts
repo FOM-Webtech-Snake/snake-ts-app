@@ -179,7 +179,7 @@ const SocketEventRegistry: {
             return;
         }
 
-        if (gameSession.getGameState() !== state) {
+        if (gameSession.getGameState() !== state && gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             gameSession.setGameState(state);
             io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, state);
         }
