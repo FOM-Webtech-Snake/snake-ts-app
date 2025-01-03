@@ -8,44 +8,44 @@ const logEvent = (event: string, payload: any) => {
 
 type EventCallback = (data: any) => void;
 
-interface EventHandlers {
-    [eventName: string]: EventCallback;
-}
-
-const reactEventHandlers: EventHandlers = {};
-const phaserEventHandlers: EventHandlers = {};
+const reactEventHandlers: Map<string, EventCallback> = new Map();
+const phaserEventHandlers: Map<string, EventCallback> = new Map();
 
 export function registerReactEvent(event: string, callback: EventCallback) {
     log.debug("registerReactEvent", event);
-    reactEventHandlers[event] = callback;
+    reactEventHandlers.set(event, callback);
 }
 
 export function unregisterReactEvent(event: string) {
     log.debug("unregisterReactEvent", event);
-    reactEventHandlers[event] = null;
-    delete reactEventHandlers[event];
+    reactEventHandlers.delete(event);
 }
 
 export function registerPhaserEvent(event: string, callback: EventCallback) {
     log.debug("registerPhaserEvent", event);
-    phaserEventHandlers[event] = callback;
+    phaserEventHandlers.set(event, callback);
 }
 
 export function unregisterPhaserEvent(event: string) {
     log.debug("unregisterPhaserEvent", event);
-    phaserEventHandlers[event] = null;
-    delete phaserEventHandlers[event];
+    phaserEventHandlers.delete(event);
 }
 
 socket.onAny((event, data) => {
     logEvent(event, data);
-    if (phaserEventHandlers[event]) {
-        phaserEventHandlers[event](data);
-    } else if (reactEventHandlers[event]) {
-        reactEventHandlers[event](data);
-    } else {
+    const phaserEvent = phaserEventHandlers.get(event);
+    const reactEvent = reactEventHandlers.get(event);
+    if (!phaserEvent && !reactEvent) {
         log.warn("unknown event:", event, data);
+    } else {
+        if (phaserEvent) {
+            phaserEvent(data);
+        }
+        if (reactEvent) {
+            reactEvent(data);
+        }
     }
+
 });
 
 export default socket;
