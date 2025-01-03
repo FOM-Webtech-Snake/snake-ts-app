@@ -12,6 +12,7 @@ import ShareInfoModal from "../components/ShareModal";
 import {registerReactEvent} from "../socket/socketRouter";
 import socket from "../socket/socket";
 import GameSessionError from "../components/GameSessionError";
+import {ColorUtil} from "../game/util/ColorUtil";
 
 interface LobbyPageProps {
     player: Player;
@@ -27,6 +28,10 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
     const [showCreateSessionModal, setShowCreateSessionModal] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const [gameMode, setGameMode] = useState('Deathmatch');
+
+    const [color, setColor] = useState<string>(() => {
+        return localStorage.getItem("color") || ColorUtil.getRandomColorRGB();
+    });
 
     const handleShowShareModal = () => setShowShareModal(true);
     const handleCloseShareModal = () => setShowShareModal(false);
@@ -107,6 +112,16 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
         }
     };
 
+    const handleColorChange = (newColor) => {
+        log.debug("new color:", newColor);
+
+        setColor(newColor);
+        player.setColor(newColor);
+        localStorage.setItem("color", newColor);
+
+        socket.emit(SocketEvents.SessionState.PLAYER_COLOR_CHANGED, newColor.toString());
+    };
+
     useEffect(() => {
         if (inputRef.current) {
             inputRef.current.focus();
@@ -149,7 +164,31 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                 {session ? (<>
                                                     <Button
                                                         variant="secondary" size="lg"
-                                                        onClick={handleShowShareModal}>
+                                                        onClick={() => document.getElementById('colorPickerInput').click()}
+                                                        style={{ borderRight: "1px solid #ccc" }}
+                                                    >
+                                                        {color && (
+                                                            <div style={{
+                                                                width: '20px',
+                                                                height: '20px',
+                                                                backgroundColor: color,
+                                                                borderRadius: '50%',
+                                                                border: '1px solid #fff',
+                                                            }}></div>
+                                                        )}
+                                                    </Button>
+                                                    {/*hidden color picker*/}
+                                                    <input
+                                                        id="colorPickerInput"
+                                                        type="color"
+                                                        value={color}
+                                                        onChange={(e) => handleColorChange(e.target.value)}
+                                                        style={{display: 'none'}}
+                                                    />
+                                                    <Button
+                                                        variant="secondary" size="lg"
+                                                        onClick={handleShowShareModal}
+                                                        style={{borderLeft: "1px solid #ccc"}}>
                                                         <i className="fa fa-share"></i>
                                                     </Button>
                                                     <Button
