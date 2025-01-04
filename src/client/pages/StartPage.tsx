@@ -66,7 +66,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
             <div>
                 <Row>
                     <Col className="col-12 text-center mt-4">
-                        <h1>Welcome to Snake Extreme!</h1>
+                        <h1 style={{color: "#ffffff"}}>Welcome to Snake Extreme!</h1>
                     </Col>
                 </Row>
                 <Row>

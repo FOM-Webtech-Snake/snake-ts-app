@@ -24,7 +24,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(({player}, ref) => {
                         src={SnakeLogo}
                         width="30"
                         height="30"
-                        className="d-inline-block align-top"
+                        className="d-inline-block align-top snake-logo"
                         alt="Snake Extreme Logo"
                     />
                 </Navbar.Brand>
@@ -43,6 +43,8 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(({player}, ref) => {
                                     marginLeft: '10px',
                                     border: '1px solid #fff',
                                     borderRadius: '50%',
+                                    position: 'relative',
+                                    top: '3px'
                                 }}
                             ></div>
                         </div>
@@ -56,7 +58,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(({player}, ref) => {
                     <i className={theme === "light" ? "fa fa fa-moon" : "fa fa fa-sun"}/>
                 </Button>
 
-                {/* navbar roggle for mobile */}
+                {/* navbar toggle for mobile */}
                 <Navbar.Toggle aria-controls="basic-navbar-nav"/>
 
                 {/* collapse content */}
@@ -64,7 +66,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(({player}, ref) => {
                     <Nav className="ms-auto">
                         {/* socket id */}
                         {socket?.id && (
-                            <Nav.Item>
+                            <Nav.Item className="me-3">
                                 <strong>ID:</strong> {socket.id}
                             </Nav.Item>
                         )}

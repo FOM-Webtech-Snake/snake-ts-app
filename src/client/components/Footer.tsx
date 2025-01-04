@@ -8,12 +8,12 @@ const Footer= forwardRef<HTMLDivElement, {}>((_, ref) => {
             <Container>
                 <Row>
                     {/* Left side: Copyright */}
-                    <Col md={6}>
+                    <Col xs={10} md={6}>
                         <span>&copy; {new Date().getFullYear()} Snake Extreme (Build: {APP_VERSION})</span>
                     </Col>
 
                     {/* Right side: GitHub icon */}
-                    <Col md={6} className="text-end">
+                    <Col xs={2} md={6} className="text-end">
                         <a href={REPO_URL} target="_blank" rel="noopener noreferrer" className="text-light me-3">
                             <i className="fab fa-github"></i>
                         </a>
