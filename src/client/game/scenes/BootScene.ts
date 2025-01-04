@@ -14,6 +14,7 @@ import CollectableArrow from '../../../../public/assets/collectable_arrow.png';
 import Gravestone from '../../../../public/assets/gravestone.png';
 import DeathmatchImage from '../../../../public/assets/deathmatch.png'
 import EnduranceImage from '../../../../public/assets/endurance.png'
+import BorderTexture from '../../../../public/assets/grass.png'
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -48,6 +49,7 @@ export class BootScene extends Phaser.Scene {
         this.load.image('gravestone', Gravestone);
         this.load.image('deathmatch_logo', DeathmatchImage);
         this.load.image('endurance_logo', EnduranceImage);
+        this.load.image('border_texture', BorderTexture);
     }
 
     create() {
