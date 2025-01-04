@@ -44,6 +44,28 @@ body {
     color: var(--dark-text);
 }
 
+/* snake logo */
+.app.light .snake-logo {
+    filter: none;
+}
+
+.app.dark .snake-logo {
+    filter: invert(1) brightness(2);
+}
+
+/* Hamburger Menu Icon Navbar */
+.app.dark .navbar-toggler {
+    border-color: var(--dark-primary);
+}
+
+.app.light .navbar-toggler-icon {
+    filter: none;
+}
+
+.app.dark .navbar-toggler-icon {
+    filter: invert(1) brightness(0) saturate(100%) contrast(100%);
+}
+
 /* card styles */
 .app.light .card {
     background-color: var(--light-secondary);

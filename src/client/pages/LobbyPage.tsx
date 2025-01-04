@@ -134,7 +134,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                 <div>
                     <Row>
                         <Col className="col-12 mt-4">
-                            <h1 className="text-center">Hello {player.getName()}!</h1>
+                            <h1 className="text-center" style={{color: "#ffffff"}}>Hello {player.getName()}!</h1>
                         </Col>
                     </Row>
                     <Row>
@@ -165,7 +165,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                     <Button
                                                         variant="secondary" size="lg"
                                                         onClick={() => document.getElementById('colorPickerInput').click()}
-                                                        style={{ borderRight: "1px solid #ccc" }}
+                                                        style={{borderRight: "1px solid #dee2e6"}}
                                                     >
                                                         {color && (
                                                             <div style={{
@@ -173,7 +173,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                                 height: '20px',
                                                                 backgroundColor: color,
                                                                 borderRadius: '50%',
-                                                                border: '1px solid #fff',
+                                                                border: '1px solid #ffffff',
                                                             }}></div>
                                                         )}
                                                     </Button>
@@ -188,12 +188,16 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                     <Button
                                                         variant="secondary" size="lg"
                                                         onClick={handleShowShareModal}
-                                                        style={{borderLeft: "1px solid #ccc"}}>
+                                                        style={{
+                                                            borderLeft: "1px solid #dee2e6",
+                                                            borderRight: "1px solid #dee2e6",
+                                                        }}>
                                                         <i className="fa fa-share"></i>
                                                     </Button>
                                                     <Button
                                                         variant="danger" size="lg"
-                                                        onClick={handleLeaveSession}>
+                                                        onClick={handleLeaveSession}
+                                                        style={{borderLeft: "1px solid #dee2e6"}}>
                                                         <i className="fa fa-sign-out"></i>
                                                     </Button>
                                                 </>) : (
@@ -219,14 +223,14 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                         {session && (
                                             <div className="d-grid">
                                                 {(session?.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) ? (
-                                                    <div>
+                                                    <div className="d-flex justify-content-center align-items-center">
                                                         <Button
                                                             className="button" onClick={startGame}>
                                                             <span className="actual-text">Start Game</span>
                                                         </Button>
 
                                                         <Button
-                                                            className="btn btn-secondary btn-lg mr-2"
+                                                            className="btn btn-secondary btn-lg m-3"
                                                             onClick={showConfigModal}>
                                                             <i className="fa fa-gear"/>
                                                         </Button>

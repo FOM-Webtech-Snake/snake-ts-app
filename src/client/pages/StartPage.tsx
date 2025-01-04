@@ -15,8 +15,12 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
         return localStorage.getItem("color") || ColorUtil.getRandomColorRGB();
     });
     const [sessionId, setSessionId] = useState<string>("");
+    const [isValidName, setIsValidName] = useState<boolean>(/^[a-zA-Z0-9]*$/.test(playerName) || false);
 
     const handleStart = () => {
+        if (!isValidName) {
+            return;
+        }
         if (inputRef.current) {
             if (!inputRef.current.reportValidity()) {
                 return;
@@ -38,6 +42,15 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
         if (event.key === "Enter") {
             handleStart();
         }
+    };
+
+    const handleInputChange = (e) => {
+        const value = e.target.value.trim();
+        setPlayerName(value);
+
+        // validation of the name
+        const isValid = /^[a-zA-Z0-9]*$/.test(value);
+        setIsValidName(isValid);
     };
 
     useEffect(() => {
@@ -66,7 +79,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
             <div>
                 <Row>
                     <Col className="col-12 text-center mt-4">
-                        <h1>Welcome to Snake Extreme!</h1>
+                        <h1 style={{color: "#ffffff"}}>Welcome to Snake Extreme!</h1>
                     </Col>
                 </Row>
                 <Row>
@@ -99,15 +112,18 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                                 aria-label="Player Name"
                                                 aria-describedby="playerNameAddon"
                                                 placeholder="Enter your name"
-                                                pattern="^[a-zA-Z0-9]*$"
-                                                title="Player Name can only contain letters and numbers, no special characters or spaces."
                                                 value={playerName}
                                                 required={true}
-                                                onChange={(e) => setPlayerName(e.target.value.trim())}
+                                                onChange={handleInputChange}
                                                 onKeyDown={handleKeyDown}
                                                 ref={inputRef}
                                             />
                                         </InputGroup>
+                                        {!isValidName &&
+                                            <div className="text-danger">
+                                                Player Name can only contain letters and numbers, no special characters or spaces.
+                                            </div>
+                                        }
                                     </Form.Group>
 
                                     <Form.Group controlId="colorPicker" className="mb-4">
