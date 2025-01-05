@@ -16,8 +16,8 @@ import {
 } from "../../shared/config/GlobalTickRate";
 import {PositionUtil} from "../util/PositionUtil";
 import {Position} from "../../shared/model/Position";
-import {GameTimerUtil} from "../util/GameTimerUtil";
 import {SpawnUtil} from "../util/SpawnUtil";
+import {GameTimerManager} from "../GameTimerManager";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -123,14 +123,18 @@ const SocketEventRegistry: {
         }
 
         // start countdown
+        const gameTimerManager = GameTimerManager.getInstance(io);
+
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
-            GameTimerUtil.startCountdown(io, gameSession, () => {
+
+            gameTimerManager.startCountdown(gameSession, () => {
+                log.info("Countdown ended. Starting game timer...");
                 if (gameSession.start(io)) {
+                    // start game
                     io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
                 }
-
-                // start game timer
-                GameTimerUtil.startGameTimer(io, gameSession);
+                //start game timer
+                gameTimerManager.startGameTimer(gameSession);
             });
         }
     },
@@ -149,6 +153,10 @@ const SocketEventRegistry: {
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             gameSession.reset();
             io.to(gameSession.getId()).emit(SocketEvents.GameControl.RESET_GAME, gameSession.toJson());
+
+            // reset timer
+            const gameTimerManager = GameTimerManager.getInstance(io);
+            gameTimerManager.stopGameTimer(gameSession);
         }
     },
 
@@ -223,6 +231,9 @@ const SocketEventRegistry: {
                         gameSession.setGameState(GameStateEnum.READY);
                     }
                 });
+            }
+            else {
+                log.warn(`wrong GameState: ${gameSession.getGameState()}`);
             }
         }
     },
