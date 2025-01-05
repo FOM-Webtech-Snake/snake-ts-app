@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import React from 'react';
 import {GameSessionProvider} from "./components/GameSessionContext";
 import {ThemeProvider} from "./components/ThemeProvider";
+import {GameStateProvider} from "./components/GameStateContext";
 
 window.addEventListener('DOMContentLoaded', () => {
     const rootElement = document.getElementById('root');
@@ -13,7 +14,9 @@ window.addEventListener('DOMContentLoaded', () => {
             <React.StrictMode>
                 <GameSessionProvider>
                     <ThemeProvider>
-                        <App/>
+                        <GameStateProvider>
+                            <App/>
+                        </GameStateProvider>
                     </ThemeProvider>
                 </GameSessionProvider>
             </React.StrictMode>

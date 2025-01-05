@@ -10,12 +10,12 @@ import {useGameSessionSocket} from "./components/GameSessionContext";
 import LoadingOverlay from "./components/LoadingOverlay";
 import {useTheme} from "./components/ThemeProvider";
 import logo from '../../public/assets/logo.svg';
+import {useGameState} from "./components/GameStateContext";
 
 const App: React.FC = () => {
     const {theme} = useTheme();
     const {playerId, isConnected, joinSession} = useGameSessionSocket();
-    const [gameReady, setGameReady] = useState(false);
-    const [inLobby, setInLobby] = useState(false);
+    const {inLobby, setInLobby, gameReady, setGameReady} = useGameState();
     const [player, setPlayer] = useState<Player | null>(null);
     const headerRef = useRef<HTMLDivElement | null>(null);
     const footerRef = useRef<HTMLDivElement | null>(null);
