@@ -1,1 +1,1 @@
-export const BORDER_WIDTH: number = 10;
+export const BORDER_WIDTH: number = 25;

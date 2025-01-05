@@ -120,7 +120,7 @@ const StartPage: React.FC<StartPageProps> = ({onStart}) => {
                                             />
                                         </InputGroup>
                                         {!isValidName &&
-                                            <div className="text-danger">
+                                            <div className="text-danger text-center" style={{maxWidth: "400px"}}>
                                                 Player Name can only contain letters and numbers, no special characters or spaces.
                                             </div>
                                         }
