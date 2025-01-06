@@ -309,7 +309,7 @@ export class PhaserSnake {
 
             // check collision between the head and the current segment
             if (Phaser.Geom.Intersects.CircleToCircle(headCircle, segmentCircle)) {
-                log.info(`self-collision detected!, justReversed=${this.justReversed})`);
+                log.trace(`self-collision detected!, justReversed=${this.justReversed})`);
 
                 if (this.justReversed) {
                     this.selfCollisionDetected = true;
@@ -320,7 +320,7 @@ export class PhaserSnake {
 
         // reset justReversed to enable self collision again
         if (this.selfCollisionDetected) {
-            log.info(`no further collisions detected! resetting justReversed(${this.justReversed}) to false!`);
+            log.trace(`no further collisions detected! resetting justReversed(${this.justReversed}) to false!`);
             this.selfCollisionDetected = false;
             this.justReversed = false;
         }
