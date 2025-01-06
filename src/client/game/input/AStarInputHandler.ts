@@ -146,22 +146,22 @@ export class AStarInputHandler extends InputHandler {
 
         switch (this.snake.getDirection()) {
             case DirectionEnum.RIGHT:
-                if (headGridX >= gridWidth - 1) {
+                if (headGridX >= gridWidth - 2) {
                     return DirectionEnum.DOWN;
                 }
                 break;
             case DirectionEnum.DOWN:
-                if (headGridY >= gridHeight - 1) {
+                if (headGridY >= gridHeight - 2) {
                     return DirectionEnum.LEFT;
                 }
                 break;
             case DirectionEnum.LEFT:
-                if (headGridX <= 0) {
+                if (headGridX <= 1) {
                     return DirectionEnum.UP;
                 }
                 break;
             case DirectionEnum.UP:
-                if (headGridY <= 0) {
+                if (headGridY <= 1) {
                     return DirectionEnum.RIGHT;
                 }
                 break;
