@@ -155,16 +155,18 @@ export class PlayerManager {
         const playerList = Object.values(this.players);
         log.trace("player list", playerList);
 
-        if (playerList.length === 0) {
-            log.warn("No players found");
-            return null; // Handle case where no players exist
+        const highestScorer = playerList
+            .filter(player => player.getStatus() === PlayerStatusEnum.ALIVE)
+            .reduce((highest, player) =>
+                (!highest || player.getScore() > highest.getScore() ? player : highest), null);
+
+        if (highestScorer) {
+            log.info("Highest Scorer:", highestScorer);
+        } else {
+            log.info("No players are alive.");
         }
 
-        return playerList
-            .filter((player) => player.getStatus() == PlayerStatusEnum.ALIVE)
-            .reduce((highestScorer, currentPlayer) =>
-                currentPlayer.getScore() > highestScorer.getScore() ? currentPlayer : highestScorer
-            );
+        return highestScorer;
     }
 
     private reset(): void {
