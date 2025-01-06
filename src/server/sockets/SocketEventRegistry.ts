@@ -158,11 +158,6 @@ const SocketEventRegistry: {
             // reset timer
             const gameTimerManager = GameTimerManager.getInstance(io);
             gameTimerManager.stopGameTimer(gameSession);
-
-            // reset game state
-            // gameSession.setGameState(GameStateEnum.WAITING_FOR_PLAYERS);
-            // io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
-            // log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
         }
     },
 
