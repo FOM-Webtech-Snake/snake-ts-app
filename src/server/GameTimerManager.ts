@@ -23,9 +23,7 @@ export class GameTimerManager {
     public static getInstance(io?: Server): GameTimerManager {
         if (!GameTimerManager.instance) {
             if (!io) {
-                throw new Error(
-                    "GameTimerManager has not been initialized yet. You need to provide a Server instance on first call."
-                );
+                log.warn("GameTimerManager has not been initialized yet. You need to provide a Server instance on first call.");
             }
             GameTimerManager.instance = new GameTimerManager(io);
         }
