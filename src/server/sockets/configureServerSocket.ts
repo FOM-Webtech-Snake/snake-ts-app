@@ -15,7 +15,7 @@ const configureServerSocket = (io: Server) => {
         // Dynamically register all events
         Object.entries(SocketEventRegistry).forEach(([event, handler]) => {
             socket.on(event, (...args: unknown[]) => {
-                log.debug(`Event triggered: ${event} by ${socket.id}`);
+                log.trace(`Event triggered: ${event} by ${socket.id}`);
 
                 // Ensure handler arguments are correctly typed
                 try {

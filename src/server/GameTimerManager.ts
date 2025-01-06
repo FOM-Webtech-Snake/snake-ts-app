@@ -10,11 +10,13 @@ export class GameTimerManager {
     private static instance: GameTimerManager;
     private io: Server;
     private countdownTimers: Map<string, NodeJS.Timeout>;
+    private countdownStatus: Map<string, boolean>;
     private gameTimers: Map<string, NodeJS.Timeout>;
 
     constructor(io: Server) {
         this.io = io;
         this.countdownTimers = new Map();
+        this.countdownStatus = new Map();
         this.gameTimers = new Map();
     }
 
@@ -31,39 +33,42 @@ export class GameTimerManager {
     }
 
     startCountdown(gameSession: GameSession, onCountdownEnd: () => void): void {
-        if (gameSession.getIsCountdownRunning()) {
-            log.warn(`Countdown for game session ${gameSession.getId()} is already running.`);
+        const sessionId = gameSession.getId();
+
+        if (this.countdownStatus.get(sessionId)) {
+            log.warn(`Countdown for game session ${sessionId} is already running.`);
             return;
         }
 
         let countdown = 3;
-        gameSession.setIsCountdownRunning(true);
+        this.countdownStatus.set(sessionId, true);
 
         const countdownInterval = setInterval(() => {
-            this.io.to(gameSession.getId()).emit(SocketEvents.GameControl.COUNTDOWN_UPDATED, countdown);
+            this.io.to(sessionId).emit(SocketEvents.GameControl.COUNTDOWN_UPDATED, countdown);
 
             if (countdown <= 0) {
                 clearInterval(countdownInterval);
-                this.countdownTimers.delete(gameSession.getId());
+                this.countdownTimers.delete(sessionId);
                 onCountdownEnd();
-                gameSession.setIsCountdownRunning(false);
+                this.countdownStatus.set(sessionId, false);
             } else {
                 countdown--;
             }
         }, 1000);
 
-        this.countdownTimers.set(gameSession.getId(), countdownInterval);
+        this.countdownTimers.set(sessionId, countdownInterval);
     }
 
     stopCountdown(gameSession: GameSession): void {
-        const countdownTimer = this.countdownTimers.get(gameSession.getId());
+        const sessionId = gameSession.getId();
+        const countdownTimer = this.countdownTimers.get(sessionId);
         if (countdownTimer) {
             clearInterval(countdownTimer);
-            this.countdownTimers.delete(gameSession.getId());
-            gameSession.setIsCountdownRunning(false);
-            log.debug(`Countdown for game session ${gameSession.getId()} stopped.`);
+            this.countdownTimers.delete(sessionId);
+            this.countdownStatus.set(sessionId, false);
+            log.debug(`Countdown for game session ${sessionId} stopped.`);
         } else {
-            log.warn(`No countdown found for game session ${gameSession.getId()}.`);
+            log.warn(`No countdown found for game session ${sessionId}.`);
         }
     }
 
@@ -95,14 +100,18 @@ export class GameTimerManager {
     }
 
     stopGameTimer(gameSession: GameSession): void {
-        const gameTimer = this.gameTimers.get(gameSession.getId());
+        const sessionId = gameSession.getId();
+        const gameTimer = this.gameTimers.get(sessionId);
+
         if (gameTimer) {
             clearInterval(gameTimer);
-            this.gameTimers.delete(gameSession.getId());
+            this.gameTimers.delete(sessionId);
             gameSession.setTimerInterval(null);
-            log.debug(`Game timer for session ${gameSession.getId()} stopped.`);
+            log.debug(`Game timer for session ${sessionId} stopped.`);
+
+            this.stopCountdown(gameSession);
         } else {
-            log.warn(`No game timer found for session ${gameSession.getId()}.`);
+            log.warn(`No game timer found for session ${sessionId}.`);
         }
     }
 }

@@ -23,7 +23,6 @@ export class GameSession {
     private collectables: Record<string, Collectable>;
     private remainingTime: number;
     private timerInterval: NodeJS.Timeout | null = null;
-    private isCountdownRunning: boolean = false;
 
 
     constructor(id: string,
@@ -41,7 +40,6 @@ export class GameSession {
         this.obstacles = obstacles;
         this.remainingTime = config.getGameDuration();
         this.timerInterval = timerInterval;
-        this.isCountdownRunning = false;
     }
 
     reset() {
@@ -50,7 +48,6 @@ export class GameSession {
         this.spawnPlayers();
         this.collectables = {};
         this.remainingTime = this.config.getGameDuration();
-        this.isCountdownRunning = false;
     }
 
     getId(): string {
@@ -110,14 +107,6 @@ export class GameSession {
 
     setRemainingTime(remainingTime: number) {
         this.remainingTime = remainingTime;
-    }
-
-    getIsCountdownRunning() {
-        return this.isCountdownRunning;
-    }
-
-    setIsCountdownRunning(isCountdownRunning: boolean) {
-        this.isCountdownRunning = isCountdownRunning;
     }
 
     getTimerInterval() {

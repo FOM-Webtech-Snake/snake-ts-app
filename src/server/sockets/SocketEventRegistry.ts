@@ -118,7 +118,7 @@ const SocketEventRegistry: {
         []: []
     ) => {
         const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
-        if (!gameSession || gameSession.getIsCountdownRunning()) {
+        if (!gameSession) {
             return;
         }
 
@@ -145,7 +145,7 @@ const SocketEventRegistry: {
         []: []
     ) => {
         const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
-        if (!gameSession || gameSession.getIsCountdownRunning()) {
+        if (!gameSession) {
             return;
         }
 
@@ -171,7 +171,7 @@ const SocketEventRegistry: {
         []: []
     ) => {
         const gameSession = sessionManager.getSessionIdByPlayerId(socket.id);
-        if (!gameSession || gameSession.getIsCountdownRunning()) {
+        if (!gameSession) {
             return;
         }
         const player = gameSession.getPlayer(socket.id);
