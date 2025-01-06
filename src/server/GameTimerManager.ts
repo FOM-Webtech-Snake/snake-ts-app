@@ -40,6 +40,7 @@ export class GameTimerManager {
             return;
         }
 
+        log.debug(`Starting Countdown for game session ${sessionId}.`);
         let countdown = 3;
         this.countdownStatus.set(sessionId, true);
 
@@ -68,7 +69,7 @@ export class GameTimerManager {
             this.countdownStatus.set(sessionId, false);
             log.debug(`Countdown for game session ${sessionId} stopped.`);
         } else {
-            log.warn(`No countdown found for game session ${sessionId}.`);
+            log.debug(`No countdown found for game session ${sessionId}.`);
         }
     }
 

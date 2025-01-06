@@ -132,6 +132,7 @@ const SocketEventRegistry: {
                 if (gameSession.start(io)) {
                     // start game
                     io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                    log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                 }
                 //start game timer
                 gameTimerManager.startGameTimer(gameSession);
@@ -196,6 +197,7 @@ const SocketEventRegistry: {
         if (gameSession.getGameState() !== state && gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             gameSession.setGameState(state);
             io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, state);
+            log.debug(`game state for session ${gameSession.getId()} changed to ${state}`);
         }
     },
 
@@ -235,6 +237,7 @@ const SocketEventRegistry: {
                         log.debug(`game session start confirmed from all clients`);
                         gameSession.setGameState(GameStateEnum.READY);
                         Object.values(gameSession.getPlayers()).forEach((player: Player) => player.resetPoints());
+                        log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                     }
                 });
             }
@@ -321,6 +324,7 @@ const SocketEventRegistry: {
                 if (gameSession.countPlayersWithStatus(PlayerStatusEnum.ALIVE) <= 1) {
                     gameSession.setGameState(GameStateEnum.GAME_OVER);
                     io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                    log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                     log.info("One player left! Ending the game!");
 
                     // add points in deathmatch for last player
