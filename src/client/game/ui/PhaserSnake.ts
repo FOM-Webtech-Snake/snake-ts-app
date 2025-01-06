@@ -130,7 +130,7 @@ export class PhaserSnake {
     }
 
     private updateFacePosition() {
-        if (!this.head) return; // no update of face when head is not available
+        if (!this.head || !this.face) return; // no update of face when head or face is undefined
 
         log.trace("updateFacePosition", this.head);
         this.face.setPosition(this.head.x, this.head.y);
@@ -338,7 +338,7 @@ export class PhaserSnake {
                 this.head.y <= bounds.y + 5 + BORDER_WIDTH || // top border
                 this.head.y >= bounds.y - 5 + bounds.height - BORDER_WIDTH // bottom border
             ) {
-                log.info("worldCollision detected!");
+                log.debug("worldCollision detected!");
                 return true;
             }
         }
