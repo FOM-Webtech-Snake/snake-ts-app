@@ -94,6 +94,10 @@ export class GameScene extends Phaser.Scene {
                 this.overlay.hide();
             }
         });
+
+        this.gameSocketManager.on("RESET_GAME", () => {
+            this.scene.remove();
+        });
     }
 
     public getOverlay(): Overlay {
