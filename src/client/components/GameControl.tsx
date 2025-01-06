@@ -44,7 +44,6 @@ const GameControlPanel: React.FC<GameControlPanelProps> = () => {
     const restartGame = () => {
         if (socket) {
             socket.emit(SocketEvents.GameControl.RESET_GAME);
-            socket.emit(SocketEvents.GameControl.STATE_CHANGED, GameStateEnum.READY);
         }
     };
 
@@ -66,9 +65,9 @@ const GameControlPanel: React.FC<GameControlPanelProps> = () => {
             <Card className="p-4 shadow">
                 <Card.Body>
                     <div className="d-flex justify-content-center">
-                        <Button variant="secondary" onClick={restartGame} className="mx-2">
-                            <i className={"fa fa-rotate-backward"}/>
-                        </Button>
+                        {/*<Button variant="secondary" onClick={restartGame} className="mx-2">*/}
+                        {/*    <i className={"fa fa-rotate-backward"}/>*/}
+                        {/*</Button>*/}
                         <Button variant="secondary" onClick={backToLobby} className="mx-2">
                             <i className={"fa fa-arrow-left"}/>
                         </Button>
