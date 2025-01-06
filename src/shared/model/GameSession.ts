@@ -46,7 +46,6 @@ export class GameSession {
         this.gameState = GameStateEnum.WAITING_FOR_PLAYERS;
         log.debug(`gameState changed to ${this.gameState}`);
         Object.values(this.players).forEach((player: Player) => player.reset());
-        // this.spawnPlayers();
         this.collectables = {};
         this.remainingTime = this.config.getGameDuration();
     }

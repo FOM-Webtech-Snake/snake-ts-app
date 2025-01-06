@@ -234,6 +234,7 @@ const SocketEventRegistry: {
                     } else {
                         log.debug(`game session start confirmed from all clients`);
                         gameSession.setGameState(GameStateEnum.READY);
+                        Object.values(gameSession.getPlayers()).forEach((player: Player) => player.resetPoints());
                     }
                 });
             }
