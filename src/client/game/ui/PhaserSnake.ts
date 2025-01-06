@@ -26,7 +26,9 @@ export class PhaserSnake {
     private scale: number;
     private direction: DirectionEnum;
     private directionLock: boolean;
+
     private justReversed: boolean;
+    private selfCollisionDetected: boolean;
 
     // colors
     private primaryColor: number;
@@ -66,6 +68,7 @@ export class PhaserSnake {
         this.direction = direction;
         this.directionLock = false;
         this.justReversed = false;
+        this.selfCollisionDetected = false;
 
         // store primary color and create colors for tinting
         this.primaryColor = color;
@@ -76,10 +79,17 @@ export class PhaserSnake {
     }
 
     spawn(positions: Position[]) {
+        // reset collision and reversed state
+        this.justReversed = false;
+        this.selfCollisionDetected = false;
+
         // create the body
         this.body = this.scene.physics.add.group();
         this.lockedSegments = this.scene.physics.add.group();
 
+        Object.values(positions).forEach(value => {
+            value.setLocked(true);
+        });
         this.appendSegmentsByPositions(0, positions);
 
         this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite; // Update the head reference
@@ -276,19 +286,45 @@ export class PhaserSnake {
 
 
     private hasSelfCollision(): boolean {
-        log.trace(`self-collision is ${this.scene.getConfig().getSelfCollisionEnabled()}`);
-        if (this.scene.getConfig().getSelfCollisionEnabled() && this.status !== PlayerStatusEnum.DEAD) {
-            const headBounds = this.head.getBounds();
-            const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
-            for (let i = 2; i < bodyParts.length; i++) {
-                if (!this.lockedSegments.contains(bodyParts[i])) { // don't check collision for locked segments
-                    if (Phaser.Geom.Intersects.RectangleToRectangle(headBounds, bodyParts[i].getBounds())) {
-                        log.info("self-collision detected!");
-                        return true;
-                    }
+        log.trace(`self-collision is ${this.scene.getConfig().getSelfCollisionEnabled()} and snake is justReversed=${this.justReversed}`);
+
+        // early exit if self-collision is disabled or the player is dead
+        if (!this.scene.getConfig().getSelfCollisionEnabled() || this.status === PlayerStatusEnum.DEAD) {
+            return false;
+        }
+
+        const headCircle = new Phaser.Geom.Circle(this.head.x, this.head.y, this.head.displayWidth / 2);
+        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+
+        // start loop from the third element to skip the head and the first body part
+        for (let i = 2; i < bodyParts.length; i++) {
+            const segment = bodyParts[i];
+
+            // don't check collision for locked segments
+            if (this.lockedSegments.contains(segment)) {
+                continue;
+            }
+
+            const segmentCircle = new Phaser.Geom.Circle(segment.x, segment.y, segment.displayWidth / 2);
+
+            // check collision between the head and the current segment
+            if (Phaser.Geom.Intersects.CircleToCircle(headCircle, segmentCircle)) {
+                log.info(`self-collision detected!, justReversed=${this.justReversed})`);
+
+                if (this.justReversed) {
+                    this.selfCollisionDetected = true;
                 }
+                return !this.justReversed;
             }
         }
+
+        // reset justReversed to enable self collision again
+        if (this.selfCollisionDetected) {
+            log.info(`no further collisions detected! resetting justReversed(${this.justReversed}) to false!`);
+            this.selfCollisionDetected = false;
+            this.justReversed = false;
+        }
+
         return false;
     }
 
