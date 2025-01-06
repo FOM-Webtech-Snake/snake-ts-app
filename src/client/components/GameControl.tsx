@@ -44,12 +44,13 @@ const GameControlPanel: React.FC<GameControlPanelProps> = () => {
     const restartGame = () => {
         if (socket) {
             socket.emit(SocketEvents.GameControl.RESET_GAME);
+            socket.emit(SocketEvents.GameControl.STATE_CHANGED, GameStateEnum.READY);
         }
     };
 
     const backToLobby = () => {
         if (socket) {
-            restartGame();
+            socket.emit(SocketEvents.GameControl.RESET_GAME);
             setGameReady(false);
         }
     };
