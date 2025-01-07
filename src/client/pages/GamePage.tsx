@@ -36,7 +36,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
                     "game-container"
                 )
             );
-            log.info("game instance created");
+            log.debug("game instance created");
         }
 
         // Event-Listener resize
@@ -45,7 +45,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
         return () => {
             window.removeEventListener('resize', resizeGame);
             if (gameInstanceRef.current) {
-                log.info("Destroying game instance...");
+                log.debug("Destroying game instance...");
                 gameInstanceRef.current.destroy(true);
                 gameInstanceRef.current = null;
             }
