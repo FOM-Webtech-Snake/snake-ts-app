@@ -5,6 +5,7 @@ import {Player} from "../shared/model/Player";
 import {getLogger} from "../shared/config/LogConfig";
 import SpawnerDaemon from "./SpawnerDaemon";
 import {GameSessionUtil} from "./util/GameSessionUtil";
+import {GameTimerManager} from "./GameTimerManager";
 
 const log = getLogger("server.SessionManager");
 
@@ -56,6 +57,11 @@ class SessionManager {
 
     deleteSession(sessionId: string): void {
         this.spawner.stopSpawner(sessionId);
+
+        // delete timer
+        const gameTimerManager = GameTimerManager.getInstance();
+        gameTimerManager.stopGameTimer(this.getSession(sessionId));
+
         delete this.sessions[sessionId];
         log.debug(`session ${sessionId} deleted`);
     }

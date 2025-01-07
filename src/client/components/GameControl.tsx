@@ -5,6 +5,7 @@ import {useGameSessionSocket} from "./GameSessionContext";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import {SocketEvents} from "../../shared/constants/SocketEvents";
 import socket from "../socket/socket";
+import {useGameState} from "./GameStateContext";
 
 interface GameControlPanelProps {
 }
@@ -15,6 +16,7 @@ const GameControlPanel: React.FC<GameControlPanelProps> = () => {
 
     const {status} = useGameSessionSocket();
     const [isPlaying, setIsPlaying] = useState(false);
+    const {setGameReady} = useGameState();
 
 
     useEffect(() => {
@@ -45,6 +47,13 @@ const GameControlPanel: React.FC<GameControlPanelProps> = () => {
         }
     };
 
+    const backToLobby = () => {
+        if (socket) {
+            socket.emit(SocketEvents.GameControl.RESET_GAME);
+            setGameReady(false);
+        }
+    };
+
 
     return (
         <Container style={{
@@ -56,8 +65,11 @@ const GameControlPanel: React.FC<GameControlPanelProps> = () => {
             <Card className="p-4 shadow">
                 <Card.Body>
                     <div className="d-flex justify-content-center">
-                        <Button variant="secondary" onClick={restartGame} className="mx-2">
-                            <i className={"fa fa-rotate-backward"}/>
+                        {/*<Button variant="secondary" onClick={restartGame} className="mx-2">*/}
+                        {/*    <i className={"fa fa-rotate-backward"}/>*/}
+                        {/*</Button>*/}
+                        <Button variant="secondary" onClick={backToLobby} className="mx-2">
+                            <i className={"fa fa-arrow-left"}/>
                         </Button>
                     </div>
                 </Card.Body>
