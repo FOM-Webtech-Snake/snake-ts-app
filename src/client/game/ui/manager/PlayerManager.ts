@@ -161,9 +161,9 @@ export class PlayerManager {
                 (!highest || player.getScore() > highest.getScore() ? player : highest), null);
 
         if (highestScorer) {
-            log.info("Highest Scorer:", highestScorer);
+            log.debug("Highest Scorer:", highestScorer);
         } else {
-            log.info("No players are alive.");
+            log.debug("No players are alive.");
         }
 
         return highestScorer;
