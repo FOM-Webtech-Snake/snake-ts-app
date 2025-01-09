@@ -36,6 +36,11 @@ class SessionManager {
             throw new Error(`session ${sessionId} not found.`);
         }
 
+        if (session.getGameState() !== GameStateEnum.WAITING_FOR_PLAYERS) {
+            log.warn(`session not waiting for players.`, sessionId);
+            throw new Error(`session not waiting for players. please try again later.`);
+        }
+
         log.trace("current game session config", session.getConfig());
         if (session.getPlayerCount() >= session.getConfig().getMaxPlayers()) {
             log.warn(`max player count reached`, sessionId);

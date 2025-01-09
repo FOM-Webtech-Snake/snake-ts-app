@@ -79,6 +79,8 @@ export class PhaserSnake {
     }
 
     spawn(positions: Position[]) {
+        if (!positions || positions.length === 0) return; // prevent spawn without position information
+
         // reset collision and reversed state
         this.justReversed = false;
         this.selfCollisionDetected = false;
