@@ -20,19 +20,45 @@ interface SessionOptionsModalProps {
 const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClose, onSave}) => {
     const {theme} = useTheme();
     const {session} = useGameSessionSocket();
-    const [maxPlayers, setMaxPlayers] = useState(DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers());
-    const [worldSize, setWorldSize] = useState(DEFAULT_GAME_SESSION_CONFIG.getSize());
-    const [gameDuration, setGameDuration] = useState(DEFAULT_GAME_SESSION_CONFIG.getGameDuration());
-    const [worldCollisionEnabled, setWorldCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getWorldCollisionEnabled());
-    const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
-    const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
-    const [respawnAfterDeathEnabled, setRespawnAfterDeathEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getRespawnAfterDeathEnabled());
-    const [obstaclesEnabled, setObstaclesEnabled] = useState(DEFAULT_GAME_SESSION_CONFIG.getObstacleEnabled());
+    const [maxPlayers, setMaxPlayers] = useState(
+        session ? session.getConfig().getMaxPlayers()
+            : DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers()
+    );
+    const [worldSize, setWorldSize] = useState(
+        session ? session.getConfig().getSize()
+            : DEFAULT_GAME_SESSION_CONFIG.getSize());
+    const [gameDuration, setGameDuration] = useState(
+        session ? session.getConfig().getGameDuration()
+            : DEFAULT_GAME_SESSION_CONFIG.getGameDuration());
+    const [worldCollisionEnabled, setWorldCollisionEnabled] = useState(
+        session ? session.getConfig().getWorldCollisionEnabled()
+            : DEFAULT_GAME_SESSION_CONFIG.getWorldCollisionEnabled());
+    const [selfCollisionEnabled, setSelfCollisionEnabled] = useState(
+        session ? session.getConfig().getSelfCollisionEnabled()
+            : DEFAULT_GAME_SESSION_CONFIG.getSelfCollisionEnabled());
+    const [playerToPlayerCollisionEnabled, setPlayerToPlayerCollisionEnabled] = useState(
+        session ? session.getConfig().getPlayerToPlayerCollisionEnabled()
+            : DEFAULT_GAME_SESSION_CONFIG.getPlayerToPlayerCollisionEnabled());
+    const [respawnAfterDeathEnabled, setRespawnAfterDeathEnabled] = useState(
+        session ? session.getConfig().getRespawnAfterDeathEnabled()
+            : DEFAULT_GAME_SESSION_CONFIG.getRespawnAfterDeathEnabled());
+    const [respawnTimer, setRespawnTimer] = useState(
+        session ? session.getConfig().getRespawnTimer()
+            : DEFAULT_GAME_SESSION_CONFIG.getRespawnTimer());
+    const [obstaclesEnabled, setObstaclesEnabled] = useState(
+        session ? session.getConfig().getObstacleEnabled()
+            : DEFAULT_GAME_SESSION_CONFIG.getObstacleEnabled());
 
     /* snake option parameters */
-    const [startingLength, setStartingLength] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingLength());
-    const [startingSpeed, setStartingSpeed] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingSpeed());
-    const [startingScale, setStartingScale] = useState(DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingScale());
+    const [startingLength, setStartingLength] = useState(
+        session ? session.getConfig().getSnakeStartingLength()
+            : DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingLength());
+    const [startingSpeed, setStartingSpeed] = useState(
+        session ? session.getConfig().getSnakeStartingSpeed()
+            : DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingSpeed());
+    const [startingScale, setStartingScale] = useState(
+        session ? session.getConfig().getSnakeStartingScale()
+            : DEFAULT_GAME_SESSION_CONFIG.getSnakeStartingScale());
 
     useEffect(() => {
         if (session) {
@@ -51,6 +77,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
             selfCollisionEnabled,
             playerToPlayerCollisionEnabled,
             respawnAfterDeathEnabled,
+            respawnTimer,
             obstaclesEnabled,
             startingLength,
             startingSpeed,
@@ -111,14 +138,28 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
                         </Row>
                     </Form.Group>
                     <Form.Group controlId="gameDuration">
-                        <Form.Label>Spieldauer (in Sekunden)</Form.Label>
-                        <Form.Control
-                            type="number"
-                            min={20}
-                            max={10000}
-                            value={gameDuration}
-                            onChange={(e) => setGameDuration(parseInt(e.target.value, 10))}
-                        />
+                        <Row>
+                            <Col>
+                                <Form.Label>Spieldauer (in Sekunden)</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min={20}
+                                    max={10000}
+                                    value={gameDuration}
+                                    onChange={(e) => setGameDuration(parseInt(e.target.value, 10))}
+                                />
+                            </Col>
+                            <Col>
+                                <Form.Label>Respawn Timer (in Sekunden)</Form.Label>
+                                <Form.Control
+                                    type="number"
+                                    min={1}
+                                    max={100}
+                                    value={respawnTimer / 1000}
+                                    onChange={(e) => setRespawnTimer(parseInt(e.target.value, 10) * 1000)}
+                                />
+                            </Col>
+                        </Row>
                     </Form.Group>
                     <Form.Check
                         type="switch"

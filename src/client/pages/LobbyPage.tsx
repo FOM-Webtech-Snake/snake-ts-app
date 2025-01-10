@@ -99,6 +99,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                 oldConfig.getSelfCollisionEnabled(),
                 oldConfig.getPlayerToPlayerCollisionEnabled(),
                 mode === 'Endurance',
+                oldConfig.getRespawnTimer(),
                 oldConfig.getObstacleEnabled(),
                 oldConfig.getSnakeStartingLength(),
                 oldConfig.getSnakeStartingSpeed(),

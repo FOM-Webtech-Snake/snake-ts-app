@@ -21,6 +21,7 @@ export class GameSessionConfig {
     private selfCollisionEnabled: boolean;
     private playerToPlayerCollisionEnabled: boolean;
     private respawnAfterDeathEnabled: boolean;
+    private respawnTimer: number;
     private obstacleEnabled: boolean;
 
     private snakeStartingLength: number;
@@ -35,6 +36,7 @@ export class GameSessionConfig {
         selfCollisionEnabled: boolean,
         playerToPlayerCollisionEnabled: boolean,
         respawnAfterDeathEnabled: boolean,
+        respawnTimer: number,
         obstacleEnabled: boolean,
         snakeStartingLength: number,
         snakeStartingSpeed: number,
@@ -47,6 +49,7 @@ export class GameSessionConfig {
         this.selfCollisionEnabled = selfCollisionEnabled;
         this.playerToPlayerCollisionEnabled = playerToPlayerCollisionEnabled;
         this.respawnAfterDeathEnabled = respawnAfterDeathEnabled;
+        this.respawnTimer = respawnTimer;
         this.obstacleEnabled = obstacleEnabled;
 
         this.snakeStartingLength = snakeStartingLength;
@@ -68,6 +71,10 @@ export class GameSessionConfig {
 
     getRespawnAfterDeathEnabled(): boolean {
         return this.respawnAfterDeathEnabled;
+    }
+
+    getRespawnTimer(): number {
+        return this.respawnTimer;
     }
 
     getObstacleEnabled(): boolean {
@@ -107,6 +114,7 @@ export class GameSessionConfig {
             selfCollisionEnabled: this.selfCollisionEnabled,
             playerToPlayerCollisionEnabled: this.playerToPlayerCollisionEnabled,
             respawnAfterDeathEnabled: this.respawnAfterDeathEnabled,
+            respawnTimer: this.respawnTimer,
             obstacleEnabled: this.obstacleEnabled,
             snakeStartingLength: this.snakeStartingLength,
             snakeStartingSpeed: this.snakeStartingSpeed,
@@ -124,6 +132,7 @@ export class GameSessionConfig {
             data.selfCollisionEnabled,
             data.playerToPlayerCollisionEnabled,
             data.respawnAfterDeathEnabled,
+            data.respawnTimer,
             data.obstacleEnabled,
             data.snakeStartingLength,
             data.snakeStartingSpeed,
@@ -139,6 +148,7 @@ export const DEFAULT_GAME_SESSION_CONFIG = new GameSessionConfig(
     false,
     true,
     true,
+    10000,
     true,
     SNAKE_STARTING_LENGTH.default,
     SNAKE_STARTING_SPEED.default,
