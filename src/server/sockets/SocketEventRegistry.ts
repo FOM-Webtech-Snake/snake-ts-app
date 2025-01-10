@@ -18,6 +18,7 @@ import {PositionUtil} from "../util/PositionUtil";
 import {Position} from "../../shared/model/Position";
 import {SpawnUtil} from "../util/SpawnUtil";
 import {GameTimerManager} from "../GameTimerManager";
+import {RespawnTimerUtil} from "../util/RespawnTimerUtil";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -300,8 +301,10 @@ const SocketEventRegistry: {
 
             // Respawn the player after a set amount of time
             if (gameSession.getConfig().getRespawnAfterDeathEnabled()) {
-                setTimeout(() => {
-                    if (gameSession.getGameState() === GameStateEnum.RUNNING) {
+                const respawnTimer = new RespawnTimerUtil(
+                    gameSession,
+                    gameSession.getConfig().getRespawnTimer(),
+                    () => {
                         player.setStatus(PlayerStatusEnum.ALIVE);
                         player.setSpeed(gameSession.getConfig().getSnakeStartingSpeed());
                         player.setScale(gameSession.getConfig().getSnakeStartingScale());
@@ -313,7 +316,9 @@ const SocketEventRegistry: {
                         player.setBodyPositions(bodyPositions);
                         io.to(gameSession.getId()).emit(SocketEvents.PlayerActions.PLAYER_RESPAWNED, player.toJson());
                     }
-                }, 10000); // Respawn time // TODO make configurable
+                );
+
+                respawnTimer.start();
             } else {
                 // end game when one player is alive
                 if (gameSession.countPlayersWithStatus(PlayerStatusEnum.ALIVE) <= 1) {
