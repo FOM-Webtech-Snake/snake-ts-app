@@ -49,12 +49,13 @@ export class PositionUtil {
         const height = config.getSize().getHeight();
 
         // exclude positions on border
-        const innerWidth = width - (BORDER_WIDTH * 2);
-        const innerHeight = height - (BORDER_WIDTH * 2);
+        const buffer = 10;
+        const innerWidth = width - (BORDER_WIDTH * 2)  - (buffer * 2);
+        const innerHeight = height - (BORDER_WIDTH * 2)  - (buffer * 2);
 
         return new Position(
-            Math.floor(Math.random() * innerWidth) + BORDER_WIDTH,
-            Math.floor(Math.random() * innerHeight) + BORDER_WIDTH
+            Math.floor(Math.random() * innerWidth) + BORDER_WIDTH + buffer,
+            Math.floor(Math.random() * innerHeight) + BORDER_WIDTH + buffer
         );
     }
 

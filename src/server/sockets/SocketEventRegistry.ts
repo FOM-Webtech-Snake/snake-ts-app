@@ -19,6 +19,7 @@ import {Position} from "../../shared/model/Position";
 import {SpawnUtil} from "../util/SpawnUtil";
 import {GameTimerManager} from "../GameTimerManager";
 import {RespawnTimerUtil} from "../util/RespawnTimerUtil";
+import {DirectionUtil} from "../../client/game/util/DirectionUtil";
 
 const log = getLogger("server.sockets.SocketEventRegistry");
 
@@ -306,10 +307,12 @@ const SocketEventRegistry: {
                     gameSession.getConfig().getRespawnTimer(),
                     () => {
                         player.setStatus(PlayerStatusEnum.ALIVE);
+                        const spawnPosition = PositionUtil.randomUniquePosition(gameSession);
+                        const spawnDirection = DirectionUtil.getSafeDirection(spawnPosition, gameSession.getConfig().getSize());
+                        player.setDirection(spawnDirection);
                         player.setSpeed(gameSession.getConfig().getSnakeStartingSpeed());
                         player.setScale(gameSession.getConfig().getSnakeStartingScale());
                         const bodyPositions: Position[] = [];
-                        const spawnPosition = PositionUtil.randomUniquePosition(gameSession);
                         for (let i = 0; i < gameSession.getConfig().getSnakeStartingLength(); i++) {
                             bodyPositions.push(spawnPosition);
                         }

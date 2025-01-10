@@ -1,4 +1,6 @@
 import {DirectionEnum} from "../../../shared/constants/DirectionEnum";
+import {Position} from "../../../shared/model/Position";
+import {Size} from "../../../shared/model/Size";
 
 export class DirectionUtil {
     static getDirectionVector(direction: DirectionEnum): Phaser.Math.Vector2 {
@@ -44,5 +46,32 @@ export class DirectionUtil {
             default:
                 throw new Error("Invalid direction");
         }
+    }
+
+    static getSafeDirection(position: Position, size: Size) : DirectionEnum {
+        const width = size.getWidth();
+        const height = size.getHeight();
+        let spawnDirection: DirectionEnum;
+
+        // Finde the closest wall
+        const distanceToLeft = position.getX();
+        const distanceToRight = width - position.getX();
+        const distanceToTop = position.getY();
+        const distanceToBottom = height - position.getY();
+
+        const minDistance = Math.min(distanceToLeft, distanceToRight, distanceToTop, distanceToBottom);
+
+        // Set the direction away from the nearest wall
+        if (minDistance === distanceToLeft) {
+            spawnDirection = DirectionEnum.RIGHT;
+        } else if (minDistance === distanceToRight) {
+            spawnDirection = DirectionEnum.LEFT;
+        } else if (minDistance === distanceToTop) {
+            spawnDirection = DirectionEnum.DOWN;
+        } else {
+            spawnDirection = DirectionEnum.UP;
+        }
+
+        return spawnDirection;
     }
 }
