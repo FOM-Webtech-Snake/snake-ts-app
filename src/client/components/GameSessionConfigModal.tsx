@@ -22,8 +22,7 @@ const GameSessionConfigModal: React.FC<SessionOptionsModalProps> = ({show, onClo
     const {session} = useGameSessionSocket();
     const [maxPlayers, setMaxPlayers] = useState(
         session ? session.getConfig().getMaxPlayers()
-            : DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers()
-    );
+            : DEFAULT_GAME_SESSION_CONFIG.getMaxPlayers());
     const [worldSize, setWorldSize] = useState(
         session ? session.getConfig().getSize()
             : DEFAULT_GAME_SESSION_CONFIG.getSize());
