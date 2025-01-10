@@ -306,10 +306,12 @@ const SocketEventRegistry: {
                     gameSession.getConfig().getRespawnTimer(),
                     () => {
                         player.setStatus(PlayerStatusEnum.ALIVE);
+                        const spawnPosition = PositionUtil.randomUniquePosition(gameSession);
+                        const spawnDirection = PositionUtil.getSafeDirection(spawnPosition, gameSession.getConfig().getSize());
+                        player.setDirection(spawnDirection);
                         player.setSpeed(gameSession.getConfig().getSnakeStartingSpeed());
                         player.setScale(gameSession.getConfig().getSnakeStartingScale());
                         const bodyPositions: Position[] = [];
-                        const spawnPosition = PositionUtil.randomUniquePosition(gameSession);
                         for (let i = 0; i < gameSession.getConfig().getSnakeStartingLength(); i++) {
                             bodyPositions.push(spawnPosition);
                         }

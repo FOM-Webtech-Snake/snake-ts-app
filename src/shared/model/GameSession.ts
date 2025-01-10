@@ -128,11 +128,14 @@ export class GameSession {
 
     spawnPlayer(player: Player): void {
         player.setStatus(PlayerStatusEnum.ALIVE);
-        player.setDirection(DirectionEnum.RIGHT); // TODO choose random direction on spawn
+
+        const spawnPosition = PositionUtil.randomUniquePosition(this);
+        const spawnDirection = PositionUtil.getSafeDirection(spawnPosition, this.config.getSize());
+        player.setDirection(spawnDirection);
         player.setSpeed(this.config.getSnakeStartingSpeed());
         player.setScale(this.config.getSnakeStartingScale())
+
         const bodyPositions: Position[] = []
-        const spawnPosition = PositionUtil.randomUniquePosition(this);
         for (let i = 0; i < this.getConfig().getSnakeStartingLength(); i++) {
             bodyPositions.push(spawnPosition);
         }
