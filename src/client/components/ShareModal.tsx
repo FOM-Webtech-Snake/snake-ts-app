@@ -3,13 +3,13 @@ import {Button, Modal} from "react-bootstrap";
 import {QRCodeSVG} from "qrcode.react";
 import {useTheme} from "./ThemeProvider";
 
-interface ShareInfoModalProps {
+interface ShareModalProps {
     show: boolean;
     onClose: () => void;
     sessionId: string;
 }
 
-const ShareInfoModal: React.FC<ShareInfoModalProps> = ({show, onClose, sessionId}) => {
+const ShareModal: React.FC<ShareModalProps> = ({show, onClose, sessionId}) => {
     const {theme} = useTheme();
     const shareUrl = `${window.location.origin}?sessionId=${sessionId}`;
 
@@ -41,4 +41,4 @@ const ShareInfoModal: React.FC<ShareInfoModalProps> = ({show, onClose, sessionId
     );
 };
 
-export default ShareInfoModal;
+export default ShareModal;

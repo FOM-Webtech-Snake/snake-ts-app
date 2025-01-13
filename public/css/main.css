@@ -115,6 +115,32 @@ body {
     border: 1px solid var(--border-dark);
 }
 
+/* modal table styles */
+.modal.light .table {
+    background-color: var(--light-primary);
+    color: var(--light-text);
+    border-color: var(--border-light);
+}
+
+.modal.dark .table {
+    background-color: var(--dark-primary);
+    color: var(--dark-text);
+    border-color: var(--border-dark);
+}
+
+/* Override table heading styles */
+.modal.light .table th, .modal.light .table td {
+    background-color: var(--light-primary);
+    color: var(--light-text);
+}
+
+.modal.dark .table th, .modal.dark .table td {
+    background-color: var(--dark-primary);
+    color: var(--dark-text);
+}
+
+
+
 
 .app {
     transition: background-color 0.3s, color 0.3s;
