@@ -8,7 +8,7 @@ import {PlayerRoleEnum} from "../../shared/constants/PlayerRoleEnum";
 import GameSessionConfigModal from "../components/GameSessionConfigModal";
 import {GameSessionConfig} from "../../shared/model/GameSessionConfig";
 import PlayerList from "../components/PlayerList";
-import ShareInfoModal from "../components/ShareModal";
+import ShareModal from "../components/ShareModal";
 import {registerReactEvent} from "../socket/socketRouter";
 import socket from "../socket/socket";
 import GameSessionError from "../components/GameSessionError";
@@ -300,7 +300,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                 </div>
             </Container>
 
-            <ShareInfoModal
+            <ShareModal
                 show={showShareModal}
                 onClose={handleCloseShareModal}
                 sessionId={sessionId}
