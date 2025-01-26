@@ -27,11 +27,46 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(png|jpe?g|gif|svg|mp3|wav)$/i, // Asset handling for assets and audio
-                type: 'asset/resource', generator: {
-                    filename: 'assets/[name][ext]', // Output assets to 'public/assets'
+                test: /\.(png|jpe?g|gif|svg)$/i, // Image handling
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: 'assets/[name].[ext]'
+                        }
+                    },
+                    {
+                        loader: 'image-webpack-loader',
+                        options: {
+                            mozjpeg: {
+                                progressive: true,
+                                quality: 65,
+                            },
+                            optipng: {
+                                enabled: false,
+                            },
+                            pngquant: {
+                                quality: [0.65, 0.90],
+                                speed: 4,
+                            },
+                            gifsicle: {
+                                interlaced: false,
+                            },
+                            webp: {
+                                quality: 75,
+                            }
+                        }
+                    }
+
+                ],
+            },
+            {
+                test: /\.(mp3|wav)$/i, // audio handling
+                type: 'asset/resource',
+                generator: {
+                    filename: 'assets/[name].[ext]',
                 },
-            }
+            },
         ],
     }, plugins: [
         new DefinePlugin({
