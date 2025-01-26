@@ -75,6 +75,10 @@ export class PhaserSnake {
         this.darkColor = ColorUtil.darkenColor(this.primaryColor);
         this.lightColor = ColorUtil.lightenColor(this.primaryColor);
 
+        // create the body
+        this.body = this.scene.physics.add.group();
+        this.lockedSegments = this.scene.physics.add.group();
+
         this.spawn(positions);
     }
 
@@ -84,10 +88,6 @@ export class PhaserSnake {
         // reset collision and reversed state
         this.justReversed = false;
         this.selfCollisionDetected = false;
-
-        // create the body
-        this.body = this.scene.physics.add.group();
-        this.lockedSegments = this.scene.physics.add.group();
 
         Object.values(positions).forEach(value => {
             value.setLocked(true);
