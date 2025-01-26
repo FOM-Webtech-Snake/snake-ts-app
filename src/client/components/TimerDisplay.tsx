@@ -52,7 +52,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = () => {
                         <h6 className="mb-0">Remaining Time</h6>
                     </Card.Header>
                     <Card.Body className="text-center">
-                        <span className="text-warning">{formatTime(remainingTime)}</span>
+                        <span>{formatTime(remainingTime)}</span>
                     </Card.Body>
                 </Card>
             </Container>
