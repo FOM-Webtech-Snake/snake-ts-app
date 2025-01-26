@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 import {Background} from "../ui/Background";
-import {PhaserSnake} from "../ui/PhaserSnake";
 import {GameSocketManager} from "../ui/manager/GameSocketManager";
 import {DEFAULT_GAME_SESSION_CONFIG, GameSessionConfig} from "../../../shared/model/GameSessionConfig";
 import {ArrowManager} from "../ui/manager/ArrowManager";
