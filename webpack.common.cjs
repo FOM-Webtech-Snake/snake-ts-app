@@ -32,13 +32,6 @@ module.exports = {
                 test: /\.(png|jpe?g|gif|svg|webp)$/i, // Image handling
                 type: 'asset', // Automatically determines inlining or emitting
             },
-            {
-                test: /\.(mp3|wav)$/i, // audio handling
-                type: 'asset/resource',
-                generator: {
-                    filename: 'assets/[name].[contenthash].[ext]',
-                },
-            },
         ],
     }, plugins: [
         new DefinePlugin({
