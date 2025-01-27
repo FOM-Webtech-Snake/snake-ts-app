@@ -2,6 +2,7 @@ const {resolve} = require("path");
 const {DefinePlugin} = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const pkg = require("./package.json");
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const buildVersion = process.env.APP_VERSION || "development";
 const repoUrl = pkg.repository.url;
 
@@ -10,6 +11,7 @@ module.exports = {
     output: {
         filename: 'bundle.[contenthash].js', // ensure to have unique bundle name (that you always see up to date version in your browser window and not something cached.)
         path: resolve(__dirname, 'dist/client'), // Output to './dist'
+        assetModuleFilename: 'assets/[name].[hash].[ext]',
         clean: true, // Clean output directory on each build
     },
     resolve: {
@@ -27,44 +29,14 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(png|jpe?g|gif|svg)$/i, // Image handling
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: 'assets/[name].[ext]'
-                        }
-                    },
-                    {
-                        loader: 'image-webpack-loader',
-                        options: {
-                            mozjpeg: {
-                                progressive: true,
-                                quality: 65,
-                            },
-                            optipng: {
-                                enabled: false,
-                            },
-                            pngquant: {
-                                quality: [0.65, 0.90],
-                                speed: 4,
-                            },
-                            gifsicle: {
-                                interlaced: false,
-                            },
-                            webp: {
-                                quality: 75,
-                            }
-                        }
-                    }
-
-                ],
+                test: /\.(png|jpe?g|gif|svg|webp)$/i, // Image handling
+                type: 'asset', // Automatically determines inlining or emitting
             },
             {
                 test: /\.(mp3|wav)$/i, // audio handling
                 type: 'asset/resource',
                 generator: {
-                    filename: 'assets/[name].[ext]',
+                    filename: 'assets/[name].[contenthash].[ext]',
                 },
             },
         ],
@@ -75,6 +47,19 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: './public/templates/index.html'
+        }),
+        new ImageMinimizerPlugin({
+            minimizer: {
+                implementation: ImageMinimizerPlugin.sharpMinify, // Use sharp for image optimization
+                options: {
+                    encodeOptions: {
+                        jpeg: {quality: 80},
+                        png: {quality: 80},
+                        webp: {quality: 80},
+                        avif: {quality: 80},
+                    },
+                },
+            },
         })
     ]
 };
