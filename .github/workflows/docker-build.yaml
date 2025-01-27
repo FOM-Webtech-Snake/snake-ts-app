@@ -72,12 +72,18 @@ jobs:
           docker buildx create --use
           DOCKER_TAGS="ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }}"
           DOCKER_LATEST_TAG="ghcr.io/fom-webtech-snake/snake-ts-app:latest"
+          
+          # Prepare the tags
           if [ "${{ env.LATEST }}" = "true" ]; then
-            DOCKER_TAGS="${DOCKER_TAGS},${DOCKER_LATEST_TAG}"
+            TAG_OPTIONS="--tag ${DOCKER_TAGS} --tag ${DOCKER_LATEST_TAG}"
+          else
+            TAG_OPTIONS="--tag ${DOCKER_TAGS}"
           fi
+          
+          # Build and push
           docker buildx build --platform linux/amd64,linux/arm64 \
           --build-arg APP_VERSION=${{ env.VERSION }} \
-          --tag $DOCKER_TAGS \
+          ${TAG_OPTIONS} \
           --push .
 
   cleanup:
