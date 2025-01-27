@@ -1,5 +1,7 @@
 # Snake Extreme
 
+[![Build and Push Docker Image](https://github.com/FOM-Webtech-Snake/snake-ts-app/actions/workflows/docker-build.yaml/badge.svg)](https://github.com/FOM-Webtech-Snake/snake-ts-app/actions/workflows/docker-build.yaml)
+
 ## Introduction
 
 This project is a full-stack web application that combines `Phaser`, `Node.js`, `Express`, and `Socket.IO` to create an
