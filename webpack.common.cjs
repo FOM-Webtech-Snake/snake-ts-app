@@ -11,7 +11,7 @@ module.exports = {
     output: {
         filename: 'bundle.[contenthash].js', // ensure to have unique bundle name (that you always see up to date version in your browser window and not something cached.)
         path: resolve(__dirname, 'dist/client'), // Output to './dist'
-        assetModuleFilename: 'assets/[name].[hash].[ext]',
+        assetModuleFilename: 'assets/[name].[hash][ext]',
         clean: true, // Clean output directory on each build
     },
     resolve: {
