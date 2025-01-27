@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, {forwardRef} from 'react';
 import {Col, Container, Row} from "react-bootstrap";
 
 const Footer= forwardRef<HTMLDivElement, {}>((_, ref) => {

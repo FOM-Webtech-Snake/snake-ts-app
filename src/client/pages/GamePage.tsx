@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useCallback} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
 import {Col, Container, Row} from "react-bootstrap";
