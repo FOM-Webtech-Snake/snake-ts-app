@@ -56,8 +56,11 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
 
     const renderPlayerCard = (isMobile: boolean) => (
         <Card className={`mb-3 shadow ${isMobile ? 'bg-dark text-light rounded' : ''}`}>
-            <Card.Header className="text-center">
+            <Card.Header className="text-center d-flex justify-content-between align-items-center">
                 <h6 className="mb-0">{isMobile ? 'Players' : 'Players in Lobby'}</h6>
+                <span className={`badge ${isMobile ? 'bg-light text-dark' : 'bg-primary'}`}>
+                    {sortedPlayers?.length || 0}
+                </span>
             </Card.Header>
             <Card.Body className="text-center">
                 {renderPlayerList(isMobile)}
@@ -67,7 +70,11 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
 
     if (desktopViewOnly) {
         return (
-            <Container style={{ overflowY: 'auto', padding: '1rem' }}>
+            <Container style={{
+                overflowY: 'auto',
+                padding: '2rem',
+                maxHeight: 'calc(100vh - 65vh)'
+            }}>
                 {renderPlayerCard(false)}
             </Container>
         );
@@ -76,7 +83,11 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
     return (
         <>
             {/* Desktop view */}
-            <Container className="d-none d-md-block" style={{overflowY: 'auto', padding: '1rem'}}>
+            <Container className="d-none d-md-block"
+                       style={{
+                           overflowY: 'auto',
+                           maxHeight: 'calc(100vh - 450px)'
+                       }}>
                 {renderPlayerCard(false)}
             </Container>
 
