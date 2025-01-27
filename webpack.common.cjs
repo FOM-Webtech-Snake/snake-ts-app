@@ -39,7 +39,9 @@ module.exports = {
             REPO_URL: JSON.stringify(repoUrl),
         }),
         new HtmlWebpackPlugin({
-            template: './public/templates/index.html'
+            template: './public/templates/index.html',
+            inject: 'body', // inject the scripts at the end of the body tag
+            scriptLoading: 'blocking' // Ensure external js is loaded before the bundle.js
         }),
         new ImageMinimizerPlugin({
             minimizer: {
