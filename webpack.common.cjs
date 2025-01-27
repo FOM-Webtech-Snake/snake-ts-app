@@ -50,6 +50,8 @@ module.exports = {
                         png: {quality: 80},
                         webp: {quality: 80},
                         avif: {quality: 80},
+                        svg: {quality: 80},
+                        gif: {quality: 80},
                     },
                 },
             },
