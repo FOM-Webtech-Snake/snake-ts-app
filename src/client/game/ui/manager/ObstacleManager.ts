@@ -69,11 +69,8 @@ export class ObstacleManager {
     checkCollisions(snake: PhaserSnake, onCollision: (uuid: string) => void): void {
         log.debug("checking obstacles for collisions");
         Object.keys(this.obstacles).forEach(uuid => {
-            const obstacle = this.obstacles[uuid];
-            if (!obstacle) return;
-
             // check for collisions with the snake
-            if (obstacle.checkCollision(snake)) {
+            if (this.obstacles[uuid]?.checkCollision(snake)) {
                 onCollision(uuid); // Callback to handle the collect event
             }
         });

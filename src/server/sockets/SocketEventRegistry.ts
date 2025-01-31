@@ -26,7 +26,7 @@ const log = getLogger("server.sockets.SocketEventRegistry");
 interface EventHandlers {
     [SocketEvents.Connection.CREATE_SESSION]: [any, (session: any) => void];
     [SocketEvents.Connection.JOIN_SESSION]: [string, any, (session: any) => void];
-    [SocketEvents.SessionState.CONFIG_UPDATED]: [any];
+    [SocketEvents.SessionEvents.CONFIG_UPDATED]: [any];
     [SocketEvents.GameControl.GET_READY]: [];
     [SocketEvents.GameControl.START_GAME]: [];
     [SocketEvents.GameControl.RESET_GAME]: [];
@@ -37,7 +37,7 @@ interface EventHandlers {
     [SocketEvents.GameEvents.COLLISION]: [CollisionTypeEnum, (response: { status: boolean }) => void];
     [SocketEvents.Connection.LEAVE_SESSION]: [];
     [SocketEvents.Connection.DISCONNECT]: [];
-    [SocketEvents.SessionState.PLAYER_COLOR_CHANGED]: [string];
+    [SocketEvents.SessionEvents.PLAYER_COLOR_CHANGED]: [string];
 }
 
 // Map event names to handler functions
@@ -88,14 +88,14 @@ const SocketEventRegistry: {
             socket.join(gameSession.getId());
             log.info(`player ${socket.id} joined session ${sessionId}`);
             callback(gameSession.toJson());
-            io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_JOINED, player.toJson());
+            io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.PLAYER_JOINED, player.toJson());
         } catch (error: any) {
             callback({error: error.message})
             return;
         }
     },
 
-    [SocketEvents.SessionState.CONFIG_UPDATED]: async (
+    [SocketEvents.SessionEvents.CONFIG_UPDATED]: async (
         io: Server,
         socket: Socket,
         [configData]: [any]
@@ -111,7 +111,7 @@ const SocketEventRegistry: {
         }
 
         log.debug(`player ${socket.id} updated config ${configData}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.CONFIG_UPDATED, gameSession.getConfig().toJson());
+        io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.CONFIG_UPDATED, gameSession.getConfig().toJson());
     },
 
     [SocketEvents.GameControl.START_GAME]: async (
@@ -262,7 +262,6 @@ const SocketEventRegistry: {
             }
             gameSession.removeCollectable(uuid);
             callback({status: true});
-            io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
             io.to(gameSession.getId()).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
         } else {
             callback({status: false});
@@ -359,7 +358,7 @@ const SocketEventRegistry: {
             if (!gameSession.hasPlayers()) {
                 sessionManager.deleteSession(gameSession.getId());
             } else {
-                io.to(gameSession.getId()).emit(SocketEvents.SessionState.LEFT_SESSION, socket.id);
+                io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.LEFT_SESSION, socket.id);
             }
         }
     },
@@ -378,11 +377,11 @@ const SocketEventRegistry: {
         if (!gameSession.hasPlayers()) {
             sessionManager.deleteSession(gameSession.getId());
         } else {
-            io.to(gameSession.getId()).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
+            io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.DISCONNECTED, socket.id);
         }
     },
 
-    [SocketEvents.SessionState.PLAYER_COLOR_CHANGED]: async (
+    [SocketEvents.SessionEvents.PLAYER_COLOR_CHANGED]: async (
         io: Server,
         socket: Socket,
         [color]: [string]
@@ -393,7 +392,6 @@ const SocketEventRegistry: {
         }
 
         gameSession.getPlayer(socket.id).setColor(color);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
     },
 };
 
@@ -414,7 +412,6 @@ export const startSyncingGameState = (io: Server) => {
 const syncSession = (io: Server, session: GameSession) => {
     log.trace("syncing session", session.getId());
     io.to(session.getId()).emit(SocketEvents.GameControl.SYNC_GAME_STATE, session.toJson());
-    io.to(session.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, session.getPlayers());
 }
 
 const monitorHighActivitySessions = (io: Server) => {

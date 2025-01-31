@@ -122,7 +122,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
         player.setColor(newColor);
         localStorage.setItem("color", newColor);
 
-        socket.emit(SocketEvents.SessionState.PLAYER_COLOR_CHANGED, newColor.toString());
+        socket.emit(SocketEvents.SessionEvents.PLAYER_COLOR_CHANGED, newColor.toString());
     };
 
     useEffect(() => {
