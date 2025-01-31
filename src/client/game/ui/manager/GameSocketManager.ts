@@ -65,11 +65,11 @@ export class GameSocketManager extends Phaser.Events.EventEmitter {
             self.emit("SPAWN_NEW_OBSTACLE", newObstacle);
         })
 
-        registerPhaserEvent(SocketEvents.SessionState.LEFT_SESSION, function (playerId: string) {
+        registerPhaserEvent(SocketEvents.SessionEvents.LEFT_SESSION, function (playerId: string) {
             self.emit("LEFT_SESSION", playerId);
         })
 
-        registerPhaserEvent(SocketEvents.SessionState.DISCONNECTED, function (playerId: string) {
+        registerPhaserEvent(SocketEvents.SessionEvents.DISCONNECTED, function (playerId: string) {
             self.emit("DISCONNECT", playerId);
         });
 

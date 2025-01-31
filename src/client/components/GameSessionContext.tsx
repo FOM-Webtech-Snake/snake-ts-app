@@ -88,7 +88,7 @@ export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) =
 
     useEffect(() => {
         if (session) {
-            registerReactEvent(SocketEvents.SessionState.CONFIG_UPDATED, (data: any) => {
+            registerReactEvent(SocketEvents.SessionEvents.CONFIG_UPDATED, (data: any) => {
                 log.debug("received session config update", data);
                 session.setConfig(GameSessionConfig.fromData(data));
                 log.trace("session", session);
@@ -100,16 +100,16 @@ export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) =
                 updateGameSessionContext(GameSession.fromData(data));
             });
 
-            registerReactEvent(SocketEvents.SessionState.PLAYER_JOINED, (data: any) => {
+            registerReactEvent(SocketEvents.SessionEvents.PLAYER_JOINED, (data: any) => {
                 log.debug("received player join session", data);
                 session.addPlayer(Player.fromData(data));
             });
         }
 
         return () => {
-            unregisterReactEvent(SocketEvents.SessionState.CONFIG_UPDATED);
+            unregisterReactEvent(SocketEvents.SessionEvents.CONFIG_UPDATED);
             unregisterReactEvent(SocketEvents.GameControl.SYNC_GAME_STATE);
-            unregisterReactEvent(SocketEvents.SessionState.PLAYER_JOINED);
+            unregisterReactEvent(SocketEvents.SessionEvents.PLAYER_JOINED);
         };
     }, [session]);
 
@@ -154,7 +154,7 @@ export const GameSessionProvider: React.FC<SocketProviderProps> = ({children}) =
 
     const updateConfig = (conf: GameSessionConfig) => {
         if (!socket || !session) return;
-        socket.emit(SocketEvents.SessionState.CONFIG_UPDATED, conf.toJson());
+        socket.emit(SocketEvents.SessionEvents.CONFIG_UPDATED, conf.toJson());
     }
 
 
