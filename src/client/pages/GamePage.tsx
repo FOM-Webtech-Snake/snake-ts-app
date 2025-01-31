@@ -28,7 +28,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
     useEffect(() => {
         if (gameContainerRef.current && !gameInstanceRef.current) {
             const gameContainer = gameContainerRef.current;
-            const {width, height} = gameContainer.getBoundingClientRect(); // Get dynamic width and height
+            const {width} = gameContainer.getBoundingClientRect(); // Get dynamic width
             gameInstanceRef.current = GameUtil.createGame(
                 ConfigUtil.createPhaserGameConfig(
                     width,

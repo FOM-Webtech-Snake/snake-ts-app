@@ -176,22 +176,21 @@ export class GameScene extends Phaser.Scene {
             return;
         }
 
-        ArrowManager.getInstance().reset();
         this.inputManager?.handleInput();
+        ArrowManager.getInstance().reset();
+        this.collectableManager?.update();
 
         const players = this.playerManager?.getPlayers();
         if (players) {
             log.trace("players", players);
-            const localPlayerId = this.gameSocketManager.getPlayerId();
-            Object.keys(players).forEach((playerId) => {
+            Object.keys(players).forEach((playerId: string) => {
                 players[playerId].update();
-                if (playerId === localPlayerId) {
+                if (playerId === this.gameSocketManager.getPlayerId()) {
                     this.gameSocketManager.emitSnake(players[playerId]);
+                    this.collisionManager?.handleCollisionUpdate(players[playerId]);
                 }
+
             });
         }
-
-        this.collectableManager?.update();
-        this.collisionManager?.handleCollisionUpdate();
     }
 }

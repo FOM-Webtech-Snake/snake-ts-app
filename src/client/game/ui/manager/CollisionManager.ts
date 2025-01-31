@@ -29,11 +29,10 @@ export class CollisionManager {
         this.gameSocketManager = gameSocketManager;
     }
 
-    public handleCollisionUpdate() {
-        const player = this.playerManager.getPlayer(this.gameSocketManager.getPlayerId());
+    public handleCollisionUpdate(player: PhaserSnake) {
         log.trace("handling collision update", player);
 
-        // only collision check when snake is alive
+        // only check collision check when snake is alive
         if (player?.getStatus() !== PlayerStatusEnum.ALIVE) return;
 
         this.obstacleManager.checkCollisions(player, () =>
@@ -94,8 +93,7 @@ export class CollisionManager {
             }
 
             for (const bodyPart of otherPlayer.getBody()) {
-                const bodySegment = bodyPart as Phaser.Physics.Arcade.Sprite;
-                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), bodySegment.getBounds())) {
+                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), bodyPart.getBounds())) {
                     this.handlePlayerCollision(localPlayer, CollisionTypeEnum.PLAYER);
                     return; // Only handle the first collision
                 }
