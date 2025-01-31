@@ -262,7 +262,6 @@ const SocketEventRegistry: {
             }
             gameSession.removeCollectable(uuid);
             callback({status: true});
-            io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
             io.to(gameSession.getId()).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
         } else {
             callback({status: false});
@@ -393,7 +392,6 @@ const SocketEventRegistry: {
         }
 
         gameSession.getPlayer(socket.id).setColor(color);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
     },
 };
 
@@ -414,7 +412,6 @@ export const startSyncingGameState = (io: Server) => {
 const syncSession = (io: Server, session: GameSession) => {
     log.trace("syncing session", session.getId());
     io.to(session.getId()).emit(SocketEvents.GameControl.SYNC_GAME_STATE, session.toJson());
-    io.to(session.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, session.getPlayers());
 }
 
 const monitorHighActivitySessions = (io: Server) => {

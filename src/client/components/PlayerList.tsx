@@ -4,8 +4,6 @@ import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
 import socket from "../socket/socket";
-import {registerReactEvent} from "../socket/socketRouter";
-import {SocketEvents} from "../../shared/constants/SocketEvents";
 import PlayerListItem from "./PlayerListItem";
 
 const log = getLogger("client.components.PlayerList");
@@ -21,20 +19,13 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
     useEffect(() => {
         if (!socket) return;
 
-        registerReactEvent(SocketEvents.SessionState.PLAYER_LIST, (data) => {
-            log.trace("received player list", data);
-            const players = Object.values(data).map(entry => Player.fromData(entry));
+        setSortedPlayers((session.getPlayersAsArray() || []).sort(
+            (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
+        ));
 
-            log.trace("mapped player list", players);
-            const sortedPlayers = (players || []).sort(
-                (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
-            );
+        log.trace("updated players", sortedPlayers);
 
-            setSortedPlayers(sortedPlayers);
-            log.trace("updated players", sortedPlayers);
-        });
-
-    }, []);
+    }, [session]);
 
     const renderPlayerList = (isMobile: boolean) => {
         if (!sortedPlayers) {
