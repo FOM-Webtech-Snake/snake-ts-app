@@ -53,6 +53,10 @@ export class PhaserCollectable extends Collectable {
         }
     }
 
+    getBody(): Phaser.Physics.Arcade.Sprite {
+        return this.item;
+    }
+
     updateArrow(camera: Phaser.Cameras.Scene2D.Camera) {
         if (!this.arrow) return;
 

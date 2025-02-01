@@ -1,7 +1,8 @@
 import {PhaserSnake} from "./PhaserSnake";
+import {PhaserCollectable} from "./PhaserCollectable";
 
 export class SpatialGrid {
-    private grid: Map<string, PhaserSnake[]> = new Map();
+    private cells: Map<string, (PhaserSnake | PhaserCollectable)[]> = new Map();
     private cellSize: number;
 
     constructor(cellSize: number) {
@@ -9,41 +10,62 @@ export class SpatialGrid {
     }
 
     private getCellKey(x: number, y: number): string {
-        const gridX = Math.floor(x / this.cellSize);
-        const gridY = Math.floor(y / this.cellSize);
-        return `${gridX}:${gridY}`;
+        const cellX = Math.floor(x / this.cellSize);
+        const cellY = Math.floor(y / this.cellSize);
+        return `${cellX}:${cellY}`;
     }
 
-    public addSnake(snake: PhaserSnake): void {
-        for (const bodyPart of snake.getBody()) {
-            const cellKey = this.getCellKey(bodyPart.x, bodyPart.y);
-            if (!this.grid.has(cellKey)) {
-                this.grid.set(cellKey, []);
+    private getOverlappingCells(x: number, y: number, width: number, height: number): string[] {
+        const overlappingCells: string[] = [];
+
+        // calculate the min and max cells
+        const minCellX = Math.floor((x - width / 2) / this.cellSize);
+        const maxCellX = Math.floor((x + width / 2) / this.cellSize);
+        const minCellY = Math.floor((y - height / 2) / this.cellSize);
+        const maxCellY = Math.floor((y + height / 2) / this.cellSize);
+
+        // iterate over all overlapping cells
+        for (let cellX = minCellX; cellX <= maxCellX; cellX++) {
+            for (let cellY = minCellY; cellY <= maxCellY; cellY++) {
+                overlappingCells.push(`${cellX},${cellY}`);
             }
-            this.grid.get(cellKey).push(snake);
         }
+
+        return overlappingCells;
     }
 
-    public getPotentialColliders(snake: PhaserSnake): PhaserSnake[] {
-        const head = snake.getHead();
-        const baseCell = this.getCellKey(head.x, head.y);
-        const [baseX, baseY] = baseCell.split(':').map(Number);
+    public addGameObject(gameObject: PhaserSnake | PhaserCollectable): void {
+        const body = gameObject instanceof PhaserSnake ? gameObject.getBody() : [gameObject.getBody()];
 
-        const potentialColliders: PhaserSnake[] = [];
+        for (const part of body) {
+            const width = part.displayWidth;
+            const height = part.displayHeight;
+            const overlappingCellKeys = this.getOverlappingCells(part.x, part.y, width, height);
 
-        for (let offsetX = -1; offsetX <= 1; offsetX++) {
-            for (let offsetY = -1; offsetY <= 1; offsetY++) {
-                const neighborKey = `${baseX + offsetX}:${baseY + offsetY}`;
-                if (this.grid.has(neighborKey)) {
-                    potentialColliders.push(...this.grid.get(neighborKey));
+            for (const cellKey of overlappingCellKeys) {
+                if (!this.cells.has(cellKey)) {
+                    this.cells.set(cellKey, []);
                 }
+                this.cells.get(cellKey).push(gameObject);
+            }
+        }
+    }
+
+    public getPotentialColliders(x: number, y: number, width: number, height: number): Set<PhaserSnake | PhaserCollectable> {
+        const overlappingCellKeys = this.getOverlappingCells(x, y, width, height);
+        const potentialCollidersSet = new Set<PhaserSnake | PhaserCollectable>();
+
+        for (const cellKey of overlappingCellKeys) {
+            const cellObjects: (PhaserSnake | PhaserCollectable)[] = this.cells.get(cellKey);
+            if (cellObjects) {
+                cellObjects.forEach(obj => potentialCollidersSet.add(obj));
             }
         }
 
-        return potentialColliders;
+        return potentialCollidersSet;
     }
 
     public clear(): void {
-        this.grid.clear();
+        this.cells.clear();
     }
 }
