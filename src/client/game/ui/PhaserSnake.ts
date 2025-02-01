@@ -83,7 +83,10 @@ export class PhaserSnake {
     }
 
     spawn(positions: Position[]) {
-        if (!positions || positions.length === 0) return; // prevent spawn without position information
+        if (!positions || positions.length === 0) {
+            log.error("Cannot spawn snake: positions array is empty or undefined.");
+            return; // prevent spawn without position information
+        }
 
         // reset collision and reversed state
         this.justReversed = false;
@@ -166,14 +169,6 @@ export class PhaserSnake {
         return this.direction;
     }
 
-    getStatus(): PlayerStatusEnum {
-        return this.status;
-    }
-
-    setStatus(status: PlayerStatusEnum) {
-        this.status = status;
-    }
-
     getScore() {
         return this.score;
     }
@@ -186,7 +181,7 @@ export class PhaserSnake {
     }
 
     update(): void {
-        if (this.status !== PlayerStatusEnum.ALIVE) return; // no update when snake is not alive
+        if (!this.isAlive()) return; // no update when snake is not alive
 
         log.trace("updating snake", this.playerId, this.status);
         this.moveBodyParts(); // move the body parts since the head is moving automatically by phaser
@@ -274,24 +269,31 @@ export class PhaserSnake {
     }
 
     die() {
-        this.status = PlayerStatusEnum.DEAD;
-        this.headGroup.setVelocity(0, 0);
-        this.destroy();
-        log.trace("playerSnake died", this);
+        if (this.isAlive()) { // snake can only die when it's alive.
+            this.status = PlayerStatusEnum.DEAD;
+            this.headGroup.setVelocity(0, 0);
+            this.destroy();
+            log.trace("playerSnake died", this);
+        }
     }
 
     revive(positions: Position[]) {
-        this.spawn(positions);
-        this.status = PlayerStatusEnum.ALIVE;
-        log.trace("playerSnake revived", this);
+        if (!this.isAlive()) { // snake can only revive when it's not alive
+            this.spawn(positions);
+            this.status = PlayerStatusEnum.ALIVE;
+            log.trace("playerSnake revived", this);
+        }
     }
 
+    isAlive() {
+        return this.status === PlayerStatusEnum.ALIVE;
+    }
 
     private hasSelfCollision(): boolean {
         log.trace(`self-collision is ${this.scene.getConfig().getSelfCollisionEnabled()} and snake is justReversed=${this.justReversed}`);
 
         // early exit if self-collision is disabled or the player is dead
-        if (!this.scene.getConfig().getSelfCollisionEnabled() || this.status === PlayerStatusEnum.DEAD) {
+        if (!this.scene.getConfig().getSelfCollisionEnabled() || !this.isAlive()) {
             return false;
         }
 
@@ -332,18 +334,19 @@ export class PhaserSnake {
 
     private hasWorldCollision(): boolean {
         log.trace(`world-collision is ${this.scene.getConfig().getWorldCollisionEnabled()}`);
-        if (this.scene.getConfig().getWorldCollisionEnabled() && this.status !== PlayerStatusEnum.DEAD) {
-            const bounds = this.scene.physics.world.bounds;
-            if (
-                this.head.x <= bounds.x + 5 + BORDER_WIDTH || // left border
-                this.head.x >= bounds.x - 5 + bounds.width - BORDER_WIDTH || // right border
-                this.head.y <= bounds.y + 5 + BORDER_WIDTH || // top border
-                this.head.y >= bounds.y - 5 + bounds.height - BORDER_WIDTH // bottom border
-            ) {
-                log.debug("worldCollision detected!");
-                return true;
-            }
+        if (!this.scene.getConfig().getWorldCollisionEnabled() || !this.isAlive()) return false;
+
+        const bounds = this.scene.physics.world.bounds;
+        if (
+            this.head.x <= bounds.x + 5 + BORDER_WIDTH || // left border
+            this.head.x >= bounds.x - 5 + bounds.width - BORDER_WIDTH || // right border
+            this.head.y <= bounds.y + 5 + BORDER_WIDTH || // top border
+            this.head.y >= bounds.y - 5 + bounds.height - BORDER_WIDTH // bottom border
+        ) {
+            log.debug("worldCollision detected!");
+            return true;
         }
+
         return false;
     }
 
@@ -417,12 +420,11 @@ export class PhaserSnake {
 
                 if (accumulatedDistance + segmentDistance >= targetDistance) {
                     const t = (targetDistance - accumulatedDistance) / segmentDistance;
-                    const interpolatedX = Phaser.Math.Linear(p1.x, p2.x, t);
-                    const interpolatedY = Phaser.Math.Linear(p1.y, p2.y, t);
-                    const interpolatedZ = Phaser.Math.Linear(p1.z, p2.z, t);
-
-                    bodyParts[i].setPosition(interpolatedX, interpolatedY);
-                    bodyParts[i].setRotation(interpolatedZ);
+                    bodyParts[i].setPosition(
+                        Phaser.Math.Linear(p1.x, p2.x, t),
+                        Phaser.Math.Linear(p1.y, p2.y, t)
+                    );
+                    bodyParts[i].setRotation(Phaser.Math.Linear(p1.z, p2.z, t));
                     break;
                 }
 
