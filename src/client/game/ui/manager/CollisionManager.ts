@@ -1,5 +1,4 @@
 import {PlayerManager} from "./PlayerManager";
-import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
 import {CollisionTypeEnum} from "../../../../shared/constants/CollisionTypeEnum";
 import {CollectableManager} from "./CollectableManager";
 import {GameSocketManager} from "./GameSocketManager";
@@ -33,7 +32,7 @@ export class CollisionManager {
         log.trace("handling collision update", player);
 
         // only check collision check when snake is alive
-        if (player?.getStatus() !== PlayerStatusEnum.ALIVE) return;
+        if (!player?.isAlive()) return;
 
         this.obstacleManager.checkCollisions(player, () =>
             this.handlePlayerCollision(player, CollisionTypeEnum.OBSTACLE)
@@ -69,7 +68,7 @@ export class CollisionManager {
     private handlePlayerCollision(player: PhaserSnake, collisionType: CollisionTypeEnum) {
         socket.emitWithLog(SocketEvents.GameEvents.COLLISION, collisionType, (response: any) => {
             if (response.status) {
-                player.setStatus(PlayerStatusEnum.DEAD);
+                player.die();
             }
         });
     }
@@ -79,7 +78,7 @@ export class CollisionManager {
         const spatialGrid = new SpatialGrid(25);
         for (const player of otherPlayers) {
             // only add players that are alive to collision checks
-            if (player.getStatus() === PlayerStatusEnum.ALIVE) {
+            if (player?.isAlive()) {
                 spatialGrid.addSnake(player);
             }
         }
