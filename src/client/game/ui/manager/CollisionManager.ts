@@ -30,7 +30,7 @@ export class CollisionManager {
         this.gameSocketManager = gameSocketManager;
 
         // create a spacial grip with suitable cell size
-        this.spatialGrid = new SpatialGrid(25);
+        this.spatialGrid = new SpatialGrid(100);
     }
 
     public handleCollisionUpdate(player: PhaserSnake) {
