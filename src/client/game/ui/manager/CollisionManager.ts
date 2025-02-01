@@ -16,6 +16,7 @@ export class CollisionManager {
     private collectableManager: CollectableManager;
     private obstacleManager: ObstacleManager;
     private gameSocketManager: GameSocketManager;
+    private spatialGrid: SpatialGrid;
 
     constructor(
         playerManager: PlayerManager,
@@ -26,6 +27,9 @@ export class CollisionManager {
         this.collectableManager = collectableManager;
         this.obstacleManager = obstacleManager;
         this.gameSocketManager = gameSocketManager;
+
+        // create a spacial grip with suitable cell size
+        this.spatialGrid = new SpatialGrid(25);
     }
 
     public handleCollisionUpdate(player: PhaserSnake) {
@@ -50,7 +54,8 @@ export class CollisionManager {
             this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
         }
 
-        this.checkPlayerToPlayerCollisions(player, this.playerManager.getPlayersExcept(this.gameSocketManager.getPlayerId()));
+        this.updateSpatialGrid(); // update the grid with current player positions
+        this.checkPlayerToPlayerCollisions(player);
     }
 
     private handleCollectableCollision(uuid: string, playerSnake: PhaserSnake): void {
@@ -73,17 +78,18 @@ export class CollisionManager {
         });
     }
 
-    private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake, otherPlayers: PhaserSnake[]) {
-        // create a spacial grip with suitable cell size
-        const spatialGrid = new SpatialGrid(25);
-        for (const player of otherPlayers) {
-            // only add players that are alive to collision checks
-            if (player?.isAlive()) {
-                spatialGrid.addSnake(player);
+    private updateSpatialGrid(): void {
+        this.spatialGrid.clear();
+        const players = this.playerManager.getPlayersExcept(this.gameSocketManager.getPlayerId())
+        for (const player of players) {
+            if (player?.isAlive()) { // only add players that are alive to collision checks
+                this.spatialGrid.addSnake(player);
             }
         }
+    }
 
-        const potentialColliders = spatialGrid.getPotentialColliders(localPlayer);
+    private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake) {
+        const potentialColliders = this.spatialGrid.getPotentialColliders(localPlayer);
         const localPlayerHead = localPlayer.getHead();
 
         for (const otherPlayer of potentialColliders) {
