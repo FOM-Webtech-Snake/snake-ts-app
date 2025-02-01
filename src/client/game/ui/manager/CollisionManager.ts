@@ -92,6 +92,7 @@ export class CollisionManager {
         const potentialColliders = this.spatialGrid.getPotentialColliders(localPlayer);
         const localPlayerHead = localPlayer.getHead();
 
+        log.trace("potentialColliders", potentialColliders);
         for (const otherPlayer of potentialColliders) {
             if (otherPlayer.getPlayerId() === localPlayer.getPlayerId()) {
                 continue; // skip when local player is also other player.
