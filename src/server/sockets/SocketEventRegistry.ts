@@ -125,11 +125,11 @@ const SocketEventRegistry: {
         }
 
         // start countdown
-        const gameTimerManager = GameTimerManager.getInstance(io);
+        const gameTimerManager = GameTimerManager.getInstance();
 
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
 
-            gameTimerManager.startCountdown(gameSession, () => {
+            gameTimerManager.startCountdown(gameSession.getId(), io, () => {
                 log.info("Countdown ended. Starting game timer...");
                 if (gameSession.start(io)) {
                     // start game
@@ -137,7 +137,7 @@ const SocketEventRegistry: {
                     log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                 }
                 //start game timer
-                gameTimerManager.startGameTimer(gameSession);
+                gameTimerManager.startGameTimer(gameSession, io);
             });
         }
     },
@@ -158,7 +158,7 @@ const SocketEventRegistry: {
             io.to(gameSession.getId()).emit(SocketEvents.GameControl.RESET_GAME, gameSession.toJson());
 
             // reset timer
-            const gameTimerManager = GameTimerManager.getInstance(io);
+            const gameTimerManager = GameTimerManager.getInstance();
             gameTimerManager.stopGameTimer(gameSession);
         }
     },
