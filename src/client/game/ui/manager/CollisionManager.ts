@@ -107,7 +107,7 @@ export class CollisionManager {
             if (collider instanceof PhaserSnake) {
                 // handle player-to-player collisions
                 if (collider.getPlayerId() !== localPlayer.getPlayerId()) {
-                    for (const bodyPart of collider.getBody()) {
+                    for (const bodyPart of collider.getVisibleBody()) {
                         if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHeadBounds, bodyPart.getBounds())) {
                             this.handlePlayerCollision(localPlayer, CollisionTypeEnum.PLAYER);
                             return; // Only handle the first collision

@@ -142,8 +142,9 @@ export class PhaserSnake {
         this.face.setRotation(this.head.rotation);
     }
 
-    getBody(): Phaser.Physics.Arcade.Sprite[] {
-        return this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+    getVisibleBody(): Phaser.Physics.Arcade.Sprite[] {
+        return this.body.getChildren()
+            .filter((segment: Phaser.Physics.Arcade.Sprite) => segment.visible) as Phaser.Physics.Arcade.Sprite[];
     }
 
     getPlayerId() {
@@ -160,7 +161,7 @@ export class PhaserSnake {
     }
 
     getBodyPositions(): Position[] {
-        return this.getBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
+        return this.getVisibleBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
             return new Position(segment.x, segment.y, this.lockedSegments.contains(segment), segment.rotation);
         });
     }
@@ -235,7 +236,7 @@ export class PhaserSnake {
     }
 
     splitInHalf(): void {
-        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+        const bodyParts = this.getVisibleBody();
         const halfLength = Math.ceil(bodyParts.length / 2);
 
         // remove the second half of the body
@@ -247,7 +248,7 @@ export class PhaserSnake {
     }
 
     doubleLength(): void {
-        const currentLength = this.body.getLength();
+        const currentLength = this.getVisibleBody().length;
         const spawnPos: Position = new Position(this.head.x, this.head.y, true, this.head.rotation);
         for (let i = 0; i < currentLength; i++) {
             this.addSegmentToBody(spawnPos);
@@ -308,7 +309,7 @@ export class PhaserSnake {
         }
 
         const headCircle = new Phaser.Geom.Circle(this.head.x, this.head.y, this.head.displayWidth / 2);
-        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+        const bodyParts = this.getVisibleBody();
 
         // start loop from the third element to skip the head and the first body part
         for (let i = 2; i < bodyParts.length; i++) {
@@ -533,7 +534,6 @@ export class PhaserSnake {
         // update body parts to match the new positions
         this.resetSnakeState(player.getBodyPositions(), this.isAlive());
 
-        // TODO this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite;
         this.updateFacePosition();
 
         if (this.scale != player.getScale()) {
@@ -563,14 +563,13 @@ export class PhaserSnake {
             scale: this.scale,
             direction: this.direction,
             primaryColor: this.primaryColor,
-            body: this.body.getChildren()
-                .filter((segment: Phaser.Physics.Arcade.Sprite) => segment.visible) // exclude invisible segments
+            body: this.getVisibleBody()
                 .map((segment: Phaser.Physics.Arcade.Sprite) => ({
-                x: segment.x,
-                y: segment.y,
-                locked: this.lockedSegments.contains(segment),
-                rotation: segment.rotation,
-            })),
+                    x: segment.x,
+                    y: segment.y,
+                    locked: this.lockedSegments.contains(segment),
+                    rotation: segment.rotation,
+                })),
         };
     }
 }

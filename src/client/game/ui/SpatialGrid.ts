@@ -36,7 +36,7 @@ export class SpatialGrid {
     }
 
     public addGameObject(gameObject: PhaserSnake | PhaserCollectable | PhaserObstacle): void {
-        const body = gameObject instanceof PhaserSnake ? gameObject.getBody() : [gameObject.getBody()];
+        const body = gameObject instanceof PhaserSnake ? gameObject.getVisibleBody() : [gameObject.getBody()];
 
         for (const part of body) {
             const width = part.displayWidth;
