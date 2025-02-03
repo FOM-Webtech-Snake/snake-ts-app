@@ -79,24 +79,15 @@ export class PhaserSnake {
         this.body = this.scene.physics.add.group();
         this.lockedSegments = this.scene.physics.add.group();
 
+        this.createHead();
         this.spawn(positions);
     }
 
-    spawn(positions: Position[]) {
-        if (!positions || positions.length === 0) {
-            log.error("Cannot spawn snake: positions array is empty or undefined.");
-            return; // prevent spawn without position information
+    private createHead() {
+        // create the head
+        if (this.body.getChildren().length == 0) {
+            this.addSegmentToBody(new Position(0, 0, true, 0));
         }
-
-        // reset collision and reversed state
-        this.justReversed = false;
-        this.selfCollisionDetected = false;
-
-        Object.values(positions).forEach(value => {
-            value.setLocked(true);
-        });
-        this.appendSegmentsByPositions(0, positions);
-
         this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite; // Update the head reference
 
         // create the face
@@ -110,6 +101,17 @@ export class PhaserSnake {
         this.headGroup = this.scene.physics.add.group();
         this.headGroup.add(this.head);
         this.headGroup.add(this.face);
+    }
+
+    private spawn(positions: Position[]) {
+        if (!positions || positions.length === 0) {
+            log.error(`Cannot spawn snake: positions array is empty or undefined. ${this}`);
+        } else {
+            Object.values(positions).forEach(value => {
+                value.setLocked(true);
+            });
+            this.appendSegmentsByPositions(0, positions);
+        }
     }
 
     destroy() {
@@ -362,6 +364,9 @@ export class PhaserSnake {
     }
 
     private resetSnakeState(positions: Position[], makeVisible: boolean) {
+        this.justReversed = false;
+        this.selfCollisionDetected = false;
+
         const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
         positions.forEach((segment, index) => {
             if (index < bodyParts.length) {
@@ -393,7 +398,7 @@ export class PhaserSnake {
 
     }
 
-    private addSegmentToBody(pos: Position) {
+    private addSegmentToBody(pos: Position): Phaser.Physics.Arcade.Sprite {
         // check if there are any invisible segments available to reuse
         const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
 
