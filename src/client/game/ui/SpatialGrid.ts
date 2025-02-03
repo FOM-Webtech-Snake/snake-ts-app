@@ -1,8 +1,9 @@
 import {PhaserSnake} from "./PhaserSnake";
 import {PhaserCollectable} from "./PhaserCollectable";
+import {PhaserObstacle} from "./PhaserObstacle";
 
 export class SpatialGrid {
-    private cells: Map<string, (PhaserSnake | PhaserCollectable)[]> = new Map();
+    private cells: Map<string, (PhaserSnake | PhaserCollectable | PhaserObstacle)[]> = new Map();
     private cellSize: number;
 
     constructor(cellSize: number) {
@@ -34,7 +35,7 @@ export class SpatialGrid {
         return overlappingCells;
     }
 
-    public addGameObject(gameObject: PhaserSnake | PhaserCollectable): void {
+    public addGameObject(gameObject: PhaserSnake | PhaserCollectable | PhaserObstacle): void {
         const body = gameObject instanceof PhaserSnake ? gameObject.getBody() : [gameObject.getBody()];
 
         for (const part of body) {
@@ -51,12 +52,12 @@ export class SpatialGrid {
         }
     }
 
-    public getPotentialColliders(x: number, y: number, width: number, height: number): Set<PhaserSnake | PhaserCollectable> {
-        const overlappingCellKeys = this.getOverlappingCells(x, y, width, height);
-        const potentialCollidersSet = new Set<PhaserSnake | PhaserCollectable>();
+    public getPotentialColliders(bounds: Phaser.Geom.Rectangle): Set<PhaserSnake | PhaserCollectable | PhaserObstacle> {
+        const overlappingCellKeys = this.getOverlappingCells(bounds.x, bounds.y, bounds.width, bounds.height);
+        const potentialCollidersSet = new Set<PhaserSnake | PhaserCollectable | PhaserObstacle>();
 
         for (const cellKey of overlappingCellKeys) {
-            const cellObjects: (PhaserSnake | PhaserCollectable)[] = this.cells.get(cellKey);
+            const cellObjects: (PhaserSnake | PhaserCollectable | PhaserObstacle)[] = this.cells.get(cellKey);
             if (cellObjects) {
                 cellObjects.forEach(obj => potentialCollidersSet.add(obj));
             }
