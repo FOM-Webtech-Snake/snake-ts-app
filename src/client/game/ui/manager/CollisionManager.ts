@@ -99,10 +99,8 @@ export class CollisionManager {
     }
 
     private checkCollisions(localPlayer: PhaserSnake) {
-        const localPlayerHead = localPlayer.getHead();
-        const width = localPlayerHead.displayWidth
-        const height = localPlayerHead.displayHeight;
-        const potentialColliders: Set<PhaserSnake | PhaserCollectable | PhaserObstacle> = this.spatialGrid.getPotentialColliders(localPlayerHead.x, localPlayerHead.y, width, height);
+        const localPlayerHeadBounds = localPlayer.getHead().getBounds();
+        const potentialColliders: Set<PhaserSnake | PhaserCollectable | PhaserObstacle> = this.spatialGrid.getPotentialColliders(localPlayerHeadBounds);
 
         log.trace("potentialColliders", potentialColliders);
         for (const collider of potentialColliders) {
@@ -110,7 +108,7 @@ export class CollisionManager {
                 // handle player-to-player collisions
                 if (collider.getPlayerId() !== localPlayer.getPlayerId()) {
                     for (const bodyPart of collider.getBody()) {
-                        if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), bodyPart.getBounds())) {
+                        if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHeadBounds, bodyPart.getBounds())) {
                             this.handlePlayerCollision(localPlayer, CollisionTypeEnum.PLAYER);
                             return; // Only handle the first collision
                         }
@@ -118,12 +116,12 @@ export class CollisionManager {
                 }
             } else if (collider instanceof PhaserCollectable) {
                 // handle collectable collisions
-                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), collider.getBody().getBounds())) {
+                if (collider.checkCollision(localPlayerHeadBounds)) {
                     this.handleCollectableCollision(collider.getId(), localPlayer);
                 }
             } else if (collider instanceof PhaserObstacle) {
                 // handle obstacle collisions
-                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), collider.getBody().getBounds())) {
+                if (collider.checkCollision(localPlayerHeadBounds)) {
                     this.handlePlayerCollision(localPlayer, CollisionTypeEnum.OBSTACLE);
                 }
             }
