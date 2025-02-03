@@ -9,6 +9,7 @@ import {SocketEvents} from "../../../../shared/constants/SocketEvents";
 import {getLogger} from "../../../../shared/config/LogConfig";
 import {ObstacleManager} from "./ObstacleManager";
 import {PhaserCollectable} from "../PhaserCollectable";
+import {PhaserObstacle} from "../PhaserObstacle";
 
 const log = getLogger("client.game.ui.manager.CollisionManager");
 
@@ -38,10 +39,6 @@ export class CollisionManager {
         if (!player?.isAlive()) return;
 
         log.trace("handling collision update", player);
-
-        this.obstacleManager.checkCollisions(player, () =>
-            this.handlePlayerCollision(player, CollisionTypeEnum.OBSTACLE)
-        );
 
         this.updateSpatialGrid(); // update the grid with current player positions
         this.checkCollisions(player);
@@ -93,6 +90,11 @@ export class CollisionManager {
             this.spatialGrid.addGameObject(collectable);
         }
 
+        const obstacles = this.obstacleManager.getAllObstacles();
+        for (const obstacle of obstacles) {
+            this.spatialGrid.addGameObject(obstacle);
+        }
+
         log.trace("spatialGrid.update", this.spatialGrid);
     }
 
@@ -100,7 +102,7 @@ export class CollisionManager {
         const localPlayerHead = localPlayer.getHead();
         const width = localPlayerHead.displayWidth
         const height = localPlayerHead.displayHeight;
-        const potentialColliders: Set<PhaserSnake | PhaserCollectable> = this.spatialGrid.getPotentialColliders(localPlayerHead.x, localPlayerHead.y, width, height);
+        const potentialColliders: Set<PhaserSnake | PhaserCollectable | PhaserObstacle> = this.spatialGrid.getPotentialColliders(localPlayerHead.x, localPlayerHead.y, width, height);
 
         log.trace("potentialColliders", potentialColliders);
         for (const collider of potentialColliders) {
@@ -118,6 +120,11 @@ export class CollisionManager {
                 // handle collectable collisions
                 if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), collider.getBody().getBounds())) {
                     this.handleCollectableCollision(collider.getId(), localPlayer);
+                }
+            } else if (collider instanceof PhaserObstacle) {
+                // handle obstacle collisions
+                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), collider.getBody().getBounds())) {
+                    this.handlePlayerCollision(localPlayer, CollisionTypeEnum.OBSTACLE);
                 }
             }
         }
