@@ -8,31 +8,24 @@ const log = getLogger("server.util.GameTimerManager");
 
 export class GameTimerManager {
     private static instance: GameTimerManager;
-    private io: Server;
     private countdownTimers: Map<string, NodeJS.Timeout>;
     private countdownStatus: Map<string, boolean>;
     private gameTimers: Map<string, NodeJS.Timeout>;
 
-    constructor(io: Server) {
-        this.io = io;
+    constructor() {
         this.countdownTimers = new Map();
         this.countdownStatus = new Map();
         this.gameTimers = new Map();
     }
 
-    public static getInstance(io?: Server): GameTimerManager {
+    public static getInstance(): GameTimerManager {
         if (!GameTimerManager.instance) {
-            if (!io) {
-                log.warn("GameTimerManager has not been initialized yet. You need to provide a Server instance on first call.");
-            }
-            GameTimerManager.instance = new GameTimerManager(io);
+            GameTimerManager.instance = new GameTimerManager();
         }
         return GameTimerManager.instance;
     }
 
-    startCountdown(gameSession: GameSession, onCountdownEnd: () => void): void {
-        const sessionId = gameSession.getId();
-
+    startCountdown(sessionId: string, io: Server, onCountdownEnd: () => void): void {
         if (this.countdownStatus.get(sessionId)) {
             log.warn(`Countdown for game session ${sessionId} is already running.`);
             return;
@@ -43,7 +36,7 @@ export class GameTimerManager {
         this.countdownStatus.set(sessionId, true);
 
         const countdownInterval = setInterval(() => {
-            this.io.to(sessionId).emit(SocketEvents.GameControl.COUNTDOWN_UPDATED, countdown);
+            io.to(sessionId).emit(SocketEvents.GameControl.COUNTDOWN_UPDATED, countdown);
 
             if (countdown <= 0) {
                 clearInterval(countdownInterval);
@@ -58,8 +51,7 @@ export class GameTimerManager {
         this.countdownTimers.set(sessionId, countdownInterval);
     }
 
-    stopCountdown(gameSession: GameSession): void {
-        const sessionId = gameSession.getId();
+    stopCountdown(sessionId: string): void {
         const countdownTimer = this.countdownTimers.get(sessionId);
         if (countdownTimer) {
             clearInterval(countdownTimer);
@@ -71,7 +63,7 @@ export class GameTimerManager {
         }
     }
 
-    startGameTimer(gameSession: GameSession): void {
+    startGameTimer(gameSession: GameSession, io: Server): void {
         if (this.gameTimers.has(gameSession.getId())) {
             log.warn(`Game timer for session ${gameSession.getId()} is already running.`);
             return;
@@ -83,12 +75,12 @@ export class GameTimerManager {
                 gameSession.setRemainingTime(remainingTime);
 
                 log.debug(`Remaining time for session ${gameSession.getId()}: ${remainingTime}`);
-                this.io.to(gameSession.getId()).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
+                io.to(gameSession.getId()).emit(SocketEvents.GameEvents.TIMER_UPDATED, remainingTime);
 
                 if (remainingTime <= 0) {
                     this.stopGameTimer(gameSession);
                     gameSession.setGameState(GameStateEnum.GAME_OVER);
-                    this.io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
+                    io.to(gameSession.getId()).emit(SocketEvents.GameControl.STATE_CHANGED, gameSession.getGameState());
                     log.debug(`Game over for session ${gameSession.getId()}.`);
                 }
             }
@@ -108,7 +100,7 @@ export class GameTimerManager {
             gameSession.setTimerInterval(null);
             log.debug(`Game timer for session ${sessionId} stopped.`);
 
-            this.stopCountdown(gameSession);
+            this.stopCountdown(gameSession.getId());
         } else {
             log.warn(`No game timer found for session ${sessionId}.`);
         }
