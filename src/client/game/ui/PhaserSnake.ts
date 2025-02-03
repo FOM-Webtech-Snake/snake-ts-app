@@ -89,6 +89,8 @@ export class PhaserSnake {
             this.addSegmentToBody(new Position(0, 0, true, 0));
         }
         this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite; // Update the head reference
+        this.head.setVisible(false);
+        this.head.body.enable = false;
 
         // create the face
         this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
@@ -105,7 +107,7 @@ export class PhaserSnake {
 
     private spawn(positions: Position[]) {
         if (!positions || positions.length === 0) {
-            log.error(`Cannot spawn snake: positions array is empty or undefined. ${this}`);
+            log.error(`cannot spawn snake: positions array is empty or undefined.`);
         } else {
             Object.values(positions).forEach(value => {
                 value.setLocked(true);
@@ -424,7 +426,6 @@ export class PhaserSnake {
             if (pos.getLocked()) this.lockedSegments.add(bodyPart);
             return bodyPart;
         }
-
     }
 
     private unlockDirection() {
