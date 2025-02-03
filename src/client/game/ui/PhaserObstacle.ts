@@ -24,6 +24,10 @@ export class PhaserObstacle extends Obstacle {
         this.item.setDepth(1);
     }
 
+    getBody(): Phaser.Physics.Arcade.Sprite {
+        return this.item;
+    }
+
     checkCollision(snake: PhaserSnake): boolean {
         return this.item && this.item.visible && Phaser.Geom.Intersects.RectangleToRectangle(snake.getHead().getBounds(), this.item.getBounds());
     }
