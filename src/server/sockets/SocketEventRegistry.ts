@@ -227,15 +227,15 @@ const SocketEventRegistry: {
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.isWaitingForPlayers()) {
                 gameSession.spawnPlayers();
-                io.to(gameSession.getId()).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
+                io.to(gameSession.getId()).timeout(15000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
                     if (err) {
                         log.warn(`Not all clients responded in time for session ${gameSession.getId()}`);
                     } else {
                         log.debug(`game session start confirmed from all clients`);
-                        gameSession.setGameState(GameStateEnum.READY);
-                        Object.values(gameSession.getPlayers()).forEach((player: Player) => player.resetPoints());
-                        log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                     }
+                    gameSession.setGameState(GameStateEnum.READY);
+                    Object.values(gameSession.getPlayers()).forEach((player: Player) => player.resetPoints());
+                    log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                 });
             }
             else {

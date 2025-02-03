@@ -75,16 +75,6 @@ export class CollectableManager {
         });
     }
 
-    checkCollisions(snake: PhaserSnake, onCollision: (uuid: string) => void): void {
-        log.debug("checking collectables for collisions");
-        Object.keys(this.collectables).forEach(uuid => {
-            // if available check for collisions with the snake
-            if (this.collectables[uuid]?.checkCollision(snake)) {
-                onCollision(uuid); // callback to handle the collect event
-            }
-        });
-    }
-
     private reset(): void {
         log.debug("clearing all collectables");
         Object.values(this.collectables).forEach(collectable => collectable?.destroy());

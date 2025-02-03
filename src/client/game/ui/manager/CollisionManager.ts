@@ -8,6 +8,8 @@ import socket from "../../../socket/socket";
 import {SocketEvents} from "../../../../shared/constants/SocketEvents";
 import {getLogger} from "../../../../shared/config/LogConfig";
 import {ObstacleManager} from "./ObstacleManager";
+import {PhaserCollectable} from "../PhaserCollectable";
+import {PhaserObstacle} from "../PhaserObstacle";
 
 const log = getLogger("client.game.ui.manager.CollisionManager");
 
@@ -29,22 +31,17 @@ export class CollisionManager {
         this.gameSocketManager = gameSocketManager;
 
         // create a spacial grip with suitable cell size
-        this.spatialGrid = new SpatialGrid(25);
+        this.spatialGrid = new SpatialGrid(100);
     }
 
     public handleCollisionUpdate(player: PhaserSnake) {
-        log.trace("handling collision update", player);
-
         // only check collision check when snake is alive
         if (!player?.isAlive()) return;
 
-        this.obstacleManager.checkCollisions(player, () =>
-            this.handlePlayerCollision(player, CollisionTypeEnum.OBSTACLE)
-        );
+        log.trace("handling collision update", player);
 
-        this.collectableManager.checkCollisions(player, (uuid: string) =>
-            this.handleCollectableCollision(uuid, player)
-        );
+        this.updateSpatialGrid(); // update the grid with current player positions
+        this.checkCollisions(player);
 
         const {worldCollision, selfCollision} = player.checkCollisions();
         if (worldCollision) {
@@ -54,8 +51,6 @@ export class CollisionManager {
             this.handlePlayerCollision(player, CollisionTypeEnum.SELF);
         }
 
-        this.updateSpatialGrid(); // update the grid with current player positions
-        this.checkPlayerToPlayerCollisions(player);
     }
 
     private handleCollectableCollision(uuid: string, playerSnake: PhaserSnake): void {
@@ -80,28 +75,54 @@ export class CollisionManager {
 
     private updateSpatialGrid(): void {
         this.spatialGrid.clear();
+
+        // add all alive players to the grid
         const players = this.playerManager.getPlayersExcept(this.gameSocketManager.getPlayerId())
         for (const player of players) {
-            if (player?.isAlive()) { // only add players that are alive to collision checks
-                this.spatialGrid.addSnake(player);
+            if (player?.isAlive()) {
+                this.spatialGrid.addGameObject(player);
             }
         }
+
+        // add all collectables to the grid
+        const collectables = this.collectableManager.getAllCollectables();
+        for (const collectable of collectables) {
+            this.spatialGrid.addGameObject(collectable);
+        }
+
+        const obstacles = this.obstacleManager.getAllObstacles();
+        for (const obstacle of obstacles) {
+            this.spatialGrid.addGameObject(obstacle);
+        }
+
+        log.trace("spatialGrid.update", this.spatialGrid);
     }
 
-    private checkPlayerToPlayerCollisions(localPlayer: PhaserSnake) {
-        const potentialColliders = this.spatialGrid.getPotentialColliders(localPlayer);
-        const localPlayerHead = localPlayer.getHead();
+    private checkCollisions(localPlayer: PhaserSnake) {
+        const localPlayerHeadBounds = localPlayer.getHead().getBounds();
+        const potentialColliders: Set<PhaserSnake | PhaserCollectable | PhaserObstacle> = this.spatialGrid.getPotentialColliders(localPlayerHeadBounds);
 
         log.trace("potentialColliders", potentialColliders);
-        for (const otherPlayer of potentialColliders) {
-            if (otherPlayer.getPlayerId() === localPlayer.getPlayerId()) {
-                continue; // skip when local player is also other player.
-            }
-
-            for (const bodyPart of otherPlayer.getBody()) {
-                if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHead.getBounds(), bodyPart.getBounds())) {
-                    this.handlePlayerCollision(localPlayer, CollisionTypeEnum.PLAYER);
-                    return; // Only handle the first collision
+        for (const collider of potentialColliders) {
+            if (collider instanceof PhaserSnake) {
+                // handle player-to-player collisions
+                if (collider.getPlayerId() !== localPlayer.getPlayerId()) {
+                    for (const bodyPart of collider.getVisibleBody()) {
+                        if (Phaser.Geom.Intersects.RectangleToRectangle(localPlayerHeadBounds, bodyPart.getBounds())) {
+                            this.handlePlayerCollision(localPlayer, CollisionTypeEnum.PLAYER);
+                            return; // Only handle the first collision
+                        }
+                    }
+                }
+            } else if (collider instanceof PhaserCollectable) {
+                // handle collectable collisions
+                if (collider.checkCollision(localPlayerHeadBounds)) {
+                    this.handleCollectableCollision(collider.getId(), localPlayer);
+                }
+            } else if (collider instanceof PhaserObstacle) {
+                // handle obstacle collisions
+                if (collider.checkCollision(localPlayerHeadBounds)) {
+                    this.handlePlayerCollision(localPlayer, CollisionTypeEnum.OBSTACLE);
                 }
             }
         }
