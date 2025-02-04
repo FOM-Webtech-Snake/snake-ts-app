@@ -1,10 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionContext";
-import {Modal, Button, Container} from "react-bootstrap";
-import {registerReactEvent, unregisterReactEvent} from "../socket/socketRouter";
+import {Button, Container, Modal} from "react-bootstrap";
 import socket from "../socket/socket";
-import {SocketEvents} from "../../shared/constants/SocketEvents";
 import "/public/css/endgamedisplay.css";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import WinGif from "../../../public/assets/WinGif.gif"
@@ -14,26 +12,8 @@ const log = getLogger("client.components.DeathDisplay");
 
 const DeathDisplay: React.FC = () => {
     const {playerId, session} = useGameSessionSocket();
-    const [isPlayerDead, setIsPlayerDead] = useState(false);
     const [winnerId, setWinnerId] = useState<string | null>(null);
-    const [respawnEnabled, setRespawnEnabled] = useState(false);
-
-    const onGameOver = (state: GameStateEnum) => {
-        log.debug(`Game State Changed: ${state}`);
-
-        if (state === GameStateEnum.GAME_OVER) {
-            log.debug("Game Over event received");
-
-            if (!respawnEnabled) {
-                log.debug("Respawn is disabled.");
-                // TODO Deathmatch Modal beim Tod anzeigen
-            }
-
-            setWinnerId(session.getTopPlayer().getId());
-            log.info("Spieler mit den meisten Punkten:", session.getTopPlayer());
-            log.info("All Players: ", session.getPlayersAsArray());
-        }
-    };
+    const [gameState, setGameState] = useState<GameStateEnum | null>(session.getGameState() || null);
 
     useEffect(() => {
         if (!socket) {
@@ -41,22 +21,17 @@ const DeathDisplay: React.FC = () => {
             return;
         }
 
-        log.debug("Registering event listeners");
-        registerReactEvent(SocketEvents.GameControl.STATE_CHANGED, onGameOver);
+        if (gameState !== session.getGameState() && // only trigger when game state is changed
+            session.getGameState() === GameStateEnum.GAME_OVER) {
 
-        const config = session.getConfig();
-        if (config) {
-            setRespawnEnabled(config.getRespawnAfterDeathEnabled());
-            log.info(`Respawn Status: ${respawnEnabled}`);
-        } else {
-            log.warn("Respawn configuration is undefined or not a boolean.");
+            setGameState(session.getGameState()); // store the current game state
+            setWinnerId(session.getTopPlayer().getId());
+
+            log.debug("Player with highest score:", session.getTopPlayer());
+            log.debug("All Players: ", session.getPlayersAsArray());
         }
 
-        return () => {
-            log.info("Unregistering event listeners");
-            unregisterReactEvent(SocketEvents.GameControl.STATE_CHANGED);
-        };
-    }, []);
+    }, [session]);
 
     return (
         <Container>
