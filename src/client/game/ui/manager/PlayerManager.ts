@@ -5,7 +5,6 @@ import {GameScene} from "../../scenes/GameScene";
 import {Player} from "../../../../shared/model/Player";
 import {GameSocketManager} from "./GameSocketManager";
 import {GameSession} from "../../../../shared/model/GameSession";
-import {PlayerStatusEnum} from "../../../../shared/constants/PlayerStatusEnum";
 
 const log = getLogger("client.game.ui.manager.PlayerManager");
 
@@ -156,7 +155,7 @@ export class PlayerManager {
         log.trace("player list", playerList);
 
         const highestScorer = playerList
-            .filter(player => player.getStatus() === PlayerStatusEnum.ALIVE)
+            .filter(player => player.isAlive())
             .reduce((highest, player) =>
                 (!highest || player.getScore() > highest.getScore() ? player : highest), null);
 

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useCallback} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {GameUtil} from '../game/util/GameUtil';
 import {ConfigUtil} from '../game/util/ConfigUtil';
 import {Col, Container, Row} from "react-bootstrap";
@@ -29,7 +29,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
     useEffect(() => {
         if (gameContainerRef.current && !gameInstanceRef.current) {
             const gameContainer = gameContainerRef.current;
-            const {width, height} = gameContainer.getBoundingClientRect(); // Get dynamic width and height
+            const {width} = gameContainer.getBoundingClientRect(); // Get dynamic width
             gameInstanceRef.current = GameUtil.createGame(
                 ConfigUtil.createPhaserGameConfig(
                     width,

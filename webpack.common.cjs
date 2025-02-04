@@ -2,6 +2,7 @@ const {resolve} = require("path");
 const {DefinePlugin} = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const pkg = require("./package.json");
+const ImageMinimizerPlugin = require("image-minimizer-webpack-plugin");
 const buildVersion = process.env.APP_VERSION || "development";
 const repoUrl = pkg.repository.url;
 
@@ -10,6 +11,7 @@ module.exports = {
     output: {
         filename: 'bundle.[contenthash].js', // ensure to have unique bundle name (that you always see up to date version in your browser window and not something cached.)
         path: resolve(__dirname, 'dist/client'), // Output to './dist'
+        assetModuleFilename: 'assets/[name].[hash][ext]',
         clean: true, // Clean output directory on each build
     },
     resolve: {
@@ -27,11 +29,9 @@ module.exports = {
                 use: ['style-loader', 'css-loader'],
             },
             {
-                test: /\.(png|jpe?g|gif|svg|mp3|wav)$/i, // Asset handling for assets and audio
-                type: 'asset/resource', generator: {
-                    filename: 'assets/[name][ext]', // Output assets to 'public/assets'
-                },
-            }
+                test: /\.(png|jpe?g|gif|svg|webp)$/i, // Image handling
+                type: 'asset', // Automatically determines inlining or emitting
+            },
         ],
     }, plugins: [
         new DefinePlugin({
@@ -39,7 +39,25 @@ module.exports = {
             REPO_URL: JSON.stringify(repoUrl),
         }),
         new HtmlWebpackPlugin({
-            template: './public/templates/index.html'
+            template: './public/templates/index.html',
+            inject: 'body', // inject the scripts at the end of the body tag
+            scriptLoading: 'blocking', // Ensure external js is loaded before the bundle.js
+            favicon: "./public/assets/snake_logo.png",
+        }),
+        new ImageMinimizerPlugin({
+            minimizer: {
+                implementation: ImageMinimizerPlugin.sharpMinify, // Use sharp for image optimization
+                options: {
+                    encodeOptions: {
+                        jpeg: {quality: 80},
+                        png: {quality: 80},
+                        webp: {quality: 80},
+                        avif: {quality: 80},
+                        svg: {quality: 80},
+                        gif: {quality: 80},
+                    },
+                },
+            },
         })
     ]
 };

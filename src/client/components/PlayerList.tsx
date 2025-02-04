@@ -4,8 +4,6 @@ import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {getLogger} from "../../shared/config/LogConfig";
 import socket from "../socket/socket";
-import {registerReactEvent} from "../socket/socketRouter";
-import {SocketEvents} from "../../shared/constants/SocketEvents";
 import PlayerListItem from "./PlayerListItem";
 
 const log = getLogger("client.components.PlayerList");
@@ -21,20 +19,13 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
     useEffect(() => {
         if (!socket) return;
 
-        registerReactEvent(SocketEvents.SessionState.PLAYER_LIST, (data) => {
-            log.trace("received player list", data);
-            const players = Object.values(data).map(entry => Player.fromData(entry));
+        setSortedPlayers((session.getPlayersAsArray() || []).sort(
+            (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
+        ));
 
-            log.trace("mapped player list", players);
-            const sortedPlayers = (players || []).sort(
-                (a, b) => b.getScore() - a.getScore() // Sort in descending order of score
-            );
+        log.trace("updated players", sortedPlayers);
 
-            setSortedPlayers(sortedPlayers);
-            log.trace("updated players", sortedPlayers);
-        });
-
-    }, []);
+    }, [session]);
 
     const renderPlayerList = (isMobile: boolean) => {
         if (!sortedPlayers) {
@@ -56,8 +47,11 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
 
     const renderPlayerCard = (isMobile: boolean) => (
         <Card className={`mb-3 shadow ${isMobile ? 'bg-dark text-light rounded' : ''}`}>
-            <Card.Header className="text-center">
+            <Card.Header className="text-center d-flex justify-content-between align-items-center">
                 <h6 className="mb-0">{isMobile ? 'Players' : 'Players in Lobby'}</h6>
+                <span className={`badge ${isMobile ? 'bg-light text-dark' : 'bg-primary'}`}>
+                    {sortedPlayers?.length || 0}
+                </span>
             </Card.Header>
             <Card.Body className="text-center">
                 {renderPlayerList(isMobile)}
@@ -67,7 +61,11 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
 
     if (desktopViewOnly) {
         return (
-            <Container style={{ overflowY: 'auto', padding: '1rem' }}>
+            <Container style={{
+                overflowY: 'auto',
+                padding: '2rem',
+                maxHeight: 'calc(100vh - 65vh)'
+            }}>
                 {renderPlayerCard(false)}
             </Container>
         );
@@ -76,7 +74,11 @@ const PlayerList: React.FC<PlayerListProps> = ({desktopViewOnly = false}) => {
     return (
         <>
             {/* Desktop view */}
-            <Container className="d-none d-md-block" style={{overflowY: 'auto', padding: '1rem'}}>
+            <Container className="d-none d-md-block"
+                       style={{
+                           overflowY: 'auto',
+                           maxHeight: 'calc(100vh - 450px)'
+                       }}>
                 {renderPlayerCard(false)}
             </Container>
 

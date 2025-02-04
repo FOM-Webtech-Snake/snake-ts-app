@@ -13,6 +13,8 @@ import {registerReactEvent} from "../socket/socketRouter";
 import socket from "../socket/socket";
 import GameSessionError from "../components/GameSessionError";
 import {ColorUtil} from "../game/util/ColorUtil";
+import DeathmatchLogo from '../../../public/assets/deathmatch.png';
+import EnduranceLogo from '../../../public/assets/endurance.png';
 
 interface LobbyPageProps {
     player: Player;
@@ -120,7 +122,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
         player.setColor(newColor);
         localStorage.setItem("color", newColor);
 
-        socket.emit(SocketEvents.SessionState.PLAYER_COLOR_CHANGED, newColor.toString());
+        socket.emit(SocketEvents.SessionEvents.PLAYER_COLOR_CHANGED, newColor.toString());
     };
 
     useEffect(() => {
@@ -254,7 +256,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                             style={{
                                                                 height: "100px",
                                                                 width: "100px",
-                                                                backgroundImage: "url('/assets/deathmatch.png')",
+                                                                backgroundImage: `url(${DeathmatchLogo})`,
                                                                 backgroundSize: "contain",
                                                                 backgroundPosition: "center",
                                                                 backgroundRepeat: "no-repeat",
@@ -270,7 +272,7 @@ const LobbyPage: React.FC<LobbyPageProps> = ({player, onGameReady}) => {
                                                             style={{
                                                                 height: "100px",
                                                                 width: "100px",
-                                                                backgroundImage: "url('/assets/endurance.png')",
+                                                                backgroundImage: `url(${EnduranceLogo})`,
                                                                 backgroundSize: "contain",
                                                                 backgroundPosition: "center",
                                                                 backgroundRepeat: "no-repeat",

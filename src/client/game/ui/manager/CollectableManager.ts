@@ -70,26 +70,8 @@ export class CollectableManager {
     update(): void {
         log.debug("updating collectables and arrows");
         Object.keys(this.collectables).forEach(uuid => {
-            const collectable = this.collectables[uuid];
-
-            // skip if collectable is null or destroyed
-            if (!collectable) return;
-
-            // update arrow visibility and position
-            collectable.updateArrow(this.scene.cameras.main);
-        });
-    }
-
-    checkCollisions(snake: PhaserSnake, onCollision: (uuid: string) => void): void {
-        log.debug("checking collectables for collisions");
-        Object.keys(this.collectables).forEach(uuid => {
-            const collectable = this.collectables[uuid];
-            if (!collectable) return;
-
-            // check for collisions with the snake
-            if (collectable.checkCollision(snake)) {
-                onCollision(uuid); // Callback to handle the collect event
-            }
+            // if available update arrow visibility and position
+            this.collectables[uuid]?.updateArrow(this.scene.cameras.main);
         });
     }
 

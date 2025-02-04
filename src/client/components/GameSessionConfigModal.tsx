@@ -5,7 +5,9 @@ import {Size} from "../../shared/model/Size";
 import {
     DEFAULT_GAME_SESSION_CONFIG,
     GameSessionConfig,
-    SNAKE_STARTING_LENGTH, SNAKE_STARTING_SCALE, SNAKE_STARTING_SPEED
+    SNAKE_STARTING_LENGTH,
+    SNAKE_STARTING_SCALE,
+    SNAKE_STARTING_SPEED
 } from "../../shared/model/GameSessionConfig";
 import {useTheme} from "./ThemeProvider";
 import {useGameSessionSocket} from "./GameSessionContext";

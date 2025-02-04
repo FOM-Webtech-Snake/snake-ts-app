@@ -26,7 +26,7 @@ const log = getLogger("server.sockets.SocketEventRegistry");
 interface EventHandlers {
     [SocketEvents.Connection.CREATE_SESSION]: [any, (session: any) => void];
     [SocketEvents.Connection.JOIN_SESSION]: [string, any, (session: any) => void];
-    [SocketEvents.SessionState.CONFIG_UPDATED]: [any];
+    [SocketEvents.SessionEvents.CONFIG_UPDATED]: [any];
     [SocketEvents.GameControl.GET_READY]: [];
     [SocketEvents.GameControl.START_GAME]: [];
     [SocketEvents.GameControl.RESET_GAME]: [];
@@ -37,7 +37,7 @@ interface EventHandlers {
     [SocketEvents.GameEvents.COLLISION]: [CollisionTypeEnum, (response: { status: boolean }) => void];
     [SocketEvents.Connection.LEAVE_SESSION]: [];
     [SocketEvents.Connection.DISCONNECT]: [];
-    [SocketEvents.SessionState.PLAYER_COLOR_CHANGED]: [string];
+    [SocketEvents.SessionEvents.PLAYER_COLOR_CHANGED]: [string];
 }
 
 // Map event names to handler functions
@@ -88,14 +88,14 @@ const SocketEventRegistry: {
             socket.join(gameSession.getId());
             log.info(`player ${socket.id} joined session ${sessionId}`);
             callback(gameSession.toJson());
-            io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_JOINED, player.toJson());
+            io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.PLAYER_JOINED, player.toJson());
         } catch (error: any) {
             callback({error: error.message})
             return;
         }
     },
 
-    [SocketEvents.SessionState.CONFIG_UPDATED]: async (
+    [SocketEvents.SessionEvents.CONFIG_UPDATED]: async (
         io: Server,
         socket: Socket,
         [configData]: [any]
@@ -111,7 +111,7 @@ const SocketEventRegistry: {
         }
 
         log.debug(`player ${socket.id} updated config ${configData}`);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.CONFIG_UPDATED, gameSession.getConfig().toJson());
+        io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.CONFIG_UPDATED, gameSession.getConfig().toJson());
     },
 
     [SocketEvents.GameControl.START_GAME]: async (
@@ -125,11 +125,11 @@ const SocketEventRegistry: {
         }
 
         // start countdown
-        const gameTimerManager = GameTimerManager.getInstance(io);
+        const gameTimerManager = GameTimerManager.getInstance();
 
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
 
-            gameTimerManager.startCountdown(gameSession, () => {
+            gameTimerManager.startCountdown(gameSession.getId(), io, () => {
                 log.info("Countdown ended. Starting game timer...");
                 if (gameSession.start(io)) {
                     // start game
@@ -137,7 +137,7 @@ const SocketEventRegistry: {
                     log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                 }
                 //start game timer
-                gameTimerManager.startGameTimer(gameSession);
+                gameTimerManager.startGameTimer(gameSession, io);
             });
         }
     },
@@ -158,7 +158,7 @@ const SocketEventRegistry: {
             io.to(gameSession.getId()).emit(SocketEvents.GameControl.RESET_GAME, gameSession.toJson());
 
             // reset timer
-            const gameTimerManager = GameTimerManager.getInstance(io);
+            const gameTimerManager = GameTimerManager.getInstance();
             gameTimerManager.stopGameTimer(gameSession);
         }
     },
@@ -227,15 +227,15 @@ const SocketEventRegistry: {
         if (gameSession.getPlayer(socket.id)?.getRole() === PlayerRoleEnum.HOST) {
             if (gameSession.isWaitingForPlayers()) {
                 gameSession.spawnPlayers();
-                io.to(gameSession.getId()).timeout(5000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
+                io.to(gameSession.getId()).timeout(15000).emit(SocketEvents.GameControl.GET_READY, (err: any) => {
                     if (err) {
                         log.warn(`Not all clients responded in time for session ${gameSession.getId()}`);
                     } else {
                         log.debug(`game session start confirmed from all clients`);
-                        gameSession.setGameState(GameStateEnum.READY);
-                        Object.values(gameSession.getPlayers()).forEach((player: Player) => player.resetPoints());
-                        log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                     }
+                    gameSession.setGameState(GameStateEnum.READY);
+                    Object.values(gameSession.getPlayers()).forEach((player: Player) => player.resetPoints());
+                    log.debug(`game state for session ${gameSession.getId()} changed to ${gameSession.getGameState()}`);
                 });
             }
             else {
@@ -262,7 +262,6 @@ const SocketEventRegistry: {
             }
             gameSession.removeCollectable(uuid);
             callback({status: true});
-            io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
             io.to(gameSession.getId()).emit(SocketEvents.GameEvents.ITEM_COLLECTED, uuid);
         } else {
             callback({status: false});
@@ -359,7 +358,7 @@ const SocketEventRegistry: {
             if (!gameSession.hasPlayers()) {
                 sessionManager.deleteSession(gameSession.getId());
             } else {
-                io.to(gameSession.getId()).emit(SocketEvents.SessionState.LEFT_SESSION, socket.id);
+                io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.LEFT_SESSION, socket.id);
             }
         }
     },
@@ -378,11 +377,11 @@ const SocketEventRegistry: {
         if (!gameSession.hasPlayers()) {
             sessionManager.deleteSession(gameSession.getId());
         } else {
-            io.to(gameSession.getId()).emit(SocketEvents.SessionState.DISCONNECTED, socket.id);
+            io.to(gameSession.getId()).emit(SocketEvents.SessionEvents.DISCONNECTED, socket.id);
         }
     },
 
-    [SocketEvents.SessionState.PLAYER_COLOR_CHANGED]: async (
+    [SocketEvents.SessionEvents.PLAYER_COLOR_CHANGED]: async (
         io: Server,
         socket: Socket,
         [color]: [string]
@@ -393,7 +392,6 @@ const SocketEventRegistry: {
         }
 
         gameSession.getPlayer(socket.id).setColor(color);
-        io.to(gameSession.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, gameSession.getPlayersAsArray());
     },
 };
 
@@ -414,7 +412,6 @@ export const startSyncingGameState = (io: Server) => {
 const syncSession = (io: Server, session: GameSession) => {
     log.trace("syncing session", session.getId());
     io.to(session.getId()).emit(SocketEvents.GameControl.SYNC_GAME_STATE, session.toJson());
-    io.to(session.getId()).emit(SocketEvents.SessionState.PLAYER_LIST, session.getPlayers());
 }
 
 const monitorHighActivitySessions = (io: Server) => {

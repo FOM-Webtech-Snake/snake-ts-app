@@ -70,23 +70,26 @@ jobs:
       - name: Build and push Docker image
         run: |
           docker buildx create --use
+          DOCKER_TAGS="ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }}"
+          DOCKER_LATEST_TAG="ghcr.io/fom-webtech-snake/snake-ts-app:latest"
+          
+          # Prepare the tags
           if [ "${{ env.LATEST }}" = "true" ]; then
-            docker buildx build --platform linux/amd64,linux/arm64 \
-              --build-arg APP_VERSION=${{ env.VERSION }} \
-              -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
-              -t ghcr.io/fom-webtech-snake/snake-ts-app:latest \
-              --push .
+            TAG_OPTIONS="--tag ${DOCKER_TAGS} --tag ${DOCKER_LATEST_TAG}"
           else
-            docker buildx build --platform linux/amd64,linux/arm64 \
-              --build-arg APP_VERSION=${{ env.VERSION }} \
-              -t ghcr.io/fom-webtech-snake/snake-ts-app:${{ env.VERSION }} \
-              --push .
+            TAG_OPTIONS="--tag ${DOCKER_TAGS}"
           fi
+          
+          # Build and push
+          docker buildx build --platform linux/amd64,linux/arm64 \
+          --build-arg APP_VERSION=${{ env.VERSION }} \
+          ${TAG_OPTIONS} \
+          --push .
 
   cleanup:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Only run on main branch
+    if: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v') }}
     steps:
       # Step 1: Clean up older package versions
       - name: Delete old package versions

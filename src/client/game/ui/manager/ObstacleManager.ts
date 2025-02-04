@@ -1,4 +1,3 @@
-import {PhaserSnake} from "../PhaserSnake";
 import {getLogger} from "../../../../shared/config/LogConfig";
 import {Position} from "../../../../shared/model/Position";
 import {GameSocketManager} from "./GameSocketManager";
@@ -64,19 +63,6 @@ export class ObstacleManager {
 
     update() {
         // nothing to do.
-    }
-
-    checkCollisions(snake: PhaserSnake, onCollision: (uuid: string) => void): void {
-        log.debug("checking obstacles for collisions");
-        Object.keys(this.obstacles).forEach(uuid => {
-            const obstacle = this.obstacles[uuid];
-            if (!obstacle) return;
-
-            // check for collisions with the snake
-            if (obstacle.checkCollision(snake)) {
-                onCollision(uuid); // Callback to handle the collect event
-            }
-        });
     }
 
     private reset(): void {

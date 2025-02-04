@@ -75,26 +75,22 @@ export class PhaserSnake {
         this.darkColor = ColorUtil.darkenColor(this.primaryColor);
         this.lightColor = ColorUtil.lightenColor(this.primaryColor);
 
-        this.spawn(positions);
-    }
-
-    spawn(positions: Position[]) {
-        if (!positions || positions.length === 0) return; // prevent spawn without position information
-
-        // reset collision and reversed state
-        this.justReversed = false;
-        this.selfCollisionDetected = false;
-
         // create the body
         this.body = this.scene.physics.add.group();
         this.lockedSegments = this.scene.physics.add.group();
 
-        Object.values(positions).forEach(value => {
-            value.setLocked(true);
-        });
-        this.appendSegmentsByPositions(0, positions);
+        this.createHead();
+        this.spawn(positions);
+    }
 
+    private createHead() {
+        // create the head
+        if (this.body.getChildren().length == 0) {
+            this.addSegmentToBody(new Position(0, 0, true, 0));
+        }
         this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite; // Update the head reference
+        this.head.setVisible(false);
+        this.head.body.enable = false;
 
         // create the face
         this.face = this.scene.physics.add.sprite(this.head.x, this.head.y, "snake_face");
@@ -107,6 +103,17 @@ export class PhaserSnake {
         this.headGroup = this.scene.physics.add.group();
         this.headGroup.add(this.head);
         this.headGroup.add(this.face);
+    }
+
+    private spawn(positions: Position[]) {
+        if (!positions || positions.length === 0) {
+            log.error(`cannot spawn snake: positions array is empty or undefined.`);
+        } else {
+            Object.values(positions).forEach(value => {
+                value.setLocked(true);
+            });
+            this.appendSegmentsByPositions(0, positions);
+        }
     }
 
     destroy() {
@@ -139,8 +146,9 @@ export class PhaserSnake {
         this.face.setRotation(this.head.rotation);
     }
 
-    getBody(): Phaser.Physics.Arcade.Sprite[] {
-        return this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+    getVisibleBody(): Phaser.Physics.Arcade.Sprite[] {
+        return this.body.getChildren()
+            .filter((segment: Phaser.Physics.Arcade.Sprite) => segment.visible) as Phaser.Physics.Arcade.Sprite[];
     }
 
     getPlayerId() {
@@ -157,21 +165,13 @@ export class PhaserSnake {
     }
 
     getBodyPositions(): Position[] {
-        return this.getBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
+        return this.getVisibleBody().map((segment: Phaser.Physics.Arcade.Sprite) => {
             return new Position(segment.x, segment.y, this.lockedSegments.contains(segment), segment.rotation);
         });
     }
 
     getDirection() {
         return this.direction;
-    }
-
-    getStatus(): PlayerStatusEnum {
-        return this.status;
-    }
-
-    setStatus(status: PlayerStatusEnum) {
-        this.status = status;
     }
 
     getScore() {
@@ -186,7 +186,7 @@ export class PhaserSnake {
     }
 
     update(): void {
-        if (this.status !== PlayerStatusEnum.ALIVE) return; // no update when snake is not alive
+        if (!this.isAlive()) return; // no update when snake is not alive
 
         log.trace("updating snake", this.playerId, this.status);
         this.moveBodyParts(); // move the body parts since the head is moving automatically by phaser
@@ -240,18 +240,19 @@ export class PhaserSnake {
     }
 
     splitInHalf(): void {
-        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+        const bodyParts = this.getVisibleBody();
         const halfLength = Math.ceil(bodyParts.length / 2);
 
         // remove the second half of the body
         for (let i = halfLength; i < bodyParts.length; i++) {
             const segment = bodyParts[i];
-            this.body.remove(segment, true, true);
+            segment.setVisible(false);
+            segment.body.enable = false;
         }
     }
 
     doubleLength(): void {
-        const currentLength = this.body.getLength();
+        const currentLength = this.getVisibleBody().length;
         const spawnPos: Position = new Position(this.head.x, this.head.y, true, this.head.rotation);
         for (let i = 0; i < currentLength; i++) {
             this.addSegmentToBody(spawnPos);
@@ -274,29 +275,45 @@ export class PhaserSnake {
     }
 
     die() {
-        this.status = PlayerStatusEnum.DEAD;
-        this.headGroup.setVelocity(0, 0);
-        this.destroy();
-        log.trace("playerSnake died", this);
+        if (this.isAlive()) { // snake can only die when it's alive.
+            this.status = PlayerStatusEnum.DEAD;
+            this.headGroup.setVelocity(0, 0);
+            this.setSegmentsVisibilityAndPhysics(false, false);
+            log.trace("playerSnake died", this);
+        }
     }
 
     revive(positions: Position[]) {
-        this.spawn(positions);
-        this.status = PlayerStatusEnum.ALIVE;
-        log.trace("playerSnake revived", this);
+        if (!this.isAlive()) { // snake can only revive when it's not alive
+            this.path = [];
+            this.resetSnakeState(positions, true);
+            this.status = PlayerStatusEnum.ALIVE;
+            log.trace("playerSnake revived", this);
+        }
     }
 
+    isAlive() {
+        return this.status === PlayerStatusEnum.ALIVE;
+    }
+
+    private setSegmentsVisibilityAndPhysics(visible: boolean, enablePhysics: boolean) {
+        this.body.getChildren().forEach((segment: Phaser.Physics.Arcade.Sprite) => {
+            segment.setVisible(visible);
+            segment.body.enable = enablePhysics;
+        });
+        this.face.setVisible(visible);
+    }
 
     private hasSelfCollision(): boolean {
         log.trace(`self-collision is ${this.scene.getConfig().getSelfCollisionEnabled()} and snake is justReversed=${this.justReversed}`);
 
         // early exit if self-collision is disabled or the player is dead
-        if (!this.scene.getConfig().getSelfCollisionEnabled() || this.status === PlayerStatusEnum.DEAD) {
+        if (!this.scene.getConfig().getSelfCollisionEnabled() || !this.isAlive()) {
             return false;
         }
 
         const headCircle = new Phaser.Geom.Circle(this.head.x, this.head.y, this.head.displayWidth / 2);
-        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+        const bodyParts = this.getVisibleBody();
 
         // start loop from the third element to skip the head and the first body part
         for (let i = 2; i < bodyParts.length; i++) {
@@ -332,33 +349,83 @@ export class PhaserSnake {
 
     private hasWorldCollision(): boolean {
         log.trace(`world-collision is ${this.scene.getConfig().getWorldCollisionEnabled()}`);
-        if (this.scene.getConfig().getWorldCollisionEnabled() && this.status !== PlayerStatusEnum.DEAD) {
-            const bounds = this.scene.physics.world.bounds;
-            if (
-                this.head.x <= bounds.x + 5 + BORDER_WIDTH || // left border
-                this.head.x >= bounds.x - 5 + bounds.width - BORDER_WIDTH || // right border
-                this.head.y <= bounds.y + 5 + BORDER_WIDTH || // top border
-                this.head.y >= bounds.y - 5 + bounds.height - BORDER_WIDTH // bottom border
-            ) {
-                log.debug("worldCollision detected!");
-                return true;
-            }
+        if (!this.scene.getConfig().getWorldCollisionEnabled() || !this.isAlive()) return false;
+
+        const bounds = this.scene.physics.world.bounds;
+        if (
+            this.head.x <= bounds.x + 5 + BORDER_WIDTH || // left border
+            this.head.x >= bounds.x - 5 + bounds.width - BORDER_WIDTH || // right border
+            this.head.y <= bounds.y + 5 + BORDER_WIDTH || // top border
+            this.head.y >= bounds.y - 5 + bounds.height - BORDER_WIDTH // bottom border
+        ) {
+            log.debug("worldCollision detected!");
+            return true;
         }
+
         return false;
     }
 
-    private addSegmentToBody(pos: Position) {
-        const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getY(), "snake_body");
-        bodyPart.setScale(this.scale);
-        bodyPart.setDepth(1);
-        bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
-        bodyPart.setRotation(pos.getRotation())
-        bodyPart.body.allowDrag = false;
+    private resetSnakeState(positions: Position[], makeVisible: boolean) {
+        this.justReversed = false;
+        this.selfCollisionDetected = false;
 
-        if (pos.getLocked()) this.lockedSegments.add(bodyPart);
+        const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
+        positions.forEach((segment, index) => {
+            if (index < bodyParts.length) {
+                const bodyPart: Phaser.Physics.Arcade.Sprite = bodyParts[index] as Phaser.Physics.Arcade.Sprite;
+                bodyPart.setVisible(makeVisible);
+                bodyPart.body.enable = makeVisible;
+                bodyPart.setPosition(segment.getX(), segment.getY());
+                bodyPart.setRotation(segment.getRotation())
 
-        this.body.add(bodyPart);
-        return bodyPart;
+                if (segment.getLocked() && !this.lockedSegments.contains(bodyPart)) {
+                    this.lockedSegments.add(bodyPart);
+                } else if (!segment.getLocked() && this.lockedSegments.contains(bodyPart)) {
+                    this.lockedSegments.remove(bodyPart);
+                }
+            } else {
+                this.addSegmentToBody(segment);
+            }
+        });
+
+        this.face.setVisible(makeVisible);
+
+        // remove extra body parts if needed
+        for (let i = positions.length; i < bodyParts.length; i++) {
+            const extraSegment = bodyParts[i] as Phaser.Physics.Arcade.Sprite;
+            extraSegment.setVisible(false);
+            extraSegment.body.enable = false;
+            this.lockedSegments.remove(extraSegment);
+        }
+
+    }
+
+    private addSegmentToBody(pos: Position): Phaser.Physics.Arcade.Sprite {
+        // check if there are any invisible segments available to reuse
+        const bodyParts = this.body.getChildren() as Phaser.Physics.Arcade.Sprite[];
+
+        const invisibleSegment = bodyParts.find(segment => !segment.visible);
+        if (invisibleSegment) {
+            invisibleSegment.setVisible(true);
+            invisibleSegment.body.enable = true;
+            invisibleSegment.setPosition(pos.getX(), pos.getY());
+            invisibleSegment.setRotation(pos.getRotation());
+
+            if (pos.getLocked()) this.lockedSegments.add(invisibleSegment);
+            return invisibleSegment;
+        } else {
+            // if no invisible segments are available, create a new one
+            const bodyPart = this.scene.physics.add.sprite(pos.getX(), pos.getY(), "snake_body");
+            bodyPart.setScale(this.scale);
+            bodyPart.setDepth(1);
+            bodyPart.setTint(this.lightColor, this.lightColor, this.darkColor, this.darkColor);
+            bodyPart.setRotation(pos.getRotation())
+            bodyPart.body.allowDrag = false;
+            this.body.add(bodyPart);
+
+            if (pos.getLocked()) this.lockedSegments.add(bodyPart);
+            return bodyPart;
+        }
     }
 
     private unlockDirection() {
@@ -417,12 +484,11 @@ export class PhaserSnake {
 
                 if (accumulatedDistance + segmentDistance >= targetDistance) {
                     const t = (targetDistance - accumulatedDistance) / segmentDistance;
-                    const interpolatedX = Phaser.Math.Linear(p1.x, p2.x, t);
-                    const interpolatedY = Phaser.Math.Linear(p1.y, p2.y, t);
-                    const interpolatedZ = Phaser.Math.Linear(p1.z, p2.z, t);
-
-                    bodyParts[i].setPosition(interpolatedX, interpolatedY);
-                    bodyParts[i].setRotation(interpolatedZ);
+                    bodyParts[i].setPosition(
+                        Phaser.Math.Linear(p1.x, p2.x, t),
+                        Phaser.Math.Linear(p1.y, p2.y, t)
+                    );
+                    bodyParts[i].setRotation(Phaser.Math.Linear(p1.z, p2.z, t));
                     break;
                 }
 
@@ -472,33 +538,8 @@ export class PhaserSnake {
         this.direction = player.getDirection();
 
         // update body parts to match the new positions
-        const bodyParts = this.body.getChildren() as Phaser.GameObjects.Sprite[];
-        player.getBodyPositions().forEach((segment, index) => {
-            if (index < bodyParts.length) {
-                const bodyPart = bodyParts[index];
-                if (index === 0) {
-                    bodyPart.setPosition(segment.getX(), segment.getY());
-                    bodyPart.setRotation(segment.getRotation());
-                }
+        this.resetSnakeState(player.getBodyPositions(), this.isAlive());
 
-                if (segment.getLocked() && !this.lockedSegments.contains(bodyPart)) {
-                    this.lockedSegments.add(bodyPart);
-                } else if (!segment.getLocked() && this.lockedSegments.contains(bodyPart)) {
-                    this.lockedSegments.remove(bodyPart);
-                }
-            } else {
-                this.addSegmentToBody(segment);
-            }
-        });
-
-        // remove extra body parts if needed
-        for (let i = player.getBodyPositions().length; i < bodyParts.length; i++) {
-            const extraSegment = bodyParts[i];
-            this.body.remove(extraSegment, true, true);
-            this.lockedSegments.remove(extraSegment);
-        }
-
-        this.head = this.body.getFirst(true) as Phaser.Physics.Arcade.Sprite;
         this.updateFacePosition();
 
         if (this.scale != player.getScale()) {
@@ -528,12 +569,13 @@ export class PhaserSnake {
             scale: this.scale,
             direction: this.direction,
             primaryColor: this.primaryColor,
-            body: this.body.getChildren().map((segment: Phaser.Physics.Arcade.Sprite) => ({
-                x: segment.x,
-                y: segment.y,
-                locked: this.lockedSegments.contains(segment),
-                rotation: segment.rotation,
-            })),
+            body: this.getVisibleBody()
+                .map((segment: Phaser.Physics.Arcade.Sprite) => ({
+                    x: segment.x,
+                    y: segment.y,
+                    locked: this.lockedSegments.contains(segment),
+                    rotation: segment.rotation,
+                })),
         };
     }
 }
