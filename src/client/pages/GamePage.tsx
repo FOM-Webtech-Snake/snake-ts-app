@@ -6,6 +6,7 @@ import PlayerList from "../components/PlayerList";
 import TimerDisplay from "../components/TimerDisplay";
 import GameControl from "../components/GameControl";
 import {getLogger} from "../../shared/config/LogConfig";
+import DeathDisplay from "../components/DeathDisplay";
 
 interface GamePageProps {
     availableHeight: number;
@@ -68,6 +69,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
                     <GameControl/>
                     <TimerDisplay/>
                     <PlayerList/>
+                    <DeathDisplay/>
                 </Col>
             </Row>
         </Container>
