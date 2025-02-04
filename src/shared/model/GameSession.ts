@@ -70,15 +70,12 @@ export class GameSession {
         return Object.values(this.players);
     }
 
-    getTopPlayer(): Player | null {
+    getTopPlayer(): Player {
         const playersArray = this.getPlayersAsArray();
-        if (playersArray.length === 0) {
-            return null;
-        }
 
-        return playersArray.reduce((topPlayer, currentPlayer) =>
-            currentPlayer.getScore() > topPlayer.getScore() ? currentPlayer : topPlayer
-        );
+        return playersArray.reduce((topPlayer, currentPlayer) => {
+            return currentPlayer.getScore() > topPlayer.getScore() ? currentPlayer : topPlayer;
+        }, playersArray[0]);
     }
 
     getAlivePlayers(): Player[] {
