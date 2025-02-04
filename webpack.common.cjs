@@ -41,7 +41,8 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './public/templates/index.html',
             inject: 'body', // inject the scripts at the end of the body tag
-            scriptLoading: 'blocking' // Ensure external js is loaded before the bundle.js
+            scriptLoading: 'blocking', // Ensure external js is loaded before the bundle.js
+            favicon: "./public/assets/snake_logo.png",
         }),
         new ImageMinimizerPlugin({
             minimizer: {
