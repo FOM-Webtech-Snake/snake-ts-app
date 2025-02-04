@@ -3,14 +3,15 @@ import {getLogger} from "../../shared/config/LogConfig";
 import {useGameSessionSocket} from "./GameSessionContext";
 import {Button, Container, Modal} from "react-bootstrap";
 import socket from "../socket/socket";
-import "/public/css/endgamedisplay.css";
 import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import WinGif from "../../../public/assets/WinGif.gif"
 import LoseGif from "../../../public/assets/lose.gif"
+import {useTheme} from "./ThemeProvider";
 
 const log = getLogger("client.components.DeathDisplay");
 
 const DeathDisplay: React.FC = () => {
+    const {theme} = useTheme();
     const {playerId, session} = useGameSessionSocket();
     const [winnerId, setWinnerId] = useState<string | null>(null);
     const [gameState, setGameState] = useState<GameStateEnum | null>(session.getGameState() || null);
@@ -35,8 +36,8 @@ const DeathDisplay: React.FC = () => {
 
     return (
         <Container>
-            <Modal show={winnerId !== null} onHide={() => {
-            }} centered dialogClassName="death-modal-dark">
+            <Modal className={`modal ${theme}`} show={winnerId !== null} onHide={() => {
+            }} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Spielende</Modal.Title>
                 </Modal.Header>
