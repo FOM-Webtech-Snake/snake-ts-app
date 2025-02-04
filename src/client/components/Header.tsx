@@ -2,7 +2,7 @@ import React, {forwardRef, useState} from 'react';
 import {useGameSessionSocket} from "./GameSessionContext";
 import {Player} from "../../shared/model/Player";
 import {Button, Container, Nav, Navbar} from "react-bootstrap";
-import SnakeLogo from '../../../public/img/snake_logo.png';
+import SnakeLogo from '../../../public/assets/snake_logo.png';
 import {useTheme} from "./ThemeProvider";
 import socket from "../socket/socket";
 import HelpModal from "./HelpModal";
