@@ -36,23 +36,20 @@ const DeathDisplay: React.FC = () => {
 
     return (
         <Container>
-            <Modal className={`modal ${theme}`} show={winnerId !== null} onHide={() => {
-            }} centered>
+            <Modal className={`modal ${theme}`} show={winnerId !== null} onHide={() => { }} centered>
                 <Modal.Header closeButton>
-                    <Modal.Title>Spielende</Modal.Title>
+                    <Modal.Title>Game Over</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {winnerId === playerId ? (
                         <>
-                            <p>Du hast gewonnen!</p>
-                            <img src={WinGif} alt="Winner Animation"
-                                 style={{width: '100%', height: 'auto'}}/>
+                            <p>You won!</p>
+                            <img src={WinGif} alt="Winner Animation" style={{ width: '100%', height: 'auto' }} />
                         </>
                     ) : (
                         <>
-                            <p>Du hast verloren</p>
-                            <img src={LoseGif} alt="Game Over Animation"
-                                 style={{width: '100%', height: 'auto'}}/>
+                            <p>You lost</p>
+                            <img src={LoseGif} alt="Game Over Animation" style={{ width: '100%', height: 'auto' }} />
                         </>
                     )}
                 </Modal.Body>
@@ -61,6 +58,7 @@ const DeathDisplay: React.FC = () => {
                 </Modal.Footer>
             </Modal>
         </Container>
+
     );
 };
 
