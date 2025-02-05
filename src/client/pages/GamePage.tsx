@@ -66,7 +66,7 @@ const GamePage: React.FC<GamePageProps> = ({availableHeight}) => {
                     </div>
                 </Col>
                 <Col className="col-md-4">
-                    <GameControl/>
+                    {/*<GameControl/>*/}
                     <TimerDisplay/>
                     <PlayerList/>
                     <DeathDisplay/>

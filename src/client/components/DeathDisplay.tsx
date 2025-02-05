@@ -7,6 +7,8 @@ import {GameStateEnum} from "../../shared/constants/GameStateEnum";
 import WinGif from "../../../public/assets/WinGif.gif"
 import LoseGif from "../../../public/assets/lose.gif"
 import {useTheme} from "./ThemeProvider";
+import {SocketEvents} from "../../shared/constants/SocketEvents";
+import {useGameState} from "./GameStateContext";
 
 const log = getLogger("client.components.DeathDisplay");
 
@@ -15,6 +17,7 @@ const DeathDisplay: React.FC = () => {
     const {playerId, session} = useGameSessionSocket();
     const [winnerId, setWinnerId] = useState<string | null>(null);
     const [gameState, setGameState] = useState<GameStateEnum | null>(session.getGameState() || null);
+    const {setGameReady} = useGameState();
 
     useEffect(() => {
         if (!socket) {
@@ -24,15 +27,24 @@ const DeathDisplay: React.FC = () => {
 
         if (gameState !== session.getGameState() && // only trigger when game state is changed
             session.getGameState() === GameStateEnum.GAME_OVER) {
-
             setGameState(session.getGameState()); // store the current game state
             setWinnerId(session.getTopPlayer().getId());
 
             log.debug("Player with highest score:", session.getTopPlayer());
             log.debug("All Players: ", session.getPlayersAsArray());
+        } else {
+            setGameState(session.getGameState());
         }
-
     }, [session]);
+
+    const backToLobby = () => {
+        setWinnerId(null)
+        if (socket) {
+            socket.emit(SocketEvents.GameControl.RESET_GAME);
+            setGameReady(false);
+        }
+    };
+
 
     return (
         <Container>
@@ -54,7 +66,7 @@ const DeathDisplay: React.FC = () => {
                     )}
                 </Modal.Body>
                 <Modal.Footer className="modal-footer-dark">
-                    <Button variant="primary" onClick={() => setWinnerId(null)}>Close</Button>
+                    <Button variant="primary" onClick={() => backToLobby()}>Back to Lobby</Button>
                 </Modal.Footer>
             </Modal>
         </Container>

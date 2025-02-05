@@ -47,7 +47,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = () => {
                     overflowY: 'auto',
                     padding: '1rem',
                 }}>
-                <Card className="mb-3 shadow">
+                <Card className="m-3 shadow">
                     <Card.Header className="text-center">
                         <h6 className="mb-0">Remaining Time</h6>
                     </Card.Header>
