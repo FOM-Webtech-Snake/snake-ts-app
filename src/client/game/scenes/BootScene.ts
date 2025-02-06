@@ -15,6 +15,8 @@ import Gravestone from '../../../../public/assets/gravestone.png';
 import DeathmatchImage from '../../../../public/assets/deathmatch.png'
 import EnduranceImage from '../../../../public/assets/endurance.png'
 import BorderTexture from '../../../../public/assets/grass.png'
+import LoseImage from '../../../../public/assets/lose.gif'
+import WinImage from '../../../../public/assets/WinGif.gif'
 
 const sceneConfig: Phaser.Types.Scenes.SettingsConfig = {
     active: false,
@@ -50,6 +52,8 @@ export class BootScene extends Phaser.Scene {
         this.load.image('deathmatch_logo', DeathmatchImage);
         this.load.image('endurance_logo', EnduranceImage);
         this.load.image('border_texture', BorderTexture);
+        this.load.image('win.gif', WinImage);
+        this.load.image('lose.gif', LoseImage);
     }
 
     create() {
