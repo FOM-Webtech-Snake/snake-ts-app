@@ -286,6 +286,9 @@ export class PhaserSnake {
     revive(positions: Position[]) {
         if (!this.isAlive()) { // snake can only revive when it's not alive
             this.path = [];
+            positions.forEach(position => {
+                position.setLocked(true);
+            });
             this.resetSnakeState(positions, true);
             this.status = PlayerStatusEnum.ALIVE;
             log.trace("playerSnake revived", this);
